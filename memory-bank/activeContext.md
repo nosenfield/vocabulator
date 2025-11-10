@@ -27,13 +27,14 @@
 
 ## Recent Changes
 
-### Last 6 Significant Changes
-1. **Created architecture.md** (42 pages) - Complete system architecture with tech stack justification, directory structure, data flow, security strategy, cost estimates - 2025-11-10
-2. **Created task-list.md** (38 pages) - Detailed MVP roadmap with 9 phases, 71 tasks, time estimates, acceptance criteria - 2025-11-10
-3. **Created best-practices.md** (51 pages) - Comprehensive coding standards for Python, FastAPI, OpenAI, AWS, testing, security - 2025-11-10
-4. **Created required-reading.md** (28 pages) - Curated developer onboarding guide with ~29 hours of essential reading - 2025-11-10
-5. **Architecture Decisions Made** - Clarified compute (Lambda+Batch), storage (S3+DynamoDB), privacy (anonymous IDs) - 2025-11-10
-6. **Research Completed** - 2025 best practices for AI/ML frameworks, AWS deployment, COPPA compliance, NLP libraries - 2025-11-10
+### Last 7 Significant Changes
+1. **Restructured task-list.md** - Chunked into modular phase guides for easier navigation (401 lines master + 4 detailed phase files) - 2025-11-10
+2. **Created architecture.md** (42 pages) - Complete system architecture with tech stack justification, directory structure, data flow, security strategy, cost estimates - 2025-11-10
+3. **Created task-list.md** (38 pages → now modular) - Detailed MVP roadmap with 9 phases, 71 tasks, time estimates, acceptance criteria - 2025-11-10
+4. **Created best-practices.md** (51 pages) - Comprehensive coding standards for Python, FastAPI, OpenAI, AWS, testing, security - 2025-11-10
+5. **Created required-reading.md** (28 pages) - Curated developer onboarding guide with ~29 hours of essential reading - 2025-11-10
+6. **Architecture Decisions Made** - Clarified compute (Lambda+Batch), storage (S3+DynamoDB), privacy (anonymous IDs) - 2025-11-10
+7. **Research Completed** - 2025 best practices for AI/ML frameworks, AWS deployment, COPPA compliance, NLP libraries - 2025-11-10
 
 ---
 
