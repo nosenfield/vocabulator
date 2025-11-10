@@ -208,9 +208,10 @@ Ready for push: Yes
 2. ❌ Skip test writing
 3. ❌ Touch files outside planned scope
 4. ❌ Use `git add .` or `git add -A`
-5. ❌ Commit secrets or credentials
-6. ❌ Cross-module refactoring
-7. ❌ Auto-push to remote
+5. ❌ Use `--no-verify` or `-n` (must run pre-commit hooks)
+6. ❌ Commit secrets or credentials
+7. ❌ Cross-module refactoring
+8. ❌ Auto-push to remote
 
 ---
 

@@ -399,10 +399,11 @@ Add all test coverage for a specific module.
 1. Skip tests to continue batch
 2. Commit failing code
 3. Combine multiple tasks in one commit
-4. Continue if dependencies fail
-5. Auto-push to remote
-6. Ignore ambiguous requirements
-7. Modify files outside task scope
+4. Use `--no-verify` or `-n` (must run pre-commit hooks)
+5. Continue if dependencies fail
+6. Auto-push to remote
+7. Ignore ambiguous requirements
+8. Modify files outside task scope
 
 ---
 

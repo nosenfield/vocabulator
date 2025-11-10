@@ -8,6 +8,7 @@ You are helping the user create a git commit with proper staging and commit mess
 2. **Always list files explicitly** - Show the user what will be committed
 3. **Use a single `git add` command** - List all files in one command, not multiple individual commands
 4. **Create meaningful commit messages** - Follow conventional commit format
+5. **NEVER use `--no-verify` or `-n`** - Always run pre-commit and commit-msg hooks
 
 ## Workflow
 
@@ -107,6 +108,15 @@ git commit -m "$(cat <<'EOF'
 EOF
 )"
 ```
+
+**CRITICAL**: NEVER use `--no-verify` or `-n` flags. Pre-commit hooks MUST run to ensure:
+- Code formatting (black, prettier, etc.)
+- Linting (ruff, eslint, etc.)
+- Type checking (mypy, tsc, etc.)
+- Tests passing
+- Security checks
+
+Only skip hooks if the user explicitly requests it for a valid reason (e.g., fixing broken hooks).
 
 ### Step 6: Verify Commit
 
