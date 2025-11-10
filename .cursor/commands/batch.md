@@ -88,10 +88,11 @@ Follow the complete one-shot process for this task:
    - Update progress percentages
 
 6. **Commit Changes**
-   - Safety checks
-   - Stage files explicitly
-   - Conventional commit message
-   - Verify commit created
+   - Safety checks (no secrets, no large files)
+   - Stage files explicitly by name (NEVER use `git add .` or `git add -A`)
+   - Use conventional commit message format
+   - NEVER use `--no-verify` (must run pre-commit hooks)
+   - Verify commit created with git log
 
 ### 3. Post-Task Reporting
 
@@ -399,11 +400,12 @@ Add all test coverage for a specific module.
 1. Skip tests to continue batch
 2. Commit failing code
 3. Combine multiple tasks in one commit
-4. Use `--no-verify` or `-n` (must run pre-commit hooks)
-5. Continue if dependencies fail
-6. Auto-push to remote
-7. Ignore ambiguous requirements
-8. Modify files outside task scope
+4. Use `git add .` or `git add -A` (must stage files by name)
+5. Use `--no-verify` or `-n` (must run pre-commit hooks)
+6. Continue if dependencies fail
+7. Auto-push to remote
+8. Ignore ambiguous requirements
+9. Modify files outside task scope
 
 ---
 
