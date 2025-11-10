@@ -98,7 +98,7 @@ StudentProfiles:
 ### Related Documentation
 - See [architecture.md](../architecture.md) - Data Layer section
 - See [best-practices.md](../best-practices.md) - Pydantic V2 section
-- Required for [Phase 4: API Layer](phase-4-api-layer.md) (task 4.4)
+- Required for [Phase 4: API Layer](phases-3-to-9-summary.md#phase-4-api-layer) (task 4.4)
 
 ---
 
@@ -133,7 +133,7 @@ StudentProfiles:
 ### Related Documentation
 - See [architecture.md](../architecture.md) - Data Layer section
 - Required for [Phase 2: AI/ML Layer](phase-2-ai-ml-layer.md) (task 2.4)
-- Required for [Phase 4: API Layer](phase-4-api-layer.md) (task 4.5)
+- Required for [Phase 4: API Layer](phases-3-to-9-summary.md#phase-4-api-layer) (task 4.5)
 
 ---
 
@@ -180,7 +180,7 @@ vocabulator-data-{env}/
 ### Related Documentation
 - See [best-practices.md](../best-practices.md) - S3 Operations section
 - See [architecture.md](../architecture.md) - S3 Structure section
-- Required for [Phase 4: API Layer](phase-4-api-layer.md) (task 4.3)
+- Required for [Phase 4: API Layer](phases-3-to-9-summary.md#phase-4-api-layer) (task 4.3)
 
 ---
 
@@ -289,6 +289,6 @@ assert len(cc_words) >= 500
 **Related Files:**
 - [Phase 0: Project Setup](phase-0-project-setup.md) (prerequisite)
 - [Phase 2: AI/ML Layer](phase-2-ai-ml-layer.md) (next phase)
-- [Phase 4: API Layer](phase-4-api-layer.md) (consumer)
+- [Phase 4: API Layer](phases-3-to-9-summary.md#phase-4-api-layer) (consumer)
 - [architecture.md](../architecture.md)
 - [best-practices.md](../best-practices.md)

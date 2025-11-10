@@ -24,7 +24,7 @@
 ### Cross-References
 - Uses AI/ML components from [Phase 2](phase-2-ai-ml-layer.md)
 - Uses data repositories from [Phase 1](phase-1-data-layer.md)
-- Required for [Phase 4](phase-4-api-layer.md) (task 4.6)
+- Required for [Phase 4: API Layer](phases-3-to-9-summary.md#phase-4-api-layer) (task 4.6)
 
 ---
 
@@ -322,6 +322,13 @@ Phase 0 (Setup)
 - [Phase 0: Project Setup](phase-0-project-setup.md) (detailed)
 - [Phase 1: Data Layer](phase-1-data-layer.md) (detailed)
 - [Phase 2: AI/ML Layer](phase-2-ai-ml-layer.md) (detailed)
+- [Phase 3: Processing Layer](#phase-3-processing-layer) (this file)
+- [Phase 4: API Layer](#phase-4-api-layer) (this file)
+- [Phase 5: Frontend Layer](#phase-5-frontend-layer) (this file)
+- [Phase 6: Infrastructure & Deployment](#phase-6-infrastructure--deployment) (this file)
+- [Phase 7: Testing & Quality Assurance](#phase-7-testing--quality-assurance) (this file)
+- [Phase 8: Documentation & Polish](#phase-8-documentation--polish) (this file)
+- [Phase 9: MVP Launch Preparation](#phase-9-mvp-launch-preparation) (this file)
 - [Master Task List](../task-list.md)
 - [architecture.md](../architecture.md)
 - [best-practices.md](../best-practices.md)

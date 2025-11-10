@@ -299,7 +299,7 @@ Output: JSON formatted recommendations
 ### Related Documentation
 - See [architecture.md](../architecture.md) - Recommendation Repository section
 - Saves to [Phase 1](phase-1-data-layer.md) recommendation repository (task 1.3)
-- Used by [Phase 4: API Layer](phase-4-api-layer.md) (task 4.5)
+- Used by [Phase 4: API Layer](phases-3-to-9-summary.md#phase-4-api-layer) (task 4.5)
 - Used by [Phase 5: Frontend](phase-5-frontend-layer.md) (task 5.1)
 
 ---
@@ -361,7 +361,7 @@ Track Phase 2 API costs:
 - [Phase 0: Project Setup](phase-0-project-setup.md) (prerequisite)
 - [Phase 1: Data Layer](phase-1-data-layer.md) (prerequisite)
 - [Phase 3: Processing Layer](phase-3-processing-layer.md) (next phase)
-- [Phase 4: API Layer](phase-4-api-layer.md) (consumer)
+- [Phase 4: API Layer](phases-3-to-9-summary.md#phase-4-api-layer) (consumer)
 - [Phase 5: Frontend Layer](phase-5-frontend-layer.md) (consumer)
 - [architecture.md](../architecture.md)
 - [best-practices.md](../best-practices.md)
