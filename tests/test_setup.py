@@ -43,18 +43,86 @@ def test_development_tools_available():
 
 
 def test_project_structure_exists():
-    """Verify basic project directory structure exists."""
+    """Verify complete project directory structure exists per architecture.md."""
     project_root = Path(__file__).parent.parent
+    
+    # Core source directories
     required_dirs = [
+        # Source directories
         project_root / "src",
+        project_root / "src" / "api",
+        project_root / "src" / "api" / "routes",
+        project_root / "src" / "api" / "models",
+        project_root / "src" / "api" / "middleware",
+        project_root / "src" / "processing",
+        project_root / "src" / "ai",
+        project_root / "src" / "ai" / "prompts",
+        project_root / "src" / "data",
+        project_root / "src" / "data" / "models",
+        project_root / "src" / "data" / "repositories",
+        project_root / "src" / "vocabulary",
+        project_root / "src" / "vocabulary" / "corpus",
+        project_root / "src" / "utils",
+        project_root / "src" / "frontend",
+        project_root / "src" / "frontend" / "templates",
+        project_root / "src" / "frontend" / "static" / "css",
+        project_root / "src" / "frontend" / "static" / "js",
+        # Test directories
         project_root / "tests",
-        project_root / "_docs",
+        project_root / "tests" / "unit",
+        project_root / "tests" / "integration",
+        project_root / "tests" / "fixtures",
+        project_root / "tests" / "fixtures" / "sample_transcripts",
+        project_root / "tests" / "mocks",
+        # Infrastructure directories
+        project_root / "infrastructure",
+        project_root / "infrastructure" / "cloudformation",
+        project_root / "infrastructure" / "docker",
     ]
 
     missing_dirs = [str(d) for d in required_dirs if not d.exists()]
 
     if missing_dirs:
         raise AssertionError(f"Required directories missing: {', '.join(missing_dirs)}")
+
+
+def test_python_packages_have_init_files():
+    """Verify all Python packages have __init__.py files."""
+    project_root = Path(__file__).parent.parent
+    
+    python_packages = [
+        project_root / "src",
+        project_root / "src" / "api",
+        project_root / "src" / "api" / "routes",
+        project_root / "src" / "api" / "models",
+        project_root / "src" / "api" / "middleware",
+        project_root / "src" / "processing",
+        project_root / "src" / "ai",
+        project_root / "src" / "ai" / "prompts",
+        project_root / "src" / "data",
+        project_root / "src" / "data" / "models",
+        project_root / "src" / "data" / "repositories",
+        project_root / "src" / "vocabulary",
+        project_root / "src" / "vocabulary" / "corpus",
+        project_root / "src" / "utils",
+        project_root / "src" / "frontend",
+        project_root / "tests",
+        project_root / "tests" / "unit",
+        project_root / "tests" / "integration",
+        project_root / "tests" / "fixtures",
+        project_root / "tests" / "mocks",
+    ]
+    
+    missing_init_files = []
+    for package_dir in python_packages:
+        init_file = package_dir / "__init__.py"
+        if package_dir.exists() and not init_file.exists():
+            missing_init_files.append(str(init_file))
+    
+    if missing_init_files:
+        raise AssertionError(
+            f"Missing __init__.py files: {', '.join(missing_init_files)}"
+        )
 
 
 def test_configuration_files_exist():
