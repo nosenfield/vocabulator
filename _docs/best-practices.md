@@ -21,7 +21,7 @@ These practices ensure code quality, security, testability, and cost-efficiency 
 ## Quick Navigation
 
 ### Detailed Practice Guides
-- [Python Development Standards](best-practices/python-development.md) ⭐ Start here
+- [Python Development Standards](best-practices/python-development.md) - Start here
 - [FastAPI Best Practices](best-practices/fastapi-patterns.md)
 - [OpenAI API Integration](best-practices/openai-integration.md)
 - [AWS Services Best Practices](best-practices/aws-services.md)

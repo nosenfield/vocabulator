@@ -1,7 +1,7 @@
 # Phase 2: AI/ML Layer
 
 **Total Estimated Time:** 21-27 hours (4-5 days)
-**Priority:** 🔴 P0 (All tasks)
+**Priority:** P0 (All tasks)
 **Dependencies:** Phase 0 (0.4), Phase 1 (1.5 for task 2.3)
 
 ---
@@ -25,12 +25,12 @@ Phase 2 implements the AI/ML integration layer, including OpenAI API client, pro
 
 ## 2.1 OpenAI Client Wrapper
 
-**Priority:** 🔴 P0 🧪
+**Priority:** P0
 **Estimated Time:** 4-5 hours
 **Dependencies:** Phase 0 (0.4)
 
 ### Tasks
-- [ ] 🧪 Write tests for OpenAI client (mock API responses)
+- [ ] Write tests for OpenAI client (mock API responses)
 - [ ] Implement `src/ai/openai_client.py` wrapper
 - [ ] Add retry logic with exponential backoff
 - [ ] Implement rate limit handling
@@ -70,12 +70,12 @@ Track per request:
 
 ## 2.2 Vocabulary Extraction Prompts & Logic
 
-**Priority:** 🔴 P0 🧪
+**Priority:** P0
 **Estimated Time:** 6-8 hours
 **Dependencies:** 2.1
 
 ### Tasks
-- [ ] 🧪 Write tests for vocabulary extraction (sample inputs/outputs)
+- [ ] Write tests for vocabulary extraction (sample inputs/outputs)
 - [ ] Design extraction prompt template
 - [ ] Implement `src/ai/prompts/extraction.py`
 - [ ] Create text preprocessing utilities (chunking, cleaning)
@@ -137,18 +137,18 @@ Output format: JSON
 ### Related Documentation
 - See [best-practices.md](../best-practices.md) - Prompt Engineering section
 - See [architecture.md](../architecture.md) - OpenAI API Strategy section
-- Required for [Phase 3](phase-3-processing-layer.md) (task 3.1)
+- Required for [Phase 3](phases-3-to-9-summary.md#phase-3-processing-layer) (task 3.1)
 
 ---
 
 ## 2.3 Vocabulary Gap Analysis Prompts & Logic
 
-**Priority:** 🔴 P0 🧪
+**Priority:** P0
 **Estimated Time:** 6-8 hours
 **Dependencies:** 2.2, Phase 1 (1.5)
 
 ### Tasks
-- [ ] 🧪 Write tests for gap analysis
+- [ ] Write tests for gap analysis
 - [ ] Design gap analysis prompt template
 - [ ] Implement `src/ai/prompts/gap_analysis.py`
 - [ ] Create `src/processing/gap_identifier.py`
@@ -227,12 +227,12 @@ def calculate_zpd_difficulty(student_vocab_size: int, grade: int) -> tuple:
 
 ## 2.4 Word Recommendation Generation
 
-**Priority:** 🔴 P0 🧪
+**Priority:** P0
 **Estimated Time:** 5-6 hours
 **Dependencies:** 2.3
 
 ### Tasks
-- [ ] 🧪 Write tests for recommendation generation
+- [ ] Write tests for recommendation generation
 - [ ] Design recommendation prompt template
 - [ ] Implement `src/ai/prompts/recommendation.py`
 - [ ] Create `src/processing/recommender.py`
@@ -300,7 +300,7 @@ Output: JSON formatted recommendations
 - See [architecture.md](../architecture.md) - Recommendation Repository section
 - Saves to [Phase 1](phase-1-data-layer.md) recommendation repository (task 1.3)
 - Used by [Phase 4: API Layer](phases-3-to-9-summary.md#phase-4-api-layer) (task 4.5)
-- Used by [Phase 5: Frontend](phase-5-frontend-layer.md) (task 5.1)
+- Used by [Phase 5: Frontend](phases-3-to-9-summary.md#phase-5-frontend-layer) (task 5.1)
 
 ---
 

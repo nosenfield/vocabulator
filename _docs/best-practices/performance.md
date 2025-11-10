@@ -27,10 +27,10 @@ def process_students_parallel(
 
     return results
 
-# ✅ Good - Parallel processing for independent tasks
+# Good - Parallel processing for independent tasks
 results = process_students_parallel(student_ids, analyze_transcript)
 
-# ❌ Bad - Sequential processing (slow)
+# Bad - Sequential processing (slow)
 results = [analyze_transcript(sid) for sid in student_ids]
 ```
 
@@ -58,7 +58,7 @@ async def process_student(student_id: str) -> dict:
 
     return {"student_id": student_id, "status": "complete"}
 
-# ✅ Good - Async for I/O operations
+# Good - Async for I/O operations
 results = await process_students_async(student_ids)
 ```
 
@@ -73,14 +73,14 @@ from functools import lru_cache
 import hashlib
 from typing import Optional
 
-# ✅ In-memory cache for expensive computations
+# In-memory cache for expensive computations
 @lru_cache(maxsize=1000)
 def get_common_core_words(grade_level: int) -> List[str]:
     """Get Common Core words for grade level (cached)."""
     # Expensive database query cached in memory
     return query_vocabulary_database(grade_level)
 
-# ✅ Redis cache for distributed systems
+# Redis cache for distributed systems
 import redis
 
 class CacheClient:
@@ -120,12 +120,12 @@ vocab = await cache.get_or_compute(
 **Optimize DynamoDB queries:**
 
 ```python
-# ❌ Bad - Scan entire table (expensive)
+# Bad - Scan entire table (expensive)
 def get_all_students_slow():
     response = table.scan()
     return response["Items"]
 
-# ✅ Good - Query with GSI
+# Good - Query with GSI
 def get_students_by_grade(grade: int):
     response = table.query(
         IndexName="grade_level-index",
@@ -133,7 +133,7 @@ def get_students_by_grade(grade: int):
     )
     return response["Items"]
 
-# ✅ Good - Batch get for multiple IDs
+# Good - Batch get for multiple IDs
 def get_students_batch(student_ids: List[str]):
     keys = [{"student_id": sid} for sid in student_ids]
     response = dynamodb.batch_get_item(

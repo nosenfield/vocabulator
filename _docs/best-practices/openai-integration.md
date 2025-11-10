@@ -116,12 +116,12 @@ async def extract_vocabulary(text: str) -> list[dict]:
 ```
 
 **Best practices:**
-- ✅ Use templates (Jinja2) for reusable prompts
-- ✅ Specify output format clearly (JSON preferred)
-- ✅ Use lower temperature (0.1-0.3) for consistent extraction
-- ✅ Provide clear examples in the prompt
-- ✅ Include validation instructions
-- ❌ Don't rely on exact output format (parse defensively)
+- Use templates (Jinja2) for reusable prompts
+- Specify output format clearly (JSON preferred)
+- Use lower temperature (0.1-0.3) for consistent extraction
+- Provide clear examples in the prompt
+- Include validation instructions
+- Don't rely on exact output format (parse defensively)
 
 ---
 
@@ -179,13 +179,13 @@ class CostOptimizer:
 ```
 
 **Cost reduction techniques:**
-- ✅ Use GPT-4o-mini for simple tasks (10x cheaper than GPT-4o)
-- ✅ Batch multiple requests when possible
-- ✅ Cache responses for identical inputs
-- ✅ Use shorter prompts (fewer input tokens)
-- ✅ Set `max_tokens` to minimum needed
-- ✅ Monitor daily spending with alarms
-- ❌ Don't use GPT-4o for tasks GPT-4o-mini can handle
+- Use GPT-4o-mini for simple tasks (10x cheaper than GPT-4o)
+- Batch multiple requests when possible
+- Cache responses for identical inputs
+- Use shorter prompts (fewer input tokens)
+- Set `max_tokens` to minimum needed
+- Monitor daily spending with alarms
+- Don't use GPT-4o for tasks GPT-4o-mini can handle
 
 ---
 

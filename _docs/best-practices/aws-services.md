@@ -38,11 +38,11 @@ aws_clients = AWSClientFactory()
 ```
 
 **Best practices:**
-- ✅ Reuse clients (don't create new client per request)
-- ✅ Configure retries explicitly
-- ✅ Use connection pooling for high throughput
-- ✅ Use resource for higher-level operations, client for low-level
-- ❌ Don't hardcode credentials (use IAM roles)
+- Reuse clients (don't create new client per request)
+- Configure retries explicitly
+- Use connection pooling for high throughput
+- Use resource for higher-level operations, client for low-level
+- Don't hardcode credentials (use IAM roles)
 
 ---
 
@@ -111,13 +111,13 @@ class StudentRepository:
 ```
 
 **Best practices:**
-- ✅ Use `get_item` for single-item retrieval (not `query`)
-- ✅ Use GSI for queries on non-key attributes
-- ✅ Use batch operations for multiple items (up to 25)
-- ✅ Use eventually consistent reads when possible (50% cheaper)
-- ✅ Use `UpdateExpression` for atomic updates
-- ❌ Avoid `scan` operations (expensive and slow)
-- ❌ Don't use strongly consistent reads unless necessary
+- Use `get_item` for single-item retrieval (not `query`)
+- Use GSI for queries on non-key attributes
+- Use batch operations for multiple items (up to 25)
+- Use eventually consistent reads when possible (50% cheaper)
+- Use `UpdateExpression` for atomic updates
+- Avoid `scan` operations (expensive and slow)
+- Don't use strongly consistent reads unless necessary
 
 ---
 
@@ -202,13 +202,13 @@ class S3Client:
 ```
 
 **Best practices:**
-- ✅ Use multipart upload for files > 5MB
-- ✅ Enable server-side encryption by default
-- ✅ Use presigned URLs for temporary access (not public buckets)
-- ✅ Use pagination for listing large directories
-- ✅ Set lifecycle policies for automatic cleanup
-- ❌ Don't store sensitive data without encryption
-- ❌ Don't make buckets public
+- Use multipart upload for files > 5MB
+- Enable server-side encryption by default
+- Use presigned URLs for temporary access (not public buckets)
+- Use pagination for listing large directories
+- Set lifecycle policies for automatic cleanup
+- Don't store sensitive data without encryption
+- Don't make buckets public
 
 ---
 
@@ -221,7 +221,7 @@ import os
 import boto3
 from typing import Any, Dict
 
-# ✅ Initialize clients outside handler (reused across invocations)
+# Initialize clients outside handler (reused across invocations)
 dynamodb = boto3.resource("dynamodb")
 table = dynamodb.Table(os.environ["STUDENT_TABLE"])
 openai_client = OpenAIClient()
@@ -229,7 +229,7 @@ openai_client = OpenAIClient()
 def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     """Lambda function handler."""
 
-    # ✅ Extract environment variables once
+    # Extract environment variables once
     log_level = os.getenv("LOG_LEVEL", "INFO")
 
     try:
@@ -257,14 +257,14 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
 ```
 
 **Best practices:**
-- ✅ Initialize clients outside handler (cold start optimization)
-- ✅ Use environment variables for configuration
-- ✅ Set appropriate memory (512MB-1GB for most workloads)
-- ✅ Use Lambda layers for shared dependencies
-- ✅ Keep deployment package small (< 50MB)
-- ✅ Use provisioned concurrency for latency-sensitive functions
-- ❌ Don't initialize clients inside handler
-- ❌ Don't use recursion (risk of runaway costs)
+- Initialize clients outside handler (cold start optimization)
+- Use environment variables for configuration
+- Set appropriate memory (512MB-1GB for most workloads)
+- Use Lambda layers for shared dependencies
+- Keep deployment package small (< 50MB)
+- Use provisioned concurrency for latency-sensitive functions
+- Don't initialize clients inside handler
+- Don't use recursion (risk of runaway costs)
 
 ---
 

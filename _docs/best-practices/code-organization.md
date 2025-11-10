@@ -10,7 +10,7 @@
 **Organize by domain, not by layer:**
 
 ```python
-# ✅ Good - Domain-driven structure
+# Good - Domain-driven structure
 src/
 ├── students/              # Student domain
 │   ├── models.py          # Student data models
@@ -26,7 +26,7 @@ src/
     ├── pipeline.py
     └── batch.py
 
-# ❌ Bad - Layer-based structure (doesn't scale)
+# Bad - Layer-based structure (doesn't scale)
 src/
 ├── models/               # All models mixed together
 ├── repositories/         # All repos mixed together
@@ -40,7 +40,7 @@ src/
 **Inject dependencies for testability:**
 
 ```python
-# ✅ Good - Dependencies injected
+# Good - Dependencies injected
 class VocabularyService:
     def __init__(
         self,
@@ -64,7 +64,7 @@ def test_process_transcript():
     service = VocabularyService(mock_openai, mock_repo, mock_vocab_repo)
     # Test with mocks...
 
-# ❌ Bad - Hard dependencies
+# Bad - Hard dependencies
 class VocabularyService:
     def __init__(self):
         self.openai = OpenAIClient()  # Hard to mock

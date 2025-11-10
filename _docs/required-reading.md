@@ -220,16 +220,16 @@ async def create_item(item: ItemCreate, db: Database = Depends(get_db)):
 
 **Code Example:**
 ```python
-# ✅ Good - Get single item
+# Good - Get single item
 response = table.get_item(Key={"student_id": "STU-001"})
 
-# ✅ Good - Query with GSI
+# Good - Query with GSI
 response = table.query(
     IndexName="grade_level-index",
     KeyConditionExpression=Key("grade_level").eq(7)
 )
 
-# ❌ Bad - Scan (expensive)
+# Bad - Scan (expensive)
 response = table.scan()
 ```
 
@@ -274,7 +274,7 @@ response = table.scan()
 
 **Cold Start Optimization:**
 ```python
-# ✅ Initialize outside handler (reused)
+# Initialize outside handler (reused)
 dynamodb = boto3.resource("dynamodb")
 table = dynamodb.Table(os.environ["TABLE_NAME"])
 

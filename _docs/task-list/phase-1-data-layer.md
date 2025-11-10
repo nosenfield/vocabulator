@@ -1,7 +1,7 @@
 # Phase 1: Data Layer & Storage
 
 **Total Estimated Time:** 22-29 hours (4-5 days)
-**Priority:** 🔴 P0 (All tasks)
+**Priority:** P0 (All tasks)
 **Dependencies:** Phase 0 (tasks 0.3, 0.4)
 
 ---
@@ -25,12 +25,12 @@ Phase 1 implements the data persistence layer, including DynamoDB and S3 clients
 
 ## 1.1 DynamoDB Client & Base Repository
 
-**Priority:** 🔴 P0 🧪
+**Priority:** P0
 **Estimated Time:** 4-5 hours
 **Dependencies:** Phase 0 (0.4)
 
 ### Tasks
-- [ ] 🧪 Write tests for `src/data/dynamodb_client.py`
+- [ ] Write tests for `src/data/dynamodb_client.py`
 - [ ] Implement DynamoDB connection wrapper
 - [ ] Add connection pooling and retry logic
 - [ ] Create base repository class with CRUD operations
@@ -58,12 +58,12 @@ Phase 1 implements the data persistence layer, including DynamoDB and S3 clients
 
 ## 1.2 Student Profile Data Model & Repository
 
-**Priority:** 🔴 P0 🧪
+**Priority:** P0
 **Estimated Time:** 5-6 hours
 **Dependencies:** 1.1
 
 ### Tasks
-- [ ] 🧪 Write tests for StudentProfile model
+- [ ] Write tests for StudentProfile model
 - [ ] Create StudentProfile Pydantic model
 - [ ] Implement validation rules (grade level 6-8, etc.)
 - [ ] Create StudentRepository with DynamoDB operations
@@ -104,12 +104,12 @@ StudentProfiles:
 
 ## 1.3 Vocabulary Recommendation Data Model & Repository
 
-**Priority:** 🔴 P0 🧪
+**Priority:** P0
 **Estimated Time:** 4-5 hours
 **Dependencies:** 1.1
 
 ### Tasks
-- [ ] 🧪 Write tests for VocabularyRecommendation model
+- [ ] Write tests for VocabularyRecommendation model
 - [ ] Create VocabularyRecommendation Pydantic model
 - [ ] Implement RecommendationRepository
 - [ ] Add methods: create, get by student, get by date range
@@ -139,12 +139,12 @@ StudentProfiles:
 
 ## 1.4 S3 Client & File Operations
 
-**Priority:** 🔴 P0 🧪
+**Priority:** P0
 **Estimated Time:** 4-5 hours
 **Dependencies:** Phase 0 (0.4)
 
 ### Tasks
-- [ ] 🧪 Write tests for `src/data/s3_client.py`
+- [ ] Write tests for `src/data/s3_client.py`
 - [ ] Implement S3 client wrapper with boto3
 - [ ] Add methods: upload, download, list, delete
 - [ ] Implement multipart upload for large files
@@ -186,14 +186,14 @@ vocabulator-data-{env}/
 
 ## 1.5 Common Core Vocabulary Database
 
-**Priority:** 🔴 P0 🧪
+**Priority:** P0
 **Estimated Time:** 6-8 hours
 **Dependencies:** 1.1
 
 ### Tasks
 - [ ] Research and source Common Core vocabulary lists (grades 6-8)
 - [ ] Create vocabulary corpus JSON files
-- [ ] 🧪 Write tests for vocabulary loader
+- [ ] Write tests for vocabulary loader
 - [ ] Implement `src/vocabulary/common_core_loader.py`
 - [ ] Create grade-level mapping utilities
 - [ ] Load vocabulary into DynamoDB (seed script)

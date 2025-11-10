@@ -9,14 +9,14 @@
 **Write clear, descriptive commit messages:**
 
 ```bash
-# ✅ Good commit messages
+# Good commit messages
 git commit -m "feat: add vocabulary extraction with GPT-4o-mini"
 git commit -m "fix: handle rate limit errors in OpenAI client"
 git commit -m "test: add integration tests for batch processing"
 git commit -m "docs: update API documentation with examples"
 git commit -m "refactor: extract common DynamoDB logic to base repository"
 
-# ❌ Bad commit messages
+# Bad commit messages
 git commit -m "updates"
 git commit -m "fix bug"
 git commit -m "WIP"

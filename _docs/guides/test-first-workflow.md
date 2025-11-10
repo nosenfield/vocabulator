@@ -89,11 +89,11 @@ git commit -m "feat: [feature]"
 
 ## Benefits
 
-- ✅ Regressions caught immediately
-- ✅ "Done" clearly defined (tests pass)
-- ✅ AI self-corrects mistakes
-- ✅ Less manual QA needed
-- ✅ High confidence in changes
+- Regressions caught immediately
+- "Done" clearly defined (tests pass)
+- AI self-corrects mistakes
+- Less manual QA needed
+- High confidence in changes
 
 ---
 
@@ -169,16 +169,16 @@ Use from `tests/patterns/`:
 
 ## Common Mistakes
 
-❌ **Writing tests after implementation**
+**Writing tests after implementation**
 → Loses TDD benefits
 
-❌ **Modifying tests to pass**
+**Modifying tests to pass**
 → Tests should define requirements
 
-❌ **Skipping edge cases**
+**Skipping edge cases**
 → Creates blind spots
 
-❌ **No test for bug fixes**
+**No test for bug fixes**
 → Bugs can reappear
 
 ## Red-Green-Refactor Cycle

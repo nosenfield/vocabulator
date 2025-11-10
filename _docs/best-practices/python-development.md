@@ -39,13 +39,13 @@ warn_unused_configs = true
 ```
 
 **Style Guidelines:**
-- ✅ Use type hints for all function signatures
-- ✅ Write docstrings for all public functions (Google or NumPy style)
-- ✅ Use descriptive variable names (no single letters except loop counters)
-- ✅ Prefer f-strings over `.format()` or `%` formatting
-- ✅ Use `pathlib.Path` instead of `os.path` for file operations
-- ❌ Avoid `import *` (explicit imports only)
-- ❌ Avoid mutable default arguments (`def func(items=[]): ...`)
+- Use type hints for all function signatures
+- Write docstrings for all public functions (Google or NumPy style)
+- Use descriptive variable names (no single letters except loop counters)
+- Prefer f-strings over `.format()` or `%` formatting
+- Use `pathlib.Path` instead of `os.path` for file operations
+- Avoid `import *` (explicit imports only)
+- Avoid mutable default arguments (`def func(items=[]): ...`)
 
 **Example:**
 ```python
@@ -100,11 +100,11 @@ mypy==1.7.0
 ```
 
 **Best practices:**
-- ✅ Use exact version pins for production (`==`)
-- ✅ Separate dev dependencies from production
-- ✅ Update dependencies regularly (monthly security review)
-- ✅ Use `pip-tools` or `poetry` for dependency resolution
-- ❌ Don't commit virtual environment (`venv/` in `.gitignore`)
+- Use exact version pins for production (`==`)
+- Separate dev dependencies from production
+- Update dependencies regularly (monthly security review)
+- Use `pip-tools` or `poetry` for dependency resolution
+- Don't commit virtual environment (`venv/` in `.gitignore`)
 
 ---
 
@@ -140,7 +140,7 @@ import asyncio
 from typing import List
 import httpx
 
-# ✅ Good - Async for I/O operations
+# Good - Async for I/O operations
 async def fetch_multiple_definitions(words: List[str]) -> List[str]:
     """Fetch definitions for multiple words concurrently."""
     async with httpx.AsyncClient() as client:
@@ -151,7 +151,7 @@ async def fetch_definition(client: httpx.AsyncClient, word: str) -> str:
     response = await client.get(f"https://api.dictionary.com/{word}")
     return response.json()["definition"]
 
-# ❌ Bad - Sync in async function (blocks event loop)
+# Bad - Sync in async function (blocks event loop)
 async def bad_fetch():
     import time
     time.sleep(5)  # Blocks event loop!
@@ -159,11 +159,11 @@ async def bad_fetch():
 ```
 
 **When to use async:**
-- ✅ API calls (OpenAI, external services)
-- ✅ Database queries (DynamoDB, S3)
-- ✅ Multiple I/O operations that can run concurrently
-- ❌ CPU-bound tasks (use multiprocessing instead)
-- ❌ Simple CRUD operations with no concurrency benefit
+- API calls (OpenAI, external services)
+- Database queries (DynamoDB, S3)
+- Multiple I/O operations that can run concurrently
+- CPU-bound tasks (use multiprocessing instead)
+- Simple CRUD operations with no concurrency benefit
 
 ---
 

@@ -7,13 +7,13 @@
 ## Phase 3: Processing Layer
 
 **Total Time:** 19-24 hours (3-4 days)
-**Priority:** 🔴 P0 (All 3 tasks)
+**Priority:** P0 (All 3 tasks)
 **Dependencies:** Phase 2 complete
 
 ### Tasks Overview
-- **3.1** Text Processing Pipeline (5-6 hours) 🧪
-- **3.2** Parallel Processing Executor (6-8 hours) 🧪
-- **3.3** AWS Batch Integration (8-10 hours) ⚙️
+- **3.1** Text Processing Pipeline (5-6 hours)
+- **3.2** Parallel Processing Executor (6-8 hours)
+- **3.3** AWS Batch Integration (8-10 hours)
 
 ### Key Deliverables
 - End-to-end text processing pipeline
@@ -31,16 +31,16 @@
 ## Phase 4: API Layer
 
 **Total Time:** 27-33 hours (4-5 days)
-**Priority:** 🔴 P0 (All 6 tasks)
+**Priority:** P0 (All 6 tasks)
 **Dependencies:** Phase 3 complete
 
 ### Tasks Overview
-- **4.1** FastAPI Application Setup (4-5 hours) 🧪
-- **4.2** Request/Response Models (4-5 hours) 🧪
-- **4.3** Upload Endpoints (6-8 hours) 🧪
-- **4.4** Student Profile Endpoints (4-5 hours) 🧪
-- **4.5** Recommendation Endpoints (4-5 hours) 🧪
-- **4.6** Batch Processing Endpoints (5-6 hours) 🧪
+- **4.1** FastAPI Application Setup (4-5 hours)
+- **4.2** Request/Response Models (4-5 hours)
+- **4.3** Upload Endpoints (6-8 hours)
+- **4.4** Student Profile Endpoints (4-5 hours)
+- **4.5** Recommendation Endpoints (4-5 hours)
+- **4.6** Batch Processing Endpoints (5-6 hours)
 
 ### Key API Endpoints
 ```
@@ -65,12 +65,12 @@ GET    /health
 ## Phase 5: Frontend Layer
 
 **Total Time:** 11-14 hours (2-3 days)
-**Priority:** 🔴 P0 (Both tasks)
+**Priority:** P0 (Both tasks)
 **Dependencies:** Phase 1 (1.2, 1.3)
 
 ### Tasks Overview
 - **5.1** HTML Report Templates (6-8 hours)
-- **5.2** Report Generation Service (5-6 hours) 🧪
+- **5.2** Report Generation Service (5-6 hours)
 
 ### Key Deliverables
 - Student profile HTML template (Jinja2)
@@ -99,15 +99,15 @@ GET    /health
 ## Phase 6: Infrastructure & Deployment
 
 **Total Time:** 23-30 hours (4-5 days)
-**Priority:** 🔴 P0 (3 tasks), 🟡 P1 (2 tasks)
+**Priority:** P0 (3 tasks), P1 (2 tasks)
 **Dependencies:** All previous phases
 
 ### Tasks Overview
-- **6.1** CloudFormation Templates (10-12 hours) 🔴⚙️
-- **6.2** Lambda Deployment Package (4-5 hours) 🔴⚙️
-- **6.3** CI/CD Pipeline (6-8 hours) 🟡⚙️
-- **6.4** Monitoring & Alerting (5-6 hours) 🟡⚙️
-- **6.5** Deployment Scripts & Docs (4-5 hours) 🔴⚙️📝
+- **6.1** CloudFormation Templates (10-12 hours) 
+- **6.2** Lambda Deployment Package (4-5 hours) 
+- **6.3** CI/CD Pipeline (6-8 hours) 
+- **6.4** Monitoring & Alerting (5-6 hours) 
+- **6.5** Deployment Scripts & Docs (4-5 hours) 
 
 ### CloudFormation Templates
 - API Gateway + Lambda
@@ -142,13 +142,13 @@ GET    /health
 ## Phase 7: Testing & Quality Assurance
 
 **Total Time:** 17-21 hours (3-4 days)
-**Priority:** 🔴 P0 (1 task), 🟡 P1 (2 tasks)
+**Priority:** P0 (1 task), P1 (2 tasks)
 **Dependencies:** Phases 1-6 complete
 
 ### Tasks Overview
-- **7.1** Integration Test Suite (8-10 hours) 🔴🧪
-- **7.2** Performance Testing (5-6 hours) 🟡
-- **7.3** Security Audit & Fixes (4-5 hours) 🟡
+- **7.1** Integration Test Suite (8-10 hours) 
+- **7.2** Performance Testing (5-6 hours) 
+- **7.3** Security Audit & Fixes (4-5 hours) 
 
 ### Integration Test Scenarios
 1. **End-to-End Workflow**
@@ -183,14 +183,14 @@ GET    /health
 ## Phase 8: Documentation & Polish
 
 **Total Time:** 12-16 hours (2-3 days)
-**Priority:** 🔴 P0 (2 tasks), 🟡 P1 (2 tasks)
+**Priority:** P0 (2 tasks), P1 (2 tasks)
 **Dependencies:** All development complete
 
 ### Tasks Overview
-- **8.1** API Documentation (3-4 hours) 🔴📝
-- **8.2** Developer Onboarding Guide (4-5 hours) 🟡📝
-- **8.3** User Documentation (Teachers) (3-4 hours) 🟡📝
-- **8.4** README & Project Overview (2-3 hours) 🔴📝
+- **8.1** API Documentation (3-4 hours) 
+- **8.2** Developer Onboarding Guide (4-5 hours) 
+- **8.3** User Documentation (Teachers) (3-4 hours) 
+- **8.4** README & Project Overview (2-3 hours) 
 
 ### Documentation Deliverables
 1. **API Documentation**
@@ -227,14 +227,14 @@ GET    /health
 ## Phase 9: MVP Launch Preparation
 
 **Total Time:** 12-16 hours (2-3 days)
-**Priority:** 🔴 P0 (2 tasks), 🟡 P1 (2 tasks)
+**Priority:** P0 (2 tasks), P1 (2 tasks)
 **Dependencies:** All phases complete
 
 ### Tasks Overview
-- **9.1** Test Data Generation (4-5 hours) 🔴
-- **9.2** Demo Environment Setup (3-4 hours) 🟡⚙️
-- **9.3** Cost Optimization Review (3-4 hours) 🟡
-- **9.4** Launch Checklist & Go/No-Go (2-3 hours) 🔴📝
+- **9.1** Test Data Generation (4-5 hours) 
+- **9.2** Demo Environment Setup (3-4 hours) 
+- **9.3** Cost Optimization Review (3-4 hours) 
+- **9.4** Launch Checklist & Go/No-Go (2-3 hours) 
 
 ### Test Data Requirements
 - 50+ mock student transcripts (varying quality)
@@ -297,8 +297,8 @@ Phase 0 (Setup)
 ## Total MVP Estimates
 
 ### By Priority
-- **🔴 P0 (Must-Have):** 63 tasks, ~180-230 hours
-- **🟡 P1 (Should-Have):** 8 tasks, ~20-30 hours
+- **P0 (Must-Have):** 63 tasks, ~180-230 hours
+- **P1 (Should-Have):** 8 tasks, ~20-30 hours
 - **Total:** 71 tasks, ~200-260 hours (6-8 weeks)
 
 ### By Phase

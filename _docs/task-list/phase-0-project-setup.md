@@ -1,7 +1,7 @@
 # Phase 0: Project Setup & Foundation
 
 **Total Estimated Time:** 8-12 hours (2-3 days)
-**Priority:** 🔴 P0 (All tasks)
+**Priority:** P0 (All tasks)
 **Dependencies:** None
 
 ---
@@ -20,7 +20,7 @@ Phase 0 establishes the foundational development environment and project structu
 
 ## 0.1 Development Environment Setup
 
-**Priority:** 🔴 P0
+**Priority:** P0
 **Estimated Time:** 2-3 hours
 **Dependencies:** None
 
@@ -56,7 +56,7 @@ Phase 0 establishes the foundational development environment and project structu
 
 ## 0.2 Project Structure Creation
 
-**Priority:** 🔴 P0
+**Priority:** P0
 **Estimated Time:** 1 hour
 **Dependencies:** 0.1
 
@@ -110,12 +110,12 @@ vocabulator/
 
 ## 0.3 Configuration Management System
 
-**Priority:** 🔴 P0 🧪
+**Priority:** P0
 **Estimated Time:** 3-4 hours
 **Dependencies:** 0.2
 
 ### Tasks
-- [ ] 🧪 Write tests for `src/utils/config.py`
+- [ ] Write tests for `src/utils/config.py`
 - [ ] Implement configuration loader (environment variables)
 - [ ] Add validation for required config values
 - [ ] Support multiple environments (dev, staging, prod)
@@ -154,12 +154,12 @@ LOG_LEVEL=INFO
 
 ## 0.4 Logging Utility Setup
 
-**Priority:** 🔴 P0 🧪
+**Priority:** P0
 **Estimated Time:** 2-3 hours
 **Dependencies:** 0.3
 
 ### Tasks
-- [ ] 🧪 Write tests for `src/utils/logger.py`
+- [ ] Write tests for `src/utils/logger.py`
 - [ ] Implement structured JSON logging
 - [ ] Add correlation ID support for request tracing
 - [ ] Configure log levels per environment

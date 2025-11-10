@@ -20,13 +20,13 @@ def validate_anonymous_student_id(student_id: str) -> bool:
     if not STUDENT_ID_PATTERN.match(student_id):
         raise ValueError("Invalid student ID format")
 
-    # ❌ Reject IDs that look like names
+    # Reject IDs that look like names
     if any(char.isalpha() and char.isupper() for char in student_id[4:]):
         raise ValueError("Student ID appears to contain name")
 
     return True
 
-# ❌ Never log or store PII
+# Never log or store PII
 logger.info(f"Processing student: {mask_student_id(student_id)}")
 
 def mask_student_id(student_id: str) -> str:
@@ -59,12 +59,12 @@ recommendation_item = {
 import os
 from typing import Optional
 
-# ✅ Good - Environment variables
+# Good - Environment variables
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 if not OPENAI_API_KEY:
     raise ValueError("OPENAI_API_KEY environment variable required")
 
-# ✅ Better - AWS Secrets Manager (production)
+# Better - AWS Secrets Manager (production)
 import boto3
 import json
 
@@ -74,7 +74,7 @@ def get_secret(secret_name: str) -> dict:
     response = client.get_secret_value(SecretId=secret_name)
     return json.loads(response["SecretString"])
 
-# ❌ Bad - Hardcoded secrets
+# Bad - Hardcoded secrets
 # OPENAI_API_KEY = "sk-proj-abcd1234..."  # NEVER DO THIS!
 ```
 
@@ -148,7 +148,7 @@ LambdaExecutionRole:
         PolicyDocument:
           Version: '2012-10-17'
           Statement:
-            # ✅ Specific table access only
+            # Specific table access only
             - Effect: Allow
               Action:
                 - dynamodb:GetItem
@@ -156,14 +156,14 @@ LambdaExecutionRole:
                 - dynamodb:UpdateItem
               Resource: !GetAtt StudentProfilesTable.Arn
 
-            # ✅ Specific S3 prefix only
+            # Specific S3 prefix only
             - Effect: Allow
               Action:
                 - s3:GetObject
                 - s3:PutObject
               Resource: !Sub "${TranscriptsBucket.Arn}/transcripts/*"
 
-            # ✅ CloudWatch Logs (standard)
+            # CloudWatch Logs (standard)
             - Effect: Allow
               Action:
                 - logs:CreateLogGroup

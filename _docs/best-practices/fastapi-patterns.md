@@ -10,7 +10,7 @@
 **Organize by feature, not by type:**
 
 ```python
-# ✅ Good - Feature-based organization
+# Good - Feature-based organization
 src/api/
 ├── main.py              # FastAPI app initialization
 ├── routes/
@@ -24,7 +24,7 @@ src/api/
     ├── auth.py
     └── logging.py
 
-# ❌ Bad - Type-based organization (hard to scale)
+# Bad - Type-based organization (hard to scale)
 src/api/
 ├── routes.py            # All routes in one file
 ├── models.py            # All models in one file
@@ -132,11 +132,11 @@ class TranscriptUploadRequest(BaseModel):
 ```
 
 **Best practices:**
-- ✅ Use `Field()` for validation constraints and documentation
-- ✅ Add `description` and `examples` for OpenAPI docs
-- ✅ Use custom validators for complex logic
-- ✅ Define `Config.json_schema_extra` for clear examples
-- ❌ Don't put business logic in models (keep them data-only)
+- Use `Field()` for validation constraints and documentation
+- Add `description` and `examples` for OpenAPI docs
+- Use custom validators for complex logic
+- Define `Config.json_schema_extra` for clear examples
+- Don't put business logic in models (keep them data-only)
 
 ---
 
