@@ -245,6 +245,32 @@ class TestDynamoDBClient:
             assert "Item" in response
             assert response["Item"]["data"] == item["data"]
     
+    def test_batch_write_large_batch(self, dynamodb_client, test_table_name):
+        """Test batch writing more than 25 items (DynamoDB batch limit)."""
+        # Create 30 items (more than DynamoDB's batch_write_item limit of 25)
+        items = [
+            {"id": f"large-{i}", "version": 1, "data": f"item-{i}"}
+            for i in range(30)
+        ]
+        
+        dynamodb_client.batch_write_items(items=items)
+        
+        # Verify all 30 items were written across multiple batches
+        resource = create_dynamodb_resource()
+        table = resource.Table(test_table_name)
+        
+        for item in items:
+            response = table.get_item(
+                Key={"id": item["id"], "version": item["version"]}
+            )
+            assert "Item" in response
+            assert response["Item"]["data"] == item["data"]
+    
+    def test_batch_write_empty_list(self, dynamodb_client):
+        """Test batch writing empty list (should not fail)."""
+        # Should not raise an exception
+        dynamodb_client.batch_write_items(items=[])
+    
     def test_query_by_partition_key(self, dynamodb_client, test_table_name):
         """Test querying items by partition key."""
         # Put multiple items with same partition key
@@ -297,6 +323,62 @@ class TestDynamoDBClient:
         
         assert len(results) == 2
         assert all(r["status"] == "active" for r in results)
+    
+    def test_query_with_gsi(self, mock_aws_credentials, temp_env_vars):
+        """Test querying using a Global Secondary Index (GSI)."""
+        from boto3.dynamodb.conditions import Key
+        
+        temp_env_vars(
+            DYNAMODB_TABLE_PREFIX="test",
+            S3_BUCKET_NAME="test-bucket",
+            OPENAI_API_KEY="test-key",
+        )
+        
+        # Create a table with GSI (similar to StudentProfiles table design)
+        table_name = "test-gsi-table"
+        create_test_table(
+            table_name=table_name,
+            partition_key="student_id",
+            sort_key="timestamp",
+            gsi={
+                "index_name": "grade_level-proficiency_score-index",
+                "partition_key": "grade_level",
+                "sort_key": "proficiency_score",
+            },
+        )
+        
+        try:
+            client = DynamoDBClient(table_name=table_name)
+            resource = create_dynamodb_resource()
+            table = resource.Table(table_name)
+            
+            # Put items with GSI attributes
+            items = [
+                {
+                    "student_id": f"student-{i}",
+                    "timestamp": i,
+                    "grade_level": 5,
+                    "proficiency_score": 70 + i,
+                    "data": f"item-{i}",
+                }
+                for i in range(1, 4)
+            ]
+            
+            for item in items:
+                table.put_item(Item=item)
+            
+            # Query using GSI with key_condition_expression
+            results = client.query(
+                key_condition_expression=Key("grade_level").eq(5) & Key("proficiency_score").gte(71),
+                index_name="grade_level-proficiency_score-index",
+            )
+            
+            # Should return items with proficiency_score >= 71
+            assert len(results) == 2
+            assert all(r["grade_level"] == 5 for r in results)
+            assert all(r["proficiency_score"] >= 71 for r in results)
+        finally:
+            delete_test_table(table_name)
     
     def test_scan_table(self, dynamodb_client, test_table_name):
         """Test scanning the table."""

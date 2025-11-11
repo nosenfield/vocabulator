@@ -6,12 +6,20 @@ for testing, using LocalStack for local development.
 
 import boto3
 from botocore.exceptions import ClientError
-from typing import Any, Optional
+from typing import TYPE_CHECKING, Any, Optional
 
 from src.utils.config import get_config
 
+if TYPE_CHECKING:
+    from mypy_boto3_dynamodb import DynamoDBClient as Boto3DynamoDBClient
+    from mypy_boto3_dynamodb.service_resource import DynamoDBServiceResource
+else:
+    # Runtime type aliases when mypy_boto3_dynamodb is not available
+    Boto3DynamoDBClient = Any
+    DynamoDBServiceResource = Any
 
-def create_dynamodb_client() -> Any:
+
+def create_dynamodb_client() -> Boto3DynamoDBClient:
     """Create a DynamoDB client configured for testing.
     
     Uses LocalStack endpoint if available, otherwise uses default AWS config.
@@ -23,6 +31,7 @@ def create_dynamodb_client() -> Any:
     endpoint_url = config.get_aws_endpoint_url()
     
     if endpoint_url:
+        # LocalStack requires explicit credentials
         return boto3.client(
             "dynamodb",
             endpoint_url=endpoint_url,
@@ -31,10 +40,11 @@ def create_dynamodb_client() -> Any:
             aws_secret_access_key=config.aws_secret_access_key,
         )
     else:
+        # Production: Use IAM roles (no explicit credentials)
         return boto3.client("dynamodb", region_name=config.aws_region)
 
 
-def create_dynamodb_resource() -> Any:
+def create_dynamodb_resource() -> DynamoDBServiceResource:
     """Create a DynamoDB resource configured for testing.
     
     Uses LocalStack endpoint if available, otherwise uses default AWS config.
@@ -46,6 +56,7 @@ def create_dynamodb_resource() -> Any:
     endpoint_url = config.get_aws_endpoint_url()
     
     if endpoint_url:
+        # LocalStack requires explicit credentials
         return boto3.resource(
             "dynamodb",
             endpoint_url=endpoint_url,
@@ -54,6 +65,7 @@ def create_dynamodb_resource() -> Any:
             aws_secret_access_key=config.aws_secret_access_key,
         )
     else:
+        # Production: Use IAM roles (no explicit credentials)
         return boto3.resource("dynamodb", region_name=config.aws_region)
 
 
@@ -61,7 +73,7 @@ def create_test_table(
     table_name: str,
     partition_key: str,
     sort_key: Optional[str] = None,
-    gsi: Optional[dict] = None,
+    gsi: Optional[dict[str, Any]] = None,
 ) -> None:
     """Create a test DynamoDB table.
     

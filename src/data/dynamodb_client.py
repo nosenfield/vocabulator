@@ -63,6 +63,7 @@ class DynamoDBClient:
         # Create DynamoDB resource
         endpoint_url = config.get_aws_endpoint_url()
         if endpoint_url:
+            # LocalStack requires explicit credentials
             self.dynamodb = boto3.resource(
                 "dynamodb",
                 endpoint_url=endpoint_url,
@@ -71,6 +72,7 @@ class DynamoDBClient:
                 aws_secret_access_key=config.aws_secret_access_key,
             )
         else:
+            # Production: Use IAM roles (no explicit credentials)
             self.dynamodb = boto3.resource("dynamodb", config=boto_config)
         
         # Get table reference
@@ -152,18 +154,12 @@ class DynamoDBClient:
         if sort_key and sort_value is not None:
             key[sort_key] = sort_value
         
-        try:
-            response = self._retry_with_backoff(
-                self.table.get_item,
-                Key=key,
-                ConsistentRead=consistent_read,
-            )
-            return response.get("Item")
-        except DynamoDBError:
-            raise
-        except Exception as e:
-            logger.error(f"Error getting item from {self.table_name}: {e}")
-            raise DynamoDBError(f"Failed to get item: {e}") from e
+        response = self._retry_with_backoff(
+            self.table.get_item,
+            Key=key,
+            ConsistentRead=consistent_read,
+        )
+        return response.get("Item")
 
     def put_item(self, item: Dict[str, Any]) -> None:
         """Put an item into the table.
@@ -171,13 +167,7 @@ class DynamoDBClient:
         Args:
             item: Dictionary containing item attributes
         """
-        try:
-            self._retry_with_backoff(self.table.put_item, Item=item)
-        except DynamoDBError:
-            raise
-        except Exception as e:
-            logger.error(f"Error putting item to {self.table_name}: {e}")
-            raise DynamoDBError(f"Failed to put item: {e}") from e
+        self._retry_with_backoff(self.table.put_item, Item=item)
 
     def update_item(
         self,
@@ -220,14 +210,8 @@ class DynamoDBClient:
         if expression_attribute_values:
             kwargs["ExpressionAttributeValues"] = expression_attribute_values
         
-        try:
-            response = self._retry_with_backoff(self.table.update_item, **kwargs)
-            return response.get("Attributes")
-        except DynamoDBError:
-            raise
-        except Exception as e:
-            logger.error(f"Error updating item in {self.table_name}: {e}")
-            raise DynamoDBError(f"Failed to update item: {e}") from e
+        response = self._retry_with_backoff(self.table.update_item, **kwargs)
+        return response.get("Attributes")
 
     def delete_item(
         self,
@@ -248,13 +232,7 @@ class DynamoDBClient:
         if sort_key and sort_value is not None:
             key[sort_key] = sort_value
         
-        try:
-            self._retry_with_backoff(self.table.delete_item, Key=key)
-        except DynamoDBError:
-            raise
-        except Exception as e:
-            logger.error(f"Error deleting item from {self.table_name}: {e}")
-            raise DynamoDBError(f"Failed to delete item: {e}") from e
+        self._retry_with_backoff(self.table.delete_item, Key=key)
 
     def batch_get_items(self, keys: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         """Batch get multiple items from the table.
@@ -277,33 +255,26 @@ class DynamoDBClient:
         for i in range(0, len(keys), batch_size):
             batch_keys = keys[i : i + batch_size]
             
-            try:
-                response = self._retry_with_backoff(
-                    self.dynamodb.batch_get_item,
-                    RequestItems={
-                        self.table_name: {
-                            "Keys": batch_keys,
-                        }
-                    },
+            response = self._retry_with_backoff(
+                self.dynamodb.batch_get_item,
+                RequestItems={
+                    self.table_name: {
+                        "Keys": batch_keys,
+                    }
+                },
+            )
+            
+            items = response.get("Responses", {}).get(self.table_name, [])
+            all_items.extend(items)
+            
+            # Handle unprocessed keys (shouldn't happen with retry logic, but handle anyway)
+            # Note: In production, consider implementing retry loop for unprocessed keys
+            unprocessed = response.get("UnprocessedKeys", {}).get(self.table_name)
+            if unprocessed:
+                logger.warning(
+                    f"Unprocessed keys in batch_get_item: {unprocessed}. "
+                    "These items were not retrieved. Consider retrying."
                 )
-                
-                items = response.get("Responses", {}).get(self.table_name, [])
-                all_items.extend(items)
-                
-                # Handle unprocessed keys (shouldn't happen with retry logic, but handle anyway)
-                # Note: In production, consider implementing retry loop for unprocessed keys
-                unprocessed = response.get("UnprocessedKeys", {}).get(self.table_name)
-                if unprocessed:
-                    logger.warning(
-                        f"Unprocessed keys in batch_get_item: {unprocessed}. "
-                        "These items were not retrieved. Consider retrying."
-                    )
-                    
-            except DynamoDBError:
-                raise
-            except Exception as e:
-                logger.error(f"Error batch getting items from {self.table_name}: {e}")
-                raise DynamoDBError(f"Failed to batch get items: {e}") from e
         
         return all_items
 
@@ -329,33 +300,27 @@ class DynamoDBClient:
                 {"PutRequest": {"Item": item}} for item in batch_items
             ]
             
-            try:
-                response = self._retry_with_backoff(
-                    self.dynamodb.batch_write_item,
-                    RequestItems={
-                        self.table_name: write_requests,
-                    },
+            response = self._retry_with_backoff(
+                self.dynamodb.batch_write_item,
+                RequestItems={
+                    self.table_name: write_requests,
+                },
+            )
+            
+            # Handle unprocessed items (retry logic should handle this, but check anyway)
+            # Note: In production, consider implementing retry loop for unprocessed items
+            unprocessed = response.get("UnprocessedItems", {}).get(self.table_name)
+            if unprocessed:
+                logger.warning(
+                    f"Unprocessed items in batch_write_item: {unprocessed}. "
+                    "These items were not written. Consider retrying."
                 )
-                
-                # Handle unprocessed items (retry logic should handle this, but check anyway)
-                # Note: In production, consider implementing retry loop for unprocessed items
-                unprocessed = response.get("UnprocessedItems", {}).get(self.table_name)
-                if unprocessed:
-                    logger.warning(
-                        f"Unprocessed items in batch_write_item: {unprocessed}. "
-                        "These items were not written. Consider retrying."
-                    )
-                    
-            except DynamoDBError:
-                raise
-            except Exception as e:
-                logger.error(f"Error batch writing items to {self.table_name}: {e}")
-                raise DynamoDBError(f"Failed to batch write items: {e}") from e
 
     def query(
         self,
-        partition_key: str,
-        partition_value: Any,
+        partition_key: Optional[str] = None,
+        partition_value: Optional[Any] = None,
+        key_condition_expression: Optional[Any] = None,
         sort_key: Optional[str] = None,
         sort_key_condition: Optional[str] = None,
         filter_expression: Optional[Any] = None,
@@ -366,11 +331,24 @@ class DynamoDBClient:
     ) -> List[Dict[str, Any]]:
         """Query items by partition key.
         
+        This method supports two usage patterns:
+        
+        1. Simple API (backward compatible):
+           query(partition_key="id", partition_value="value")
+        
+        2. Advanced API (recommended):
+           from boto3.dynamodb.conditions import Key
+           query(key_condition_expression=Key("id").eq("value"))
+        
         Args:
-            partition_key: Name of the partition key attribute
-            partition_value: Value of the partition key
-            sort_key: Optional name of the sort key attribute
-            sort_key_condition: Optional condition string for sort key (e.g., "begins_with(:prefix)")
+            partition_key: Name of the partition key attribute (for simple API)
+            partition_value: Value of the partition key (for simple API)
+            key_condition_expression: boto3 Key condition expression (recommended).
+                If provided, partition_key and partition_value are ignored.
+            sort_key: Optional name of the sort key attribute (for simple API with sort_key_condition)
+            sort_key_condition: DEPRECATED - Use key_condition_expression instead.
+                Optional condition string for sort key (e.g., "begins_with(:prefix)").
+                This parameter is kept for backward compatibility but may be removed in future versions.
             filter_expression: Optional filter expression (can be string or boto3 condition object)
             expression_attribute_values: Values for expressions
             expression_attribute_names: Attribute name mappings
@@ -379,37 +357,50 @@ class DynamoDBClient:
             
         Returns:
             List of matching items
+            
+        Raises:
+            DynamoDBError: If query fails or invalid parameters provided
         """
         from boto3.dynamodb.conditions import Key
         
-        key_condition = Key(partition_key).eq(partition_value)
-        
-        # Build sort key condition if provided
-        if sort_key and sort_key_condition and expression_attribute_values:
-            # Parse simple conditions like "begins_with(:prefix)" or "between(:start, :end)"
-            if sort_key_condition.startswith("begins_with"):
-                match = re.search(r":(\w+)", sort_key_condition)
-                if match:
-                    prefix_key = match.group(1)
-                    if prefix_key in expression_attribute_values:
-                        prefix = expression_attribute_values[prefix_key]
-                        key_condition = key_condition & Key(sort_key).begins_with(prefix)
-            elif sort_key_condition.startswith("between"):
-                matches = re.findall(r":(\w+)", sort_key_condition)
-                if len(matches) == 2 and all(m in expression_attribute_values for m in matches):
-                    start = expression_attribute_values[matches[0]]
-                    end = expression_attribute_values[matches[1]]
-                    key_condition = key_condition & Key(sort_key).between(start, end)
-            elif sort_key_condition.startswith(">="):
-                match = re.search(r":(\w+)", sort_key_condition)
-                if match and match.group(1) in expression_attribute_values:
-                    value = expression_attribute_values[match.group(1)]
-                    key_condition = key_condition & Key(sort_key).gte(value)
-            elif sort_key_condition.startswith("<="):
-                match = re.search(r":(\w+)", sort_key_condition)
-                if match and match.group(1) in expression_attribute_values:
-                    value = expression_attribute_values[match.group(1)]
-                    key_condition = key_condition & Key(sort_key).lte(value)
+        # Build key condition expression
+        if key_condition_expression is not None:
+            # Advanced API: Use provided key condition directly
+            key_condition = key_condition_expression
+        elif partition_key is not None and partition_value is not None:
+            # Simple API: Build key condition from partition key/value
+            key_condition = Key(partition_key).eq(partition_value)
+            
+            # Build sort key condition if provided (backward compatibility)
+            if sort_key and sort_key_condition and expression_attribute_values:
+                # Parse simple conditions like "begins_with(:prefix)" or "between(:start, :end)"
+                if sort_key_condition.startswith("begins_with"):
+                    match = re.search(r":(\w+)", sort_key_condition)
+                    if match:
+                        prefix_key = match.group(1)
+                        if prefix_key in expression_attribute_values:
+                            prefix = expression_attribute_values[prefix_key]
+                            key_condition = key_condition & Key(sort_key).begins_with(prefix)
+                elif sort_key_condition.startswith("between"):
+                    matches = re.findall(r":(\w+)", sort_key_condition)
+                    if len(matches) == 2 and all(m in expression_attribute_values for m in matches):
+                        start = expression_attribute_values[matches[0]]
+                        end = expression_attribute_values[matches[1]]
+                        key_condition = key_condition & Key(sort_key).between(start, end)
+                elif sort_key_condition.startswith(">="):
+                    match = re.search(r":(\w+)", sort_key_condition)
+                    if match and match.group(1) in expression_attribute_values:
+                        value = expression_attribute_values[match.group(1)]
+                        key_condition = key_condition & Key(sort_key).gte(value)
+                elif sort_key_condition.startswith("<="):
+                    match = re.search(r":(\w+)", sort_key_condition)
+                    if match and match.group(1) in expression_attribute_values:
+                        value = expression_attribute_values[match.group(1)]
+                        key_condition = key_condition & Key(sort_key).lte(value)
+        else:
+            raise DynamoDBError(
+                "Either key_condition_expression or (partition_key and partition_value) must be provided"
+            )
         
         kwargs = {
             "KeyConditionExpression": key_condition,
@@ -426,14 +417,8 @@ class DynamoDBClient:
         if limit:
             kwargs["Limit"] = limit
         
-        try:
-            response = self._retry_with_backoff(self.table.query, **kwargs)
-            return response.get("Items", [])
-        except DynamoDBError:
-            raise
-        except Exception as e:
-            logger.error(f"Error querying {self.table_name}: {e}")
-            raise DynamoDBError(f"Failed to query items: {e}") from e
+        response = self._retry_with_backoff(self.table.query, **kwargs)
+        return response.get("Items", [])
 
     def scan(
         self,
@@ -466,20 +451,14 @@ class DynamoDBClient:
         if limit:
             kwargs["Limit"] = limit
         
-        try:
+        response = self._retry_with_backoff(self.table.scan, **kwargs)
+        items = response.get("Items", [])
+        
+        # Handle pagination
+        while "LastEvaluatedKey" in response:
+            kwargs["ExclusiveStartKey"] = response["LastEvaluatedKey"]
             response = self._retry_with_backoff(self.table.scan, **kwargs)
-            items = response.get("Items", [])
-            
-            # Handle pagination
-            while "LastEvaluatedKey" in response:
-                kwargs["ExclusiveStartKey"] = response["LastEvaluatedKey"]
-                response = self._retry_with_backoff(self.table.scan, **kwargs)
-                items.extend(response.get("Items", []))
-            
-            return items
-        except DynamoDBError:
-            raise
-        except Exception as e:
-            logger.error(f"Error scanning {self.table_name}: {e}")
-            raise DynamoDBError(f"Failed to scan table: {e}") from e
+            items.extend(response.get("Items", []))
+        
+        return items
 
