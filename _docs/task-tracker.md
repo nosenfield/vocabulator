@@ -18,11 +18,11 @@ Simple progress tracker for the Vocabulator MVP. Reference: [task-list.md](task-
 
 ## Progress Summary
 
-**Overall:** 4/71 tasks complete (5.6%)
+**Overall:** 5/71 tasks complete (7.0%)
 
 **By Phase:**
 - Phase 0: 4/4 (100%)
-- Phase 1: 0/5 (0%)
+- Phase 1: 1/5 (20%)
 - Phase 2: 0/4 (0%)
 - Phase 3: 0/3 (0%)
 - Phase 4: 0/6 (0%)
@@ -47,9 +47,9 @@ Simple progress tracker for the Vocabulator MVP. Reference: [task-list.md](task-
 
 ## Phase 1: Data Layer & Storage
 
-**Progress:** 0/5 (0%)
+**Progress:** 1/5 (20%)
 
-- [ ] 1.1 - DynamoDB Client & Base Repository
+- [x] 1.1 - DynamoDB Client & Base Repository
 - [ ] 1.2 - Student Profile Data Model & Repository
 - [ ] 1.3 - Vocabulary Recommendation Data Model & Repository
 - [ ] 1.4 - S3 Client & File Operations
@@ -147,5 +147,6 @@ Simple progress tracker for the Vocabulator MVP. Reference: [task-list.md](task-
 ## Completion Log
 
 ### 2025-11-10
-- Completed: 0.1, 0.2, 0.3, 0.4
+- Completed: 0.1, 0.2, 0.3, 0.4, 1.1
 - Phase 0 complete (100%)
+- Phase 1 started (20%)
