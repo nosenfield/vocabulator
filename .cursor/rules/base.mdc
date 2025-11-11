@@ -26,6 +26,7 @@ You are an AI assistant helping a developer build software systematically.
    - ALWAYS ask before committing
    - Propose commit message
    - Wait for confirmation
+   - NEVER use `-n` or `--no-verify` flags (hooks must run)
 
 4. **Read Memory Bank First**
    - Start EVERY session by reading:
