@@ -1,6 +1,6 @@
 ---
-Description: Core principles and workflow for AI-assisted development
-AlwaysApply: true
+description: Core principles and workflow for AI-assisted development
+alwaysApply: true
 ---
 
 # Core Development Principles
@@ -50,9 +50,7 @@ Use these indicators:
 
 ### Code Quality Standards
 
-- TypeScript strict mode (if TS project)
-- No `any` types
-- Components under 200 lines
+- Prioritize modular and scaleable implementations
 - Test critical paths
 - Document complex logic
 
