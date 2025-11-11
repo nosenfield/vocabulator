@@ -16,6 +16,7 @@ from src.data.repositories.student_repository import StudentRepository
 from src.data.s3_client import S3Client
 from src.processing.batch_client import BatchClient
 from src.processing.text_processing_pipeline import TextProcessingPipeline
+from src.utils.config import get_config
 from src.utils.logger import get_logger
 
 logger = get_logger("api.main")
@@ -43,31 +44,41 @@ app = FastAPI(
 )
 
 # Configure CORS
+config = get_config()
+cors_origins = config.get_cors_origins()
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Configure appropriately for production
+    allow_origins=cors_origins if cors_origins else [],  # Empty list = no CORS in production unless configured
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE"],
     allow_headers=["*"],
 )
 
 
 # Dependency Injection Functions
+# Note: DynamoDBClient requires a table_name parameter, so direct usage is limited.
+# Repositories (StudentRepository, RecommendationRepository) create their own clients.
+# This dependency is kept for potential future use but may not be used directly in routes.
 def get_dynamodb_client() -> Generator[DynamoDBClient, None, None]:
     """Provide DynamoDB client as dependency.
     
+    Note: This dependency is not typically used directly as DynamoDBClient
+    requires a table_name parameter. Repositories handle their own client creation.
+    This is kept for potential future use.
+    
     Yields:
-        DynamoDBClient instance
+        DynamoDBClient instance (requires table_name, so use repositories instead)
         
-    Note:
-        Client is automatically cleaned up after request completes.
+    Raises:
+        ValueError: If called without proper setup (DynamoDBClient requires table_name)
     """
-    client = DynamoDBClient()
-    try:
-        yield client
-    finally:
-        # DynamoDBClient doesn't have explicit cleanup, but we can log
-        logger.debug("DynamoDB client dependency cleanup")
+    # DynamoDBClient requires table_name, so this dependency is not directly usable
+    # Repositories create their own clients internally
+    raise NotImplementedError(
+        "DynamoDBClient requires table_name. Use repositories (StudentRepository, "
+        "RecommendationRepository) instead, which handle client creation internally."
+    )
 
 
 def get_s3_client() -> Generator[S3Client, None, None]:

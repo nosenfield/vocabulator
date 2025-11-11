@@ -102,6 +102,12 @@ class Config(BaseModel):
         description="LocalStack endpoint URL for local AWS emulation (optional)",
     )
 
+    # CORS Configuration
+    cors_allowed_origins: Optional[str] = Field(
+        default=None,
+        description="Comma-separated list of allowed CORS origins (optional, defaults to localhost:3000 in dev)",
+    )
+
     @field_validator("environment", mode="before")
     @classmethod
     def validate_environment(cls, v: Any) -> str:
@@ -163,6 +169,21 @@ class Config(BaseModel):
             return self.localstack_endpoint_url
         return None
 
+    def get_cors_origins(self) -> list[str]:
+        """Get CORS allowed origins.
+
+        Returns:
+            List of allowed origins, defaults to localhost:3000 in development
+        """
+        if self.cors_allowed_origins:
+            return [origin.strip() for origin in self.cors_allowed_origins.split(",")]
+        
+        # Default: allow localhost in development, empty list in production
+        if self.environment == Environment.DEVELOPMENT:
+            return ["http://localhost:3000", "http://localhost:8000"]
+        
+        return []
+
 
 # Global config instance (lazy-loaded)
 _config: Optional[Config] = None
@@ -209,6 +230,7 @@ def load_config() -> Config:
             "OPENAI_API_KEY": "openai_api_key",
             "LOG_LEVEL": "log_level",
             "LOCALSTACK_ENDPOINT_URL": "localstack_endpoint_url",
+            "CORS_ALLOWED_ORIGINS": "cors_allowed_origins",
         }
 
         for env_key, config_key in env_mapping.items():

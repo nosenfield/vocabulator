@@ -38,24 +38,19 @@ class TestFastAPIApp:
 class TestDependencyInjection:
     """Test dependency injection functions."""
 
-    @patch("src.api.main.DynamoDBClient")
-    def test_get_dynamodb_client(self, mock_client_class):
-        """Test DynamoDB client dependency injection."""
-        mock_client = Mock()
-        mock_client_class.return_value = mock_client
+    def test_get_dynamodb_client(self):
+        """Test DynamoDB client dependency injection raises NotImplementedError.
         
-        # Get dependency
-        client_gen = get_dynamodb_client()
-        client = next(client_gen)
-        
-        assert client == mock_client
-        mock_client_class.assert_called_once()
-        
-        # Cleanup
-        try:
+        Note: DynamoDBClient requires table_name parameter, so this dependency
+        is not directly usable. Repositories handle their own client creation.
+        """
+        # This dependency raises NotImplementedError because DynamoDBClient
+        # requires a table_name parameter. Repositories create their own clients.
+        with pytest.raises(NotImplementedError) as exc_info:
+            client_gen = get_dynamodb_client()
             next(client_gen)
-        except StopIteration:
-            pass
+        
+        assert "DynamoDBClient requires table_name" in str(exc_info.value)
 
     @patch("src.api.main.S3Client")
     def test_get_s3_client(self, mock_client_class):
