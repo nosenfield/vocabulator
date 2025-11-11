@@ -1,6 +1,7 @@
 """Text processing utilities."""
 
 from src.processing.gap_identifier import GapIdentifier, GapWord
+from src.processing.recommender import Recommender
 from src.processing.text_analyzer import (
     chunk_text,
     clean_text,
@@ -19,5 +20,6 @@ __all__ = [
     "normalize_word",
     "GapIdentifier",
     "GapWord",
+    "Recommender",
 ]
 

@@ -9,6 +9,10 @@ from src.ai.prompts.gap_analysis import (
     build_gap_analysis_prompt,
     GAP_ANALYSIS_SYSTEM_PROMPT,
 )
+from src.ai.prompts.recommendation import (
+    build_recommendation_prompt,
+    RECOMMENDATION_SYSTEM_PROMPT,
+)
 
 __all__ = [
     "build_extraction_prompt",
@@ -16,5 +20,7 @@ __all__ = [
     "EXTRACTION_SYSTEM_PROMPT",
     "build_gap_analysis_prompt",
     "GAP_ANALYSIS_SYSTEM_PROMPT",
+    "build_recommendation_prompt",
+    "RECOMMENDATION_SYSTEM_PROMPT",
 ]
 
