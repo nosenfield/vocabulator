@@ -384,24 +384,25 @@ Add all test coverage for a specific module.
 
 ## Rules & Constraints
 
-### MUST DO
+### MANDATORY
 
 1. Execute tasks in specified order
 2. Complete one-shot workflow for each task
 3. Create one commit per task
-4. Stop on test failures
-5. Update memory bank after each task
-6. Update task tracker after each task
-7. Report progress clearly
-8. Validate pre/post conditions
+4. Stage files by name
+5. Stop on test failures
+6. Update memory bank after each task
+7. Update task tracker after each task
+8. Report progress clearly
+9. Validate pre/post conditions
 
-### MUST NOT DO
+### FORBIDDEN
 
 1. Skip tests to continue batch
 2. Commit failing code
 3. Combine multiple tasks in one commit
-4. Use `git add .` or `git add -A` (must stage files by name)
-5. Use `--no-verify` or `-n` (must run pre-commit hooks)
+4. Use of `git add .` or `git add -A`
+5. Use of `--no-verify` or `-n`
 6. Continue if dependencies fail
 7. Auto-push to remote
 8. Ignore ambiguous requirements
