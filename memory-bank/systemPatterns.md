@@ -1,6 +1,6 @@
 # System Patterns: vocabulator
 
-**Last Updated**: 2025-11-10
+**Last Updated**: 2025-11-11
 
 ## Architecture Overview
 
@@ -53,6 +53,9 @@ src/
 │   └── repositories/  # Repository pattern implementations
 ├── ai/                # AI/ML layer (OpenAI integration)
 ├── processing/        # Text processing pipeline
+│   ├── text_processing_pipeline.py  # End-to-end orchestrator
+│   ├── parallel_executor.py         # Async parallel processing
+│   └── batch_client.py              # AWS Batch integration
 ├── api/               # FastAPI application
 ├── vocabulary/        # Vocabulary corpus and utilities
 └── utils/             # Shared utilities (config, logger)
@@ -134,7 +137,67 @@ def _retry_with_backoff(self, operation, *args, **kwargs):
 - Prevents thundering herd (jitter)
 - Configurable retry attempts
 
-### Pattern 4: Conditional Credential Handling
+### Pattern 4: Processing Pipeline Orchestration
+**When to use**: End-to-end workflows requiring multiple steps
+**Implementation**: Pipeline class coordinating multiple components
+**Example**:
+```python
+class TextProcessingPipeline:
+    def __init__(self, extractor, gap_identifier, recommender, ...):
+        self.extractor = extractor
+        self.gap_identifier = gap_identifier
+        self.recommender = recommender
+        # ...
+    
+    async def process_text(self, student_id: str, text: str, ...):
+        # Step 1: Extract vocabulary
+        words = await self._extract_vocabulary(text)
+        # Step 2: Update profile
+        profile = await self._update_profile_with_words(student_id, words)
+        # Step 3: Identify gaps
+        gaps = await self._identify_gaps(profile)
+        # Step 4: Generate recommendations
+        recommendations = await self._generate_recommendations(gaps)
+        # Step 5: Persist
+        await self._persist_recommendations(recommendations)
+        return recommendations
+```
+
+**Benefits**:
+- Clear separation of concerns
+- Easy to test individual steps
+- Error handling at each stage
+- Can be extended with additional steps
+
+### Pattern 5: Parallel Execution with Concurrency Control
+**When to use**: Processing multiple items concurrently with resource limits
+**Implementation**: Async executor with semaphore
+**Example**:
+```python
+class ParallelExecutor:
+    def __init__(self, max_concurrent: int = 10):
+        self.semaphore = asyncio.Semaphore(max_concurrent)
+    
+    async def execute(self, tasks: List[ProcessingTask]):
+        async def run_task(task: ProcessingTask):
+            async with self.semaphore:
+                try:
+                    result = await task.callable(*task.args, **task.kwargs)
+                    return ProcessingResult(task_id=task.task_id, success=True, result=result)
+                except Exception as e:
+                    return ProcessingResult(task_id=task.task_id, success=False, error=str(e))
+        
+        results = await asyncio.gather(*[run_task(task) for task in tasks])
+        return results
+```
+
+**Benefits**:
+- Controlled concurrency (prevents resource exhaustion)
+- Graceful error handling (one failure doesn't stop others)
+- Progress tracking support
+- Request ID propagation for correlation
+
+### Pattern 6: Conditional Credential Handling
 **When to use**: Local development vs production
 **Implementation**: Check for endpoint_url (LocalStack)
 **Example**:
@@ -248,6 +311,20 @@ else:
   - Presigned URLs for secure temporary access
   - Organized bucket structure (transcripts/, writing-samples/, reports/)
 - **Failure handling**: Retry logic, error wrapping (S3Error)
+
+### AWS Batch
+- **Purpose**: Scalable batch processing for multiple students
+- **How we use it**: 
+  - BatchClient wrapper for job submission and status tracking
+  - Job configuration with environment variables (student_ids, s3_paths, grade_level)
+  - Fargate containers process students in parallel using ParallelExecutor
+  - Batch job handler script orchestrates TextProcessingPipeline for each student
+  - Resource requirement validation (Fargate limits: memory 512-30720 MB, vCPUs 0.25-4)
+- **Failure handling**: 
+  - Retry logic for job submission
+  - Individual student failures don't stop batch (graceful degradation)
+  - Job status tracking with BatchJobInfo dataclass
+  - Job cancellation support
 
 ---
 

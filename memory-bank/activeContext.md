@@ -1,6 +1,6 @@
 # Active Context: vocabulator
 
-**Last Updated**: 2025-01-01
+**Last Updated**: 2025-11-11
 
 ## Current Focus
 
@@ -20,7 +20,7 @@
 - ✅ Task 1.5 - Common Core Vocabulary Database (COMPLETE)
 
 ### Current Phase
-**Phase 3: Processing Layer** - ✅ COMPLETE
+**Phase 3: Processing Layer** - ✅ COMPLETE (2025-11-11)
 **Next Phase**: Phase 4 - API Layer
 
 ### Active Decisions
@@ -34,28 +34,30 @@
 
 ## Recent Changes
 
-### Last 7 Significant Changes
-1. **Task 3.3 Complete** - AWS Batch Integration (2025-01-01)
+### Last 3 Significant Changes
+1. **Task 3.3 Complete** - AWS Batch Integration (2025-11-11)
    - Created BatchClient wrapper for AWS Batch job submission and tracking
    - Implemented batch job handler script for Fargate containers
-   - Created Dockerfile for batch job containers
+   - Created Dockerfile for batch job containers (non-root user for security)
    - Job submission with configurable resources (memory, vCPUs, timeout)
+   - Resource requirement validation (Fargate limits: memory 512-30720 MB, vCPUs 0.25-4)
    - Job status tracking with BatchJobInfo dataclass
-   - Comprehensive test suite (14 test cases)
+   - Fail-fast config validation (requires job_queue and job_definition)
+   - Security: S3 path validation to prevent path traversal attacks
+   - Comprehensive test suite (15 test cases including missing config validation)
    - Error handling with BatchJobError exception
-2. **Task 3.2 Complete** - Parallel Processing Executor (2025-01-01)
+2. **Task 3.2 Complete** - Parallel Processing Executor (2025-11-11)
    - Created ParallelExecutor for concurrent batch processing
    - Uses asyncio with semaphore-controlled concurrency
    - ProcessingTask and ProcessingResult dataclasses
    - Progress callback support
    - Comprehensive test suite (9 test cases)
-3. **Task 3.1 Complete** - Text Processing Pipeline (2025-01-01)
+3. **Task 3.1 Complete** - Text Processing Pipeline (2025-11-11)
    - Created TextProcessingPipeline orchestrating end-to-end workflow
    - Integrated Extract → Update Profile → Identify Gaps → Generate Recommendations → Persist
    - Error handling for DynamoDB operations
    - Context detection with regex word boundaries
    - Comprehensive test suite (6 test cases)
-4. **Task 2.4 Complete** - Word Recommendation Generation (2025-01-01)
    - Created recommendation prompt templates with pedagogical principles
    - Implemented Recommender class with OpenAI GPT-4o integration
    - Generates definitions, example sentences, and usage tips
@@ -162,17 +164,23 @@
 ## Next Steps
 
 ### Immediate (Next Session)
-- [x] Phase 3 Complete - All Processing Layer tasks done (3.1-3.3)
+- [x] Phase 3 Complete - All Processing Layer tasks done (3.1-3.3) (2025-11-11)
 - [ ] Begin Phase 4: API Layer
   - [ ] Task 4.1 - FastAPI Application Setup
   - [ ] Task 4.2 - Request/Response Models
   - [ ] Task 4.3 - Upload Endpoints
+  - [ ] Task 4.4 - Student Profile Endpoints
+  - [ ] Task 4.5 - Recommendation Endpoints
+  - [ ] Task 4.6 - Batch Processing Endpoints
 
 ### Near-Term (This Week)
-- [ ] Complete Phase 3: Processing Layer (text analysis pipeline)
-  - Text processing pipeline for batch operations
-  - Parallel processing executor for multiple students
-  - AWS Batch integration for scalable processing
+- [ ] Complete Phase 4: API Layer (FastAPI endpoints)
+  - FastAPI application setup with dependency injection
+  - Request/response models with Pydantic validation
+  - Upload endpoints for transcripts and writing samples
+  - Student profile endpoints (GET, POST, PUT)
+  - Recommendation endpoints (GET by student, GET by status)
+  - Batch processing endpoints (submit job, check status)
 
 ### Medium-Term (Next 2 Weeks)
 - [ ] Complete Phase 4: API Layer (FastAPI endpoints)
@@ -184,12 +192,11 @@
 ## Blockers / Open Questions
 
 ### Current Blockers
-**None** - Phase 2 complete, ready to begin Phase 3
+**None** - Phase 3 complete, ready to begin Phase 4
 
 ### Questions to Resolve
-1. **AWS Batch Configuration**: Need to design batch job structure for parallel processing (Task 3.3)
-2. **Processing Pipeline Design**: Determine optimal chunking and parallelization strategy (Task 3.1)
-3. **Cost Monitoring**: Set up CloudWatch alarms for OpenAI API spending (can be done in Phase 6)
+1. **API Authentication**: Determine authentication strategy for API endpoints (API keys vs IAM roles) - Phase 4
+2. **Cost Monitoring**: Set up CloudWatch alarms for OpenAI API spending (can be done in Phase 6)
 
 ### Deferred Decisions (Post-MVP)
 - AWS SAM vs raw CloudFormation (can decide during infrastructure phase)
@@ -207,6 +214,25 @@
 - `_docs/required-reading.md` - Developer onboarding materials (28 pages)
 - `memory-bank/progress.md` - Updated with Phase 0 completion
 - `memory-bank/activeContext.md` - Updated with current state (this file)
+
+### Key Files Created (Phase 3 - Processing Layer)
+
+**Task 3.1 - Text Processing Pipeline:**
+- `src/processing/text_processing_pipeline.py` - End-to-end pipeline orchestrator
+- `tests/unit/test_text_processing_pipeline.py` - Comprehensive test suite (6 tests)
+
+**Task 3.2 - Parallel Processing Executor:**
+- `src/processing/parallel_executor.py` - Async parallel executor with semaphore control
+- `tests/unit/test_parallel_executor.py` - Comprehensive test suite (9 tests)
+
+**Task 3.3 - AWS Batch Integration:**
+- `src/processing/batch_client.py` - BatchClient wrapper for AWS Batch
+- `src/processing/batch_handler.py` - Batch job handler script for Fargate containers
+- `infrastructure/docker/Dockerfile.batch` - Docker container for batch jobs
+- `tests/unit/test_batch_client.py` - Comprehensive test suite (15 tests)
+
+**Processing Module:**
+- `src/processing/__init__.py` - Exports TextProcessingPipeline, ParallelExecutor, BatchClient
 
 ### Key Files Created (Phase 1 - Data Layer)
 
