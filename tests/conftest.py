@@ -10,6 +10,17 @@ from typing import Generator
 
 import pytest
 
+# Set environment variables before any imports that need config
+# This must happen at module load time, before pytest collects tests
+os.environ.setdefault("AWS_REGION", "us-east-1")
+os.environ.setdefault("AWS_ACCESS_KEY_ID", "test")
+os.environ.setdefault("AWS_SECRET_ACCESS_KEY", "test")
+os.environ.setdefault("DYNAMODB_TABLE_PREFIX", "test")
+os.environ.setdefault("S3_BUCKET_NAME", "test-bucket")
+os.environ.setdefault("OPENAI_API_KEY", "test-key")
+os.environ.setdefault("LOCALSTACK_ENDPOINT_URL", "http://localhost:4566")
+os.environ.setdefault("ENVIRONMENT", "development")
+
 
 # Pytest markers configuration
 pytest_plugins = []

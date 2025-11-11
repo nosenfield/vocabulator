@@ -1,0 +1,60 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'DynamoDB tables for Vocabulator MVP'
+
+Parameters:
+  Environment:
+    Type: String
+    Default: development
+    AllowedValues:
+      - development
+      - staging
+      - production
+    Description: Environment name
+  
+  TablePrefix:
+    Type: String
+    Default: vocabulator
+    Description: Prefix for table names
+
+Resources:
+  StudentProfilesTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub '${TablePrefix}-${Environment}-StudentProfiles'
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: student_id
+          AttributeType: S
+        - AttributeName: profile_version
+          AttributeType: N
+        - AttributeName: grade_level
+          AttributeType: N
+        - AttributeName: proficiency_score
+          AttributeType: N
+      KeySchema:
+        - AttributeName: student_id
+          KeyType: HASH
+        - AttributeName: profile_version
+          KeyType: RANGE
+      GlobalSecondaryIndexes:
+        - IndexName: grade_level-proficiency_score-index
+          KeySchema:
+            - AttributeName: grade_level
+              KeyType: HASH
+            - AttributeName: proficiency_score
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+      Tags:
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Project
+          Value: Vocabulator
+
+Outputs:
+  StudentProfilesTableName:
+    Description: Name of the StudentProfiles table
+    Value: !Ref StudentProfilesTable
+    Export:
+      Name: !Sub '${AWS::StackName}-StudentProfiles-TableName'
+
