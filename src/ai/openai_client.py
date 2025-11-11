@@ -114,9 +114,19 @@ class OpenAIClient:
             OpenAIError: For other API errors
         """
         # Validate model
-        if model not in ["gpt-4o-mini", "gpt-4o"]:
+        SUPPORTED_MODELS = {"gpt-4o-mini", "gpt-4o"}
+        if model not in SUPPORTED_MODELS:
+            # Check if strict mode is enabled (default: False, warn but proceed)
+            config = get_config()
+            strict_mode = getattr(config, "openai_strict_model_validation", False)
+            
+            if strict_mode:
+                raise ValueError(
+                    f"Unsupported model: {model}. Supported models: {', '.join(SUPPORTED_MODELS)}"
+                )
+            
             logger.warning(
-                f"Unknown model {model}, proceeding anyway",
+                f"Unknown model {model}, proceeding anyway (strict mode disabled)",
                 extra={"model": model, "request_id": request_id},
             )
 
@@ -205,8 +215,6 @@ class OpenAIClient:
             RateLimitError: If rate limit exceeded after retries
             APIError: For other API errors
         """
-        last_error = None
-
         for attempt in range(self.max_retries):
             try:
                 # Execute request with timeout
@@ -227,7 +235,7 @@ class OpenAIClient:
                 return response
 
             except RateLimitError as e:
-                last_error = e
+                # Rate limit errors - retry if attempts remaining
                 if attempt < self.max_retries - 1:
                     # Calculate backoff time
                     retry_after = self._get_retry_after(e)
@@ -250,7 +258,7 @@ class OpenAIClient:
                     await asyncio.sleep(wait_time)
                     continue
                 else:
-                    # Max retries reached
+                    # Max retries reached - raise error
                     logger.error(
                         f"Rate limit exceeded after {self.max_retries} retries",
                         extra={
@@ -261,6 +269,7 @@ class OpenAIClient:
                     raise
 
             except asyncio.TimeoutError:
+                # Timeout errors - don't retry, raise immediately
                 logger.error(
                     f"Request timed out (attempt {attempt + 1}/{self.max_retries})",
                     extra={
@@ -272,10 +281,9 @@ class OpenAIClient:
                 raise
 
             except APIError as e:
-                last_error = e
-                # Don't retry on non-transient errors
+                # API errors - check if retryable
                 if e.status_code and e.status_code >= 400 and e.status_code < 500:
-                    # Client errors (4xx) - don't retry
+                    # Client errors (4xx) - don't retry, raise immediately
                     logger.error(
                         f"OpenAI API client error: {e}",
                         extra={
@@ -286,7 +294,7 @@ class OpenAIClient:
                     )
                     raise
 
-                # Server errors (5xx) - retry
+                # Server errors (5xx) - retry if attempts remaining
                 if attempt < self.max_retries - 1:
                     wait_time = self.backoff_factor ** attempt
                     logger.warning(
@@ -302,6 +310,7 @@ class OpenAIClient:
                     await asyncio.sleep(wait_time)
                     continue
                 else:
+                    # Max retries reached - raise error
                     logger.error(
                         f"OpenAI API error after {self.max_retries} retries: {e}",
                         extra={
@@ -311,13 +320,11 @@ class OpenAIClient:
                     )
                     raise
 
-        # Should not reach here, but handle just in case
-        if last_error:
-            raise OpenAIError(
-                f"Request failed after {self.max_retries} retries"
-            ) from last_error
-
-        raise OpenAIError("Request failed unexpectedly")
+        # If we exit the loop, we exhausted all retries
+        # This should never happen due to explicit raises above, but included for safety
+        raise OpenAIError(
+            f"Request failed after {self.max_retries} retries (unexpected loop exit)"
+        )
 
     def _get_retry_after(self, error: RateLimitError) -> Optional[float]:
         """Extract retry-after value from rate limit error.
@@ -333,8 +340,11 @@ class OpenAIClient:
                 headers = error.response.headers
                 if headers and "retry-after" in headers:
                     return float(headers["retry-after"])
-        except (AttributeError, ValueError, TypeError):
-            pass
+        except (AttributeError, ValueError, TypeError) as e:
+            logger.debug(
+                f"Could not extract retry-after header: {e}",
+                extra={"error_type": type(e).__name__},
+            )
 
         return None
 

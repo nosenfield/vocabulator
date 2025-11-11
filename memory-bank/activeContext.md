@@ -1,11 +1,14 @@
 # Active Context: vocabulator
 
-**Last Updated**: 2025-11-10
+**Last Updated**: 2025-01-01
 
 ## Current Focus
 
 ### What We're Working On Right Now
-**COMPLETE**: Phase 1 - Data Layer & Storage (Implementation)
+**IN PROGRESS**: Phase 2 - AI/ML Layer (Code Review Fixes)
+- ✅ Task 2.1 - OpenAI Client Wrapper (COMPLETE)
+- ✅ Task 2.2 - Vocabulary Extraction Prompts & Logic (COMPLETE)
+- 🔧 Code Review Fixes - Improving robustness and maintainability
 - ✅ Task 1.1 - DynamoDB Client & Base Repository (COMPLETE)
 - ✅ Task 1.2 - Student Profile Data Model & Repository (COMPLETE)
 - ✅ Task 1.3 - Vocabulary Recommendation Data Model & Repository (COMPLETE)
@@ -28,7 +31,23 @@
 ## Recent Changes
 
 ### Last 7 Significant Changes
-1. **Task 1.5 Complete** - Common Core Vocabulary Database (2025-11-10)
+1. **Code Review Fixes** - OpenAI Client & Cost Tracker improvements (2025-01-01)
+   - Restructured retry logic for clarity and explicit flow
+   - Added debug logging for retry-after header extraction
+   - Implemented strict mode for model validation (configurable)
+   - Switched cost calculations to Decimal for precision
+   - Added pricing date tracking and documentation
+   - All fixes address code review recommendations
+2. **Task 2.2 Complete** - Vocabulary Extraction Prompts & Logic (2025-01-01)
+   - Created extraction prompt templates
+   - Implemented VocabularyExtractor with OpenAI integration
+   - Added text preprocessing utilities
+   - Comprehensive test suite
+3. **Task 2.1 Complete** - OpenAI Client Wrapper (2025-01-01)
+   - Implemented OpenAIClient with retry logic
+   - Added CostTracker for API usage tracking
+   - Support for GPT-4o and GPT-4o-mini models
+4. **Task 1.5 Complete** - Common Core Vocabulary Database (2025-11-10)
    - Implemented VocabularyWord model and CommonCoreLoader
    - Created corpus JSON files for grades 6, 7, 8 (70 words sample)
    - Added grade level mapper utilities

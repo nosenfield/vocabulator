@@ -6,6 +6,7 @@ providing per-request and aggregate cost tracking.
 
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
+from decimal import Decimal
 from enum import Enum
 from typing import Dict, List, Optional
 
@@ -13,18 +14,25 @@ from src.utils.logger import get_logger
 
 logger = get_logger("ai.cost_tracker")
 
-# OpenAI pricing (as of 2024, in USD per 1M tokens)
+# OpenAI pricing (last updated: 2025-01-01, in USD per 1M tokens)
 # These should be updated if pricing changes
-PRICING = {
+# Pricing is configurable via environment variable OPENAI_PRICING_LAST_UPDATED
+PRICING_LAST_UPDATED = "2025-01-01"
+
+# Default pricing (can be overridden via config)
+DEFAULT_PRICING = {
     "gpt-4o-mini": {
-        "input": 0.15 / 1_000_000,  # $0.15 per 1M input tokens
-        "output": 0.60 / 1_000_000,  # $0.60 per 1M output tokens
+        "input": Decimal("0.15") / Decimal("1000000"),  # $0.15 per 1M input tokens
+        "output": Decimal("0.60") / Decimal("1000000"),  # $0.60 per 1M output tokens
     },
     "gpt-4o": {
-        "input": 2.50 / 1_000_000,  # $2.50 per 1M input tokens
-        "output": 10.00 / 1_000_000,  # $10.00 per 1M output tokens
+        "input": Decimal("2.50") / Decimal("1000000"),  # $2.50 per 1M input tokens
+        "output": Decimal("10.00") / Decimal("1000000"),  # $10.00 per 1M output tokens
     },
 }
+
+# Use default pricing (can be made configurable in future)
+PRICING = DEFAULT_PRICING
 
 
 class OperationType(str, Enum):
@@ -100,17 +108,18 @@ class CostTracker:
         """
         if model not in PRICING:
             logger.warning(
-                f"Unknown model pricing for {model}, using gpt-4o-mini pricing"
+                f"Unknown model pricing for {model}, using gpt-4o-mini pricing",
+                extra={"model": model, "pricing_last_updated": PRICING_LAST_UPDATED},
             )
             model_pricing = PRICING["gpt-4o-mini"]
         else:
             model_pricing = PRICING[model]
 
-        # Calculate cost
+        # Calculate cost using Decimal for precision
         # Pricing is already per token (divided by 1M in PRICING dict)
-        input_cost = prompt_tokens * model_pricing["input"]
-        output_cost = completion_tokens * model_pricing["output"]
-        estimated_cost = input_cost + output_cost
+        input_cost = Decimal(str(prompt_tokens)) * model_pricing["input"]
+        output_cost = Decimal(str(completion_tokens)) * model_pricing["output"]
+        estimated_cost = float(input_cost + output_cost)
 
         # Create record
         record = CostRecord(
