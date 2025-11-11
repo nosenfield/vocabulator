@@ -1,6 +1,6 @@
-# Start Task Command
+# Plan Command
 
-You are starting a new task.
+You are planning a new task.
 
 ## Steps
 
@@ -62,3 +62,4 @@ You are starting a new task.
 ## Approval Gate
 
 **WAIT FOR USER APPROVAL** before proceeding with implementation.
+

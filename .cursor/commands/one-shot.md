@@ -4,14 +4,14 @@ Execute a complete task from planning through commit in a single uninterrupted f
 
 **Use this when**: You trust the AI to execute without intermediate approvals and want maximum velocity.
 
-**Use start-task → implement → commit when**: You need to review plans or implementation steps before proceeding.
+**Use plan → implement → commit when**: You need to review plans or implementation steps before proceeding.
 
 ---
 
 ## Workflow Overview
 
 This command performs the 3-step process automatically:
-1. **Plan** (start-task equivalent)
+1. **Plan** (plan equivalent)
 2. **Implement** (implement equivalent)
 3. **Commit** (commit equivalent)
 
@@ -245,7 +245,7 @@ Ready for push: Yes
 - You want maximum velocity
 - Task is relatively self-contained
 
-### Use `/start-task` → `/implement` → `/commit` when:
+### Use `/plan` → `/implement` → `/commit` when:
 - Task requirements are ambiguous
 - You want to review the plan first
 - Implementation involves risky changes

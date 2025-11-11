@@ -507,7 +507,7 @@ Ready for review and push.
 - Want to observe one task before committing to more
 - Testing the workflow
 
-### Use `/start-task` → `/implement` → `/commit` when:
+### Use `/plan` → `/implement` → `/commit` when:
 - Requirements are ambiguous
 - Need to review plans
 - Critical/risky changes
