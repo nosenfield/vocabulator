@@ -1,5 +1,11 @@
 """Text processing utilities."""
 
+from src.processing.batch_client import (
+    BatchClient,
+    BatchJobError,
+    BatchJobInfo,
+    BatchJobStatus,
+)
 from src.processing.gap_identifier import GapIdentifier, GapWord
 from src.processing.parallel_executor import (
     ParallelExecutor,
@@ -24,6 +30,10 @@ __all__ = [
     "extract_sentences_with_word",
     "hash_text",
     "normalize_word",
+    "BatchClient",
+    "BatchJobError",
+    "BatchJobInfo",
+    "BatchJobStatus",
     "GapIdentifier",
     "GapWord",
     "ParallelExecutor",
