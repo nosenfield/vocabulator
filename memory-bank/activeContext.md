@@ -5,10 +5,11 @@
 ## Current Focus
 
 ### What We're Working On Right Now
-**IN PROGRESS**: Phase 2 - AI/ML Layer (Code Review Fixes)
+**COMPLETE**: Phase 2 - AI/ML Layer
 - ✅ Task 2.1 - OpenAI Client Wrapper (COMPLETE)
 - ✅ Task 2.2 - Vocabulary Extraction Prompts & Logic (COMPLETE)
-- 🔧 Code Review Fixes - Improving robustness and maintainability
+- ✅ Task 2.3 - Vocabulary Gap Analysis Prompts & Logic (COMPLETE)
+- ✅ Task 2.4 - Word Recommendation Generation (COMPLETE)
 - ✅ Task 1.1 - DynamoDB Client & Base Repository (COMPLETE)
 - ✅ Task 1.2 - Student Profile Data Model & Repository (COMPLETE)
 - ✅ Task 1.3 - Vocabulary Recommendation Data Model & Repository (COMPLETE)
@@ -16,8 +17,8 @@
 - ✅ Task 1.5 - Common Core Vocabulary Database (COMPLETE)
 
 ### Current Phase
-**Phase 1: Data Layer & Storage** - ✅ COMPLETE
-**Next Phase**: Phase 2 - AI/ML Layer
+**Phase 2: AI/ML Layer** - ✅ COMPLETE
+**Next Phase**: Phase 3 - Processing Layer
 
 ### Active Decisions
 - **Tech Stack Finalized**: Python 3.11+, FastAPI, OpenAI SDK, AWS (Lambda/Batch/Fargate/DynamoDB/S3)
@@ -31,19 +32,32 @@
 ## Recent Changes
 
 ### Last 7 Significant Changes
-1. **Code Review Fixes** - OpenAI Client & Cost Tracker improvements (2025-01-01)
+1. **Task 2.4 Complete** - Word Recommendation Generation (2025-01-01)
+   - Created recommendation prompt templates with pedagogical principles
+   - Implemented Recommender class with OpenAI GPT-4o integration
+   - Generates definitions, example sentences, and usage tips
+   - Orders recommendations by difficulty (easiest first)
+   - Converts difficulty scores from 1-10 to 0.0-1.0 scale
+   - Comprehensive test suite (373 lines)
+2. **Task 2.3 Complete** - Vocabulary Gap Analysis Prompts & Logic (2025-01-01)
+   - Created gap analysis prompt templates with ZPD principles
+   - Implemented GapIdentifier with OpenAI GPT-4o integration
+   - Added ZPD difficulty calculation algorithm
+   - Word difficulty scoring relative to student grade level
+   - Filters out words student already knows
+   - Comprehensive test suite (397 lines)
+3. **Code Review Fixes** - OpenAI Client & Cost Tracker improvements (2025-01-01)
    - Restructured retry logic for clarity and explicit flow
    - Added debug logging for retry-after header extraction
    - Implemented strict mode for model validation (configurable)
    - Switched cost calculations to Decimal for precision
    - Added pricing date tracking and documentation
-   - All fixes address code review recommendations
-2. **Task 2.2 Complete** - Vocabulary Extraction Prompts & Logic (2025-01-01)
+4. **Task 2.2 Complete** - Vocabulary Extraction Prompts & Logic (2025-01-01)
    - Created extraction prompt templates
    - Implemented VocabularyExtractor with OpenAI integration
    - Added text preprocessing utilities
    - Comprehensive test suite
-3. **Task 2.1 Complete** - OpenAI Client Wrapper (2025-01-01)
+5. **Task 2.1 Complete** - OpenAI Client Wrapper (2025-01-01)
    - Implemented OpenAIClient with retry logic
    - Added CostTracker for API usage tracking
    - Support for GPT-4o and GPT-4o-mini models
@@ -125,36 +139,34 @@
 ## Next Steps
 
 ### Immediate (Next Session)
-- [x] Phase 1 Complete - All data layer tasks done (1.1-1.5)
-- [ ] Begin Phase 2: AI/ML Layer
-  - [ ] Task 2.1 - OpenAI Client Wrapper
-  - [ ] Task 2.2 - Vocabulary Extraction Prompts & Logic
+- [x] Phase 2 Complete - All AI/ML layer tasks done (2.1-2.4)
+- [ ] Begin Phase 3: Processing Layer
+  - [ ] Task 3.1 - Text Processing Pipeline
+  - [ ] Task 3.2 - Parallel Processing Executor
+  - [ ] Task 3.3 - AWS Batch Integration
 
 ### Near-Term (This Week)
-- [ ] Complete Phase 2: AI/ML Layer (OpenAI integration)
-  - OpenAI client wrapper with retry logic
-  - Vocabulary extraction prompts
-  - Gap analysis prompts
-  - Recommendation generation logic
+- [ ] Complete Phase 3: Processing Layer (text analysis pipeline)
+  - Text processing pipeline for batch operations
+  - Parallel processing executor for multiple students
+  - AWS Batch integration for scalable processing
 
 ### Medium-Term (Next 2 Weeks)
-- [ ] Complete Phase 3: Processing Layer (text analysis pipeline)
 - [ ] Complete Phase 4: API Layer (FastAPI endpoints)
 - [ ] Begin Phase 5: Frontend Layer (HTML report templates)
+- [ ] Build end-to-end workflow (Upload → Extract → Analyze → Recommend)
 
 ---
 
 ## Blockers / Open Questions
 
 ### Current Blockers
-**None** - All architectural decisions made, ready to begin implementation
+**None** - Phase 2 complete, ready to begin Phase 3
 
 ### Questions to Resolve
-1. **OpenAI API Key**: Need to provision API key for development (can use free tier initially)
-2. **AWS Dev Account**: Need AWS credentials for LocalStack testing and eventual deployment
-3. **Common Core Vocabulary**: Need to source/compile grade-level vocabulary lists (grades 6-8)
-   - Can start with simplified corpus and enhance later
-   - Multiple public sources available (will research in task 1.5)
+1. **AWS Batch Configuration**: Need to design batch job structure for parallel processing (Task 3.3)
+2. **Processing Pipeline Design**: Determine optimal chunking and parallelization strategy (Task 3.1)
+3. **Cost Monitoring**: Set up CloudWatch alarms for OpenAI API spending (can be done in Phase 6)
 
 ### Deferred Decisions (Post-MVP)
 - AWS SAM vs raw CloudFormation (can decide during infrastructure phase)

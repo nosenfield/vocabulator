@@ -227,9 +227,11 @@ else:
 ### OpenAI API
 - **Purpose**: Vocabulary extraction, gap analysis, recommendation generation
 - **How we use it**: 
-  - GPT-4o-mini for vocabulary extraction (cost-effective)
-  - GPT-4o for gap analysis and recommendations (higher quality)
-- **Failure handling**: Retry logic with exponential backoff, fallback to cached responses
+  - GPT-4o-mini for vocabulary extraction (cost-effective, ~$0.15 per 1M tokens)
+  - GPT-4o for gap analysis and recommendations (higher quality, ~$2.50 per 1M tokens)
+- **Failure handling**: Retry logic with exponential backoff, rate limit handling with retry-after headers
+- **Cost tracking**: CostTracker with Decimal precision, OperationType enum (EXTRACTION, ANALYSIS, RECOMMENDATION)
+- **Model validation**: Configurable strict mode (default: warn but proceed for unknown models)
 
 ### AWS DynamoDB
 - **Purpose**: Structured data storage (profiles, recommendations, vocabulary corpus)
