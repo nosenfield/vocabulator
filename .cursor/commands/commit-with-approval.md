@@ -1,6 +1,6 @@
-# Git Commit Command (With Approval)
+# Git Commit Command (With Pre-commit Hook Approval)
 
-You are helping the user create a git commit with proper staging and commit message formatting. This command requires explicit user approval before executing the commit.
+You are helping the user create a git commit with proper staging and commit message formatting. This command requires approval from pre-commit hooks before finalizing the commit.
 
 ## Important Rules
 
@@ -8,8 +8,8 @@ You are helping the user create a git commit with proper staging and commit mess
 2. **Always list files explicitly** - Show the user what will be committed
 3. **Use a single `git add` command** - List all files in one command, not multiple individual commands
 4. **Create meaningful commit messages** - Follow conventional commit format
-5. **NEVER use `--no-verify` or `-n`** - Always run pre-commit and commit-msg hooks
-6. **ALWAYS wait for approval** - Never commit without explicit user confirmation
+5. **ALWAYS run pre-commit hooks** - Never use `--no-verify` or `-n`
+6. **Handle hook feedback** - If hooks fail, fix issues or provide reasoning
 
 ---
 
@@ -51,7 +51,21 @@ Total: X files
 
 ---
 
-### Step 3: Draft Commit Message
+### Step 3: Stage Files in Single Command
+
+Stage all files in a single `git add` command with explicit file paths:
+```bash
+git add path/to/file1.py path/to/file2.py path/to/file3.py
+```
+
+**Important:**
+- Use a single `git add` command listing all files explicitly
+- **NEVER run `git add .` or `git add -A`** - This would stage everything including untracked files
+- The single command approach reduces noise while maintaining explicit control over what gets staged
+
+---
+
+### Step 4: Draft Commit Message
 
 Follow this format:
 
@@ -94,443 +108,381 @@ chore: Update dependencies to latest versions
 
 ---
 
-### Step 4: Safety Checks
+### Step 5: Safety Checks
 
-Before presenting for approval, verify:
+Before committing, verify:
 - [ ] No `.env` or `.env.local` files being committed (unless it's `.env.example`)
 - [ ] No `node_modules/` or `__pycache__/` being committed
 - [ ] No large binary files (> 10MB) unless intentional
 - [ ] No API keys or secrets in code
 - [ ] Files are actually ready to commit (not work-in-progress)
 
-If any safety issues found, warn the user clearly.
+If any safety issues found, warn the user and ask for confirmation.
 
 ---
 
-### Step 5: Present for Approval
+### Step 6: Attempt Commit (Let Hooks Run)
 
-Present the proposed commit for user review:
-
-```
-PROPOSED COMMIT
-
-Files to stage (X files):
-  - path/to/file1.py
-  - path/to/file2.py
-  - path/to/file3.py
-
-Commit message:
-───────────────────────────────────────
-<type>: <short description>
-
-<detailed description>
-
-- Key change 1
-- Key change 2
-- Key change 3
-───────────────────────────────────────
-
-Safety checks:
-✅ No secrets or credentials
-✅ No large binary files
-✅ No dependency directories
-✅ Files are ready to commit
-
-Commands to execute:
-1. git add path/to/file1.py path/to/file2.py path/to/file3.py
-2. git commit -m "$(cat <<'EOF'
-   <commit message>
-   EOF
-   )"
-
-───────────────────────────────────────
-
-Please review and respond:
-- "approved" or "yes" to proceed with commit
-- "no" or "cancel" to abort
-- Provide feedback to revise commit message
-- Suggest files to add/remove from commit
-```
-
----
-
-### Step 6: Wait for User Response
-
-**CRITICAL**: Do NOT proceed until user responds with one of the following:
-
-#### Response: "approved" or "yes"
-- Proceed to Step 7 (Execute Commit)
-
-#### Response: "no" or "cancel"
-- Abort the commit process
-- Output: "Commit cancelled by user"
-
-#### Response: Feedback/Suggestions
-Examples:
-- "Change commit message to ..."
-- "Don't include file3.py"
-- "Add file4.py to the commit"
-- "Use 'fix' instead of 'feat'"
-
-**Action**:
-1. Incorporate the feedback
-2. Revise the commit proposal
-3. Present updated proposal for approval again
-4. Return to Step 5
-
-#### Response: User asks "Why X?"
-Examples:
-- "Why is file3.py included?"
-- "Why use 'feat' instead of 'chore'?"
-
-**Action**:
-1. Provide clear reasoning for the decision
-2. If reasoning is weak, offer to change it
-3. Wait for user's decision (approved/change/cancel)
-
----
-
-### Step 7: Execute Commit (Only After Approval)
-
-Once approved, execute the commit:
+Run the commit command using heredoc for proper formatting:
 
 ```bash
-# Stage files explicitly
-git add path/to/file1.py path/to/file2.py path/to/file3.py
-
-# Create commit with heredoc
 git commit -m "$(cat <<'EOF'
 <commit message here>
 EOF
 )"
 ```
 
-**CRITICAL**: NEVER use `--no-verify` or `-n` flags. Pre-commit hooks MUST run to ensure:
+**CRITICAL**: Do NOT use `--no-verify` or `-n`. Pre-commit hooks MUST run.
+
+The hooks will check:
 - Code formatting (black, prettier, etc.)
 - Linting (ruff, eslint, etc.)
 - Type checking (mypy, tsc, etc.)
 - Tests passing
 - Security checks
 
-Only skip hooks if the user explicitly requests it for a valid reason (e.g., fixing broken hooks).
-
 ---
 
-### Step 8: Handle Pre-commit Hook Failures
+### Step 7: Analyze Hook Response
 
-If pre-commit hooks fail:
+After attempting commit, analyze the result:
 
-```
-Pre-commit hooks failed:
+#### Case A: Hooks Pass - Commit Successful ✅
 
-[Error output from hooks]
-
-The commit was not created.
-
-Options:
-1. Fix the issues and try again
-2. Review the changes made by hooks (if any)
-3. Investigate why hooks failed
-
-Would you like me to:
-- Show the git diff to see what changed?
-- Run the specific failing check manually?
-- Abort this commit?
-```
-
-**If hooks auto-fixed files** (e.g., black reformatted code):
-```
-Pre-commit hooks made changes:
-
-Modified files:
-  - path/to/file1.py (auto-formatted by black)
-
-The commit was not created yet.
-
-Options:
-1. Review the changes: git diff
-2. Stage the auto-fixed files and retry commit
-3. Abort
-
-Please respond with your choice.
-```
-
----
-
-### Step 9: Verify Commit
-
-After successful commit:
+If hooks pass and commit succeeds:
 
 ```
 ✅ COMMIT SUCCESSFUL
 
+Pre-commit hooks: PASSED
+
 Commit: a1b2c3d feat: Implement configuration management system
-Files: 3 files changed
-Author: [name] <[email]>
-Date: [timestamp]
+Files: 3 files changed, 45 insertions(+), 2 deletions(-)
 
 You can verify with: git log --oneline -1
 ```
 
-Run verification:
+**Done!** No further action needed.
+
+---
+
+#### Case B: Hooks Auto-Fixed Files 🔧
+
+If hooks modified files (e.g., black reformatted code):
+
+```
+⚠️ PRE-COMMIT HOOKS MODIFIED FILES
+
+The following files were auto-fixed:
+  - src/utils/config.py (formatted by black)
+  - src/utils/logger.py (formatted by black)
+
+The commit was NOT created yet.
+
+I will now:
+1. Review the changes made by hooks
+2. Stage the modified files
+3. Retry the commit
+```
+
+**Action Steps:**
+
+1. **Show what changed:**
 ```bash
-git log --oneline -1
+git diff
+```
+
+2. **Explain the changes:**
+```
+Changes made by pre-commit hooks:
+- black reformatted code (whitespace, line breaks)
+- No logic changes, only formatting
+```
+
+3. **Stage the auto-fixed files:**
+```bash
+git add path/to/file1.py path/to/file2.py
+```
+
+4. **Retry commit:**
+```bash
+git commit -m "$(cat <<'EOF'
+<same commit message>
+EOF
+)"
+```
+
+5. **Report success:**
+```
+✅ COMMIT SUCCESSFUL (after auto-fixes)
+
+Pre-commit hooks: PASSED (on retry)
+
+Commit: a1b2c3d feat: Implement configuration management system
+Files: 3 files changed, 47 insertions(+), 2 deletions(-)
 ```
 
 ---
 
-## Safety Checks Details
+#### Case C: Hooks Fail - Validation Errors ❌
 
-### Critical Issues (Block commit)
+If hooks fail with validation errors:
 
-❌ **Secrets/Credentials**:
-- `.env` files (except `.env.example`)
-- `credentials.json`, `service-account.json`
-- Files containing API keys, tokens, passwords
-- AWS credentials files
-
-❌ **Large Files**:
-- Binary files > 10MB
-- Database dumps
-- Media files (unless intentional)
-
-❌ **Dependency Directories**:
-- `node_modules/`
-- `__pycache__/`
-- `.pytest_cache/`
-- `venv/`, `.venv/`
-
-### Warnings (Ask for confirmation)
-
-⚠️ **Many files** (> 10 files):
 ```
-Warning: This commit includes 15 files.
+❌ PRE-COMMIT HOOKS FAILED
 
-Consider breaking into smaller, focused commits:
-- Commit 1: Core functionality
-- Commit 2: Tests
-- Commit 3: Documentation
+Hook: black
+Error: File src/utils/config.py has syntax errors
 
-Proceed anyway? (yes/no/help)
+Details:
+  src/utils/config.py:42:15: E999 SyntaxError: invalid syntax
+
+The commit was NOT created.
 ```
 
-⚠️ **Mixed concerns**:
+**Action Steps:**
+
+1. **Analyze the error:**
+   - Is it a syntax error? → Must fix
+   - Is it a linting issue? → Must fix
+   - Is it a type error? → Must fix
+   - Is it a test failure? → Must fix
+
+2. **Attempt to fix automatically:**
+
+If the error is clear and fixable:
 ```
-Warning: This commit includes both feature code and documentation.
+I will fix the syntax error in src/utils/config.py:42
 
-Consider separating:
-- Commit 1: feat: Add feature X
-- Commit 2: docs: Document feature X
+The issue: Missing closing parenthesis
+Fix: Add closing parenthesis
 
-Proceed anyway? (yes/no/help)
+Applying fix...
+```
+
+3. **Verify the fix:**
+```bash
+# Re-run the specific hook that failed
+black src/utils/config.py
+```
+
+4. **Stage fixed files and retry:**
+```bash
+git add src/utils/config.py
+git commit -m "$(cat <<'EOF'
+<same commit message>
+EOF
+)"
+```
+
+5. **If fix successful:**
+```
+✅ COMMIT SUCCESSFUL (after fixes)
+
+Pre-commit hooks: PASSED (after fixing syntax error)
+
+Commit: a1b2c3d feat: Implement configuration management system
+```
+
+---
+
+#### Case D: Hooks Fail - Cannot Auto-Fix ⚠️
+
+If the error cannot be fixed automatically:
+
+```
+❌ PRE-COMMIT HOOKS FAILED
+
+Hook: mypy
+Error: Type checking failed
+
+Details:
+  src/utils/config.py:42: error: Incompatible types in assignment (expression has type "str", variable has type "int")
+  src/utils/logger.py:15: error: Missing return statement
+
+The commit was NOT created.
+
+REASONING WHY I CANNOT AUTO-FIX:
+
+1. Type error at line 42:
+   - The code assigns a string to an integer variable
+   - This requires understanding the intended logic
+   - Auto-fixing could introduce bugs
+   - Recommendation: Review the code and correct the type
+
+2. Missing return statement at line 15:
+   - The function is declared to return a value but doesn't
+   - This requires understanding the function's purpose
+   - Auto-fixing could break functionality
+   - Recommendation: Add appropriate return statement
+
+SUGGESTED ACTIONS:
+
+1. Review src/utils/config.py:42 and fix type mismatch
+2. Add return statement to function in src/utils/logger.py:15
+3. Run 'mypy src/utils/' to verify fixes
+4. Re-run commit command
+
+Would you like me to:
+- Show the problematic code? (git diff)
+- Explain the type error in detail?
+- Suggest a potential fix (with explanation)?
+```
+
+**Reasoning Format:**
+
+When cannot auto-fix, provide:
+1. **What failed:** Specific error from hook
+2. **Why cannot fix:** Reasoning for each error
+3. **Risk of auto-fixing:** What could go wrong
+4. **Recommended action:** What user should do
+
+---
+
+### Step 8: Verify Commit
+
+After successful commit:
+
+```bash
+git log --oneline -1
+git show --stat
+```
+
+Show:
+- Commit hash and message
+- Files changed
+- Insertions/deletions count
+
+---
+
+## Auto-Fix Decision Matrix
+
+| Hook Type | Error Type | Auto-Fix? | Reasoning |
+|-----------|------------|-----------|-----------|
+| black | Formatting | ✅ Yes | Safe, deterministic |
+| ruff | Import sorting | ✅ Yes | Safe, deterministic |
+| ruff | Unused imports | ✅ Yes | Safe to remove |
+| mypy | Type errors | ❌ No | Requires logic understanding |
+| pytest | Test failures | ❌ No | Requires logic fixes |
+| eslint | Syntax errors | ❌ No | Could break functionality |
+| Custom hook | Validation | ⚠️ Maybe | Depends on error |
+
+**Rules for Auto-Fixing:**
+
+✅ **Can auto-fix when:**
+- Error is purely formatting (whitespace, line breaks)
+- Fix is deterministic (same result every time)
+- Fix cannot introduce bugs
+- Hook provides the fix (e.g., black reformats)
+
+❌ **Cannot auto-fix when:**
+- Error requires logic understanding
+- Multiple valid solutions exist
+- Fix could introduce bugs
+- Error is in tests or test logic
+- Type system errors
+- Requires human judgment
+
+---
+
+## Retry Strategy
+
+After fixing issues:
+
+1. **Stage fixed files:**
+```bash
+git add <files that were fixed>
+```
+
+2. **Retry commit with SAME message:**
+```bash
+git commit -m "$(cat <<'EOF'
+<same commit message as before>
+EOF
+)"
+```
+
+3. **Maximum 3 retry attempts:**
+   - Attempt 1: Original commit
+   - Attempt 2: After auto-fixes
+   - Attempt 3: After manual intervention
+
+After 3 failed attempts:
+```
+❌ COMMIT FAILED AFTER 3 ATTEMPTS
+
+Pre-commit hooks continue to fail.
+
+The issues require manual intervention:
+[List of remaining issues]
+
+Suggested workflow:
+1. Fix the issues manually
+2. Run 'git add <files>'
+3. Run 'git commit' manually
+4. Or: Use '/commit' command again after fixes
 ```
 
 ---
 
 ## Special Cases
 
-### Case 1: Committing .env.example
-✅ **Allowed** - This is a template file
+### Case 1: Hooks Disabled or Not Installed
 
-### Case 2: Committing package-lock.json or requirements.txt
-✅ **Allowed** - These are dependency lockfiles
+If no hooks are configured:
 
-### Case 3: Committing Memory Bank updates
-Use commit type: `docs: Update Memory Bank - <what changed>`
-
-### Case 4: Large refactoring (10+ files)
-Suggest breaking into multiple commits:
-1. Refactor module A
-2. Refactor module B
-3. Update tests
-4. Update documentation
-
-### Case 5: WIP commits
 ```
-Warning: Files may not be ready to commit.
+⚠️ WARNING: No pre-commit hooks detected
 
-Are you creating a WIP commit? Consider:
-- Using git stash instead
-- Creating a feature branch
-- Waiting until implementation is complete
+Installing pre-commit hooks is recommended for code quality.
 
-Proceed with WIP commit? (yes/no)
+To install: pre-commit install
+
+Proceeding with commit anyway...
 ```
 
----
+### Case 2: Hook Timeout
 
-## Handling User Feedback
+If hook takes too long (> 60 seconds):
 
-### Example 1: Change commit message
-
-**User**: "Change the message to use 'fix' instead of 'feat'"
-
-**Action**:
 ```
-Updated commit message:
+⚠️ PRE-COMMIT HOOK TIMEOUT
 
-fix: Implement configuration management system
+Hook 'pytest' exceeded 60 second timeout.
 
-Add Pydantic-based configuration with environment support:
-- Multi-environment support (dev, staging, prod)
-- Type-safe configuration loading
-- Helper methods for DynamoDB and AWS endpoints
+Options:
+1. Wait longer (continue waiting)
+2. Skip this hook (not recommended)
+3. Cancel commit
 
-Approved? (yes/no/feedback)
+Recommendation: Optimize tests or run separately
 ```
 
-### Example 2: Remove file from commit
+### Case 3: Partial Hook Failure
 
-**User**: "Don't commit file3.py"
+If some hooks pass, some fail:
 
-**Action**:
 ```
-Updated file list (2 files):
-  - path/to/file1.py
-  - path/to/file2.py
+MIXED PRE-COMMIT RESULTS
 
-Removed:
-  - path/to/file3.py
+Passed:
+✅ black - Code formatting
+✅ ruff - Import sorting
 
-Updated commit proposal:
-───────────────────────────────────────
-[Updated proposal with new file list]
-───────────────────────────────────────
+Failed:
+❌ mypy - Type checking (3 errors)
 
-Approved? (yes/no/feedback)
+The commit was NOT created due to failures.
+
+Fixing mypy errors...
+[Attempt to fix or explain why cannot fix]
 ```
-
-### Example 3: Add file to commit
-
-**User**: "Also include tests/test_config.py"
-
-**Action**:
-```
-Updated file list (4 files):
-  - path/to/file1.py
-  - path/to/file2.py
-  - path/to/file3.py
-  - tests/test_config.py (added)
-
-Updated commit proposal:
-───────────────────────────────────────
-[Updated proposal with new file list]
-───────────────────────────────────────
-
-Approved? (yes/no/feedback)
-```
-
-### Example 4: Why question
-
-**User**: "Why is this a 'feat' commit?"
-
-**Action**:
-```
-Reasoning for 'feat' commit type:
-
-This commit introduces new functionality:
-- New configuration management system
-- New Pydantic models
-- New helper methods
-
-According to conventional commits:
-- 'feat': A new feature (user-facing or internal)
-- 'chore': Maintenance/tooling (no feature added)
-
-Since this adds new capabilities to the codebase, 'feat' is appropriate.
-
-Would you like to:
-1. Keep it as 'feat' (approved)
-2. Change to 'chore' (provide reason)
-3. Use different type (specify)
-```
-
----
-
-## Approval Loop
-
-The command will loop until one of these conditions:
-
-1. ✅ **User approves** → Execute commit
-2. ❌ **User cancels** → Abort commit
-3. 🔄 **User provides feedback** → Revise and re-present for approval
-
-Maximum 5 revision iterations. After 5 iterations:
-```
-Maximum revisions reached (5 attempts).
-
-Would you like to:
-1. Approve current version
-2. Cancel commit
-3. Start over with fresh proposal
-```
-
----
-
-## Output Format
-
-### Success
-```
-✅ COMMIT SUCCESSFUL
-
-Commit: [hash] [message first line]
-Files: [count] files changed, [insertions] insertions(+), [deletions] deletions(-)
-
-Next steps:
-- Review: git show
-- Push: git push
-```
-
-### Cancelled
-```
-❌ COMMIT CANCELLED
-
-No changes were committed.
-Staged files remain staged.
-
-To unstage: git reset
-```
-
-### Failed (hooks)
-```
-❌ COMMIT FAILED
-
-Pre-commit hooks failed. See errors above.
-
-To fix:
-1. Address the issues
-2. Run the commit command again
-```
-
----
-
-## Rules & Constraints
-
-### MUST DO
-
-1. ✅ Read git status first
-2. ✅ List all files explicitly
-3. ✅ Draft commit message following conventional format
-4. ✅ Run safety checks
-5. ✅ Present for approval
-6. ✅ **WAIT for user approval**
-7. ✅ Stage files by name (one command)
-8. ✅ Use heredoc for commit message
-9. ✅ Verify commit created
-
-### MUST NOT DO
-
-1. ❌ Use `git add .` or `git add -A`
-2. ❌ Use `--no-verify` or `-n` (unless explicitly requested)
-3. ❌ Commit without approval
-4. ❌ Ignore safety check warnings
-5. ❌ Commit secrets or credentials
-6. ❌ Proceed if user says "no" or "cancel"
-7. ❌ Skip presenting the proposal
 
 ---
 
 ## Example Full Execution
+
+### Example 1: Success on First Try
 
 **User**: `/commit-with-approval`
 
@@ -539,81 +491,151 @@ To fix:
 Checking git status...
 
 Files ready to commit:
-
-Modified:
-  - .cursor/commands/batch.md
-  - .cursor/commands/commit.md
-  - .cursor/commands/one-shot.md
-
-Total: 3 files
-
-Safety checks:
-✅ No secrets or credentials
-✅ No large binary files
-✅ No dependency directories
-✅ Files are ready to commit
-
-───────────────────────────────────────
-
-PROPOSED COMMIT
-
-Files to stage (3 files):
-  - .cursor/commands/batch.md
-  - .cursor/commands/commit.md
-  - .cursor/commands/one-shot.md
-
-Commit message:
-───────────────────────────────────────
-chore: Add safety rules to commit commands
-
-Forbid use of git add shortcuts and hook bypass:
-- NEVER use git add . or git add -A
-- NEVER use --no-verify or -n flags
-- Stage files explicitly by name
-- Pre-commit hooks must always run
-───────────────────────────────────────
-
-Commands to execute:
-1. git add .cursor/commands/batch.md .cursor/commands/commit.md .cursor/commands/one-shot.md
-2. git commit -m "$(cat <<'EOF'
-   chore: Add safety rules to commit commands
-
-   Forbid use of git add shortcuts and hook bypass:
-   - NEVER use git add . or git add -A
-   - NEVER use --no-verify or -n flags
-   - Stage files explicitly by name
-   - Pre-commit hooks must always run
-   EOF
-   )"
-
-───────────────────────────────────────
-
-Please review and respond:
-- "approved" or "yes" to proceed
-- "no" or "cancel" to abort
-- Provide feedback to revise
-```
-
-**User**: approved
-
-**AI**:
-```
-Executing commit...
+- src/utils/config.py
+- tests/unit/utils/test_config.py
 
 Staging files...
+git add src/utils/config.py tests/unit/utils/test_config.py
+
 Creating commit...
-[pre-commit hooks run...]
+git commit -m "$(cat <<'EOF'
+feat: Implement configuration management system
+
+Add Pydantic-based configuration with environment support:
+- Multi-environment support (dev, staging, prod)
+- Type-safe configuration loading
+EOF
+)"
+
+Running pre-commit hooks...
+[black]..........Passed
+[ruff]............Passed
+[mypy]............Passed
 
 ✅ COMMIT SUCCESSFUL
 
-Commit: f8e3a9b chore: Add safety rules to commit commands
-Files: 3 files changed, 24 insertions(+), 3 deletions(-)
-
-Next steps:
-- Review: git show
-- Push: git push
+Commit: a1b2c3d feat: Implement configuration management system
+Files: 2 files changed, 45 insertions(+), 0 deletions(-)
 ```
 
 ---
 
-**Remember**: This command prioritizes user control. NEVER commit without explicit approval. Always incorporate user feedback and re-present for approval.
+### Example 2: Auto-Fix and Retry
+
+**User**: `/commit-with-approval`
+
+**AI**:
+```
+Checking git status...
+Staging files...
+Creating commit...
+
+Running pre-commit hooks...
+[black]..........Failed
+- hook id: black
+- files were modified by this hook
+
+⚠️ FILES MODIFIED BY PRE-COMMIT HOOKS
+
+Auto-fixed by black:
+- src/utils/config.py (formatting)
+
+Changes made:
+- Reformatted to 88 character line width
+- Fixed whitespace
+
+Staging auto-fixed files...
+git add src/utils/config.py
+
+Retrying commit...
+git commit -m "..."
+
+Running pre-commit hooks...
+[black]..........Passed
+[ruff]............Passed
+[mypy]............Passed
+
+✅ COMMIT SUCCESSFUL (after auto-fixes)
+
+Commit: a1b2c3d feat: Implement configuration management system
+```
+
+---
+
+### Example 3: Cannot Auto-Fix
+
+**User**: `/commit-with-approval`
+
+**AI**:
+```
+Checking git status...
+Staging files...
+Creating commit...
+
+Running pre-commit hooks...
+[mypy]............Failed
+- hook id: mypy
+
+src/utils/config.py:42: error: Incompatible types in assignment
+
+❌ COMMIT FAILED
+
+REASONING WHY I CANNOT AUTO-FIX:
+
+The mypy error indicates a type mismatch at line 42:
+```python
+age: int = "25"  # Error: str assigned to int
+```
+
+I cannot auto-fix this because:
+1. Multiple solutions exist:
+   - Convert string to int: age = int("25")
+   - Change type to str: age: str = "25"
+   - Fix the source of the string value
+
+2. Each solution has different implications:
+   - Conversion could raise ValueError if not a valid number
+   - Changing type might break other code expecting int
+   - Fixing source requires understanding data flow
+
+3. This requires understanding the intended logic
+
+RECOMMENDED ACTION:
+
+Review line 42 and choose the appropriate fix:
+- If age should be int: age = int("25")
+- If age can be str: age: str = "25"
+
+Then re-run the commit command.
+
+Would you like me to show the problematic code?
+```
+
+---
+
+## Rules & Constraints
+
+### MUST DO
+
+1. ✅ Stage files explicitly by name
+2. ✅ Draft proper commit message
+3. ✅ Run commit with hooks (no --no-verify)
+4. ✅ Analyze hook response
+5. ✅ Auto-fix if safe and possible
+6. ✅ Provide reasoning if cannot fix
+7. ✅ Retry after fixes
+8. ✅ Report final status clearly
+
+### MUST NOT DO
+
+1. ❌ Use `git add .` or `git add -A`
+2. ❌ Use `--no-verify` or `-n`
+3. ❌ Auto-fix type errors or logic errors
+4. ❌ Auto-fix without understanding the change
+5. ❌ Ignore hook failures
+6. ❌ Retry indefinitely (max 3 attempts)
+7. ❌ Commit with failing hooks
+
+---
+
+**Remember**: The pre-commit hooks are the gatekeepers. If they fail, either fix the issues safely or explain why manual intervention is needed. Never bypass the hooks.
