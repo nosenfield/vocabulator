@@ -3,6 +3,8 @@
 Tests cover connection management, retry logic, error handling, and basic CRUD operations.
 """
 
+from unittest.mock import MagicMock, patch
+
 import pytest
 from botocore.exceptions import ClientError
 from typing import Any, Dict
@@ -166,6 +168,74 @@ class TestDynamoDBClient:
         
         # Verify update
         response = table.get_item(Key={"id": "test-3", "version": 1})
+        assert response["Item"]["data"] == "updated"
+    
+    def test_update_item_with_return_values(self, dynamodb_client, test_table_name):
+        """Test updating an item with return_values parameter."""
+        # Put initial item
+        resource = create_dynamodb_resource()
+        table = resource.Table(test_table_name)
+        table.put_item(
+            Item={
+                "id": "test-return",
+                "version": 1,
+                "data": "original",
+                "count": 5,
+            }
+        )
+        
+        # Update with return_values="ALL_NEW"
+        updated_item = dynamodb_client.update_item(
+            partition_key="id",
+            partition_value="test-return",
+            sort_key="version",
+            sort_value=1,
+            update_expression="SET #data = :new_data, #count = :new_count",
+            expression_attribute_names={"#data": "data", "#count": "count"},
+            expression_attribute_values={":new_data": "updated", ":new_count": 10},
+            return_values="ALL_NEW",
+        )
+        
+        # Verify returned item
+        assert updated_item is not None
+        assert updated_item["data"] == "updated"
+        assert updated_item["count"] == 10
+        
+        # Verify update persisted
+        response = table.get_item(Key={"id": "test-return", "version": 1})
+        assert response["Item"]["data"] == "updated"
+        assert response["Item"]["count"] == 10
+    
+    def test_update_item_with_return_values_none(self, dynamodb_client, test_table_name):
+        """Test updating an item with return_values="NONE"."""
+        # Put initial item
+        resource = create_dynamodb_resource()
+        table = resource.Table(test_table_name)
+        table.put_item(
+            Item={
+                "id": "test-none",
+                "version": 1,
+                "data": "original",
+            }
+        )
+        
+        # Update with return_values="NONE"
+        result = dynamodb_client.update_item(
+            partition_key="id",
+            partition_value="test-none",
+            sort_key="version",
+            sort_value=1,
+            update_expression="SET #data = :new_data",
+            expression_attribute_names={"#data": "data"},
+            expression_attribute_values={":new_data": "updated"},
+            return_values="NONE",
+        )
+        
+        # Should return None when return_values="NONE"
+        assert result is None
+        
+        # But update should still be persisted
+        response = table.get_item(Key={"id": "test-none", "version": 1})
         assert response["Item"]["data"] == "updated"
     
     def test_delete_item(self, dynamodb_client, test_table_name):
@@ -421,4 +491,173 @@ class TestDynamoDBClient:
         )
         with pytest.raises(DynamoDBError):
             DynamoDBClient(table_name="nonexistent-table")
+    
+    def test_retry_logic_with_throttling(self, dynamodb_client, test_table_name):
+        """Test retry logic with mocked throttling errors."""
+        # Mock the table's get_item method to raise throttling errors first, then succeed
+        call_count = {"count": 0}
+        
+        original_get_item = dynamodb_client.table.get_item
+        
+        def mock_get_item(**kwargs):
+            call_count["count"] += 1
+            if call_count["count"] < 3:
+                # Raise throttling error for first 2 calls
+                error_response = {
+                    "Error": {
+                        "Code": "ProvisionedThroughputExceededException",
+                        "Message": "The level of configured provisioned throughput for the table was exceeded",
+                    }
+                }
+                raise ClientError(error_response, "GetItem")
+            else:
+                # Succeed on third call
+                return original_get_item(**kwargs)
+        
+        # Put an item first
+        resource = create_dynamodb_resource()
+        table = resource.Table(test_table_name)
+        table.put_item(
+            Item={
+                "id": "retry-test",
+                "version": 1,
+                "data": "test data",
+            }
+        )
+        
+        # Patch the get_item method
+        with patch.object(dynamodb_client.table, "get_item", side_effect=mock_get_item):
+            # Should succeed after retries
+            item = dynamodb_client.get_item(
+                partition_key="id",
+                partition_value="retry-test",
+                sort_key="version",
+                sort_value=1,
+            )
+            
+            assert item is not None
+            assert item["id"] == "retry-test"
+            assert item["data"] == "test data"
+            # Should have retried 2 times before succeeding
+            assert call_count["count"] == 3
+    
+    def test_retry_logic_max_retries_exceeded(self, dynamodb_client, test_table_name):
+        """Test retry logic when max retries are exceeded."""
+        # Mock the table's get_item method to always raise throttling errors
+        def mock_get_item(**kwargs):
+            error_response = {
+                "Error": {
+                    "Code": "ThrottlingException",
+                    "Message": "Request rate is too high",
+                }
+            }
+            raise ClientError(error_response, "GetItem")
+        
+        # Patch the get_item method
+        with patch.object(dynamodb_client.table, "get_item", side_effect=mock_get_item):
+            # Should raise DynamoDBError after max retries
+            with pytest.raises(DynamoDBError) as exc_info:
+                dynamodb_client.get_item(
+                    partition_key="id",
+                    partition_value="retry-test",
+                    sort_key="version",
+                    sort_value=1,
+                )
+            
+            assert "failed after" in str(exc_info.value).lower() or "retries" in str(exc_info.value).lower()
+    
+    def test_batch_get_unprocessed_items_raises_error(self, dynamodb_client, test_table_name):
+        """Test that unprocessed items in batch_get raise DynamoDBError."""
+        # Mock batch_get_item to return unprocessed keys
+        def mock_batch_get_item(**kwargs):
+            return {
+                "Responses": {
+                    test_table_name: [
+                        {"id": "item-1", "version": 1, "data": "data-1"},
+                    ]
+                },
+                "UnprocessedKeys": {
+                    test_table_name: {
+                        "Keys": [
+                            {"id": "item-2", "version": 1},
+                            {"id": "item-3", "version": 1},
+                        ]
+                    }
+                },
+            }
+        
+        with patch.object(
+            dynamodb_client.dynamodb, "batch_get_item", side_effect=mock_batch_get_item
+        ):
+            keys = [
+                {"id": "item-1", "version": 1},
+                {"id": "item-2", "version": 1},
+                {"id": "item-3", "version": 1},
+            ]
+            
+            with pytest.raises(DynamoDBError) as exc_info:
+                dynamodb_client.batch_get_items(keys=keys)
+            
+            assert "unprocessed" in str(exc_info.value).lower()
+            assert "2" in str(exc_info.value)  # Should mention 2 unprocessed items
+    
+    def test_batch_write_unprocessed_items_raises_error(self, dynamodb_client, test_table_name):
+        """Test that unprocessed items in batch_write raise DynamoDBError."""
+        # Mock batch_write_item to return unprocessed items
+        def mock_batch_write_item(**kwargs):
+            return {
+                "UnprocessedItems": {
+                    test_table_name: [
+                        {"PutRequest": {"Item": {"id": "item-2", "version": 1, "data": "data-2"}}},
+                        {"PutRequest": {"Item": {"id": "item-3", "version": 1, "data": "data-3"}}},
+                    ]
+                },
+            }
+        
+        with patch.object(
+            dynamodb_client.dynamodb, "batch_write_item", side_effect=mock_batch_write_item
+        ):
+            items = [
+                {"id": "item-1", "version": 1, "data": "data-1"},
+                {"id": "item-2", "version": 1, "data": "data-2"},
+                {"id": "item-3", "version": 1, "data": "data-3"},
+            ]
+            
+            with pytest.raises(DynamoDBError) as exc_info:
+                dynamodb_client.batch_write_items(items=items)
+            
+            assert "unprocessed" in str(exc_info.value).lower()
+            assert "2" in str(exc_info.value)  # Should mention 2 unprocessed items
+    
+    def test_deprecation_warning_sort_key_condition(self, dynamodb_client, test_table_name):
+        """Test that using sort_key_condition raises a deprecation warning."""
+        import warnings
+        
+        # Put an item first
+        resource = create_dynamodb_resource()
+        table = resource.Table(test_table_name)
+        table.put_item(
+            Item={
+                "id": "deprecation-test",
+                "version": 1,
+                "data": "test",
+            }
+        )
+        
+        # Should raise DeprecationWarning when using sort_key_condition
+        with warnings.catch_warnings(record=True) as w:
+            warnings.simplefilter("always")
+            
+            dynamodb_client.query(
+                partition_key="id",
+                partition_value="deprecation-test",
+                sort_key="version",
+                sort_key_condition="begins_with(:prefix)",
+                expression_attribute_values={":prefix": "1"},
+            )
+            
+            # Should have at least one deprecation warning
+            assert len(w) > 0
+            assert any(issubclass(warning.category, DeprecationWarning) for warning in w)
+            assert any("sort_key_condition" in str(warning.message) for warning in w)
 

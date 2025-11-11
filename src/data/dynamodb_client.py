@@ -8,6 +8,7 @@ error handling.
 import random
 import re
 import time
+import warnings
 from typing import Any, Dict, List, Optional
 
 import boto3
@@ -268,12 +269,13 @@ class DynamoDBClient:
             all_items.extend(items)
             
             # Handle unprocessed keys (shouldn't happen with retry logic, but handle anyway)
-            # Note: In production, consider implementing retry loop for unprocessed keys
             unprocessed = response.get("UnprocessedKeys", {}).get(self.table_name)
             if unprocessed:
-                logger.warning(
-                    f"Unprocessed keys in batch_get_item: {unprocessed}. "
-                    "These items were not retrieved. Consider retrying."
+                unprocessed_count = len(unprocessed.get("Keys", []))
+                raise DynamoDBError(
+                    f"Batch get operation incomplete: {unprocessed_count} unprocessed keys "
+                    f"remain for table '{self.table_name}'. This may indicate throttling or "
+                    "capacity issues. Consider retrying the operation."
                 )
         
         return all_items
@@ -307,13 +309,14 @@ class DynamoDBClient:
                 },
             )
             
-            # Handle unprocessed items (retry logic should handle this, but check anyway)
-            # Note: In production, consider implementing retry loop for unprocessed items
+            # Handle unprocessed items (shouldn't happen with retry logic, but handle anyway)
             unprocessed = response.get("UnprocessedItems", {}).get(self.table_name)
             if unprocessed:
-                logger.warning(
-                    f"Unprocessed items in batch_write_item: {unprocessed}. "
-                    "These items were not written. Consider retrying."
+                unprocessed_count = len(unprocessed)
+                raise DynamoDBError(
+                    f"Batch write operation incomplete: {unprocessed_count} unprocessed items "
+                    f"remain for table '{self.table_name}'. This may indicate throttling or "
+                    "capacity issues. Consider retrying the operation."
                 )
 
     def query(
@@ -372,6 +375,15 @@ class DynamoDBClient:
             key_condition = Key(partition_key).eq(partition_value)
             
             # Build sort key condition if provided (backward compatibility)
+            if sort_key_condition is not None:
+                warnings.warn(
+                    "The 'sort_key_condition' parameter is deprecated and will be removed in a "
+                    "future version. Use 'key_condition_expression' with boto3 Key conditions instead. "
+                    "Example: Key('pk').eq('value') & Key('sk').begins_with('prefix')",
+                    DeprecationWarning,
+                    stacklevel=2,
+                )
+            
             if sort_key and sort_key_condition and expression_attribute_values:
                 # Parse simple conditions like "begins_with(:prefix)" or "between(:start, :end)"
                 if sort_key_condition.startswith("begins_with"):

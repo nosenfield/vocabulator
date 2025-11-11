@@ -6,7 +6,7 @@ for testing, using LocalStack for local development.
 
 import boto3
 from botocore.exceptions import ClientError
-from typing import TYPE_CHECKING, Any, Optional
+from typing import TYPE_CHECKING, Any, Dict, Optional
 
 from src.utils.config import get_config
 
@@ -73,7 +73,7 @@ def create_test_table(
     table_name: str,
     partition_key: str,
     sort_key: Optional[str] = None,
-    gsi: Optional[dict[str, Any]] = None,
+    gsi: Optional[Dict[str, Any]] = None,
 ) -> None:
     """Create a test DynamoDB table.
     
