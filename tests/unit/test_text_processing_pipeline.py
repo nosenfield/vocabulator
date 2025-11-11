@@ -203,7 +203,7 @@ async def test_process_text_full_pipeline(
     )
 
     # Verify student repository was called
-    mock_student_repository.get.assert_called_once_with("STU-001", 1)
+    mock_student_repository.get.assert_called_once_with("STU-001", profile_version=1)
     mock_student_repository.update.assert_called_once()
 
     # Verify gap identifier was called

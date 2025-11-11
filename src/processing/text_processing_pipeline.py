@@ -11,7 +11,10 @@ This module provides an end-to-end pipeline that orchestrates:
 from datetime import datetime, timezone
 from typing import Optional
 
+import re
+
 from src.ai.vocabulary_extractor import ExtractedWord, VocabularyExtractor
+from src.data.dynamodb_client import DynamoDBError
 from src.data.models.recommendation import VocabularyRecommendation
 from src.data.models.student_profile import StudentProfile, VocabularyEntry
 from src.data.repositories.recommendation_repository import RecommendationRepository
@@ -83,6 +86,7 @@ class TextProcessingPipeline:
         Raises:
             ValueError: If student_id is invalid
             OpenAIError: If extraction or analysis fails
+            DynamoDBError: If database operations fail
         """
         if not student_id or not student_id.strip():
             raise ValueError("student_id is required")
@@ -187,7 +191,18 @@ class TextProcessingPipeline:
         )
 
         # Try to get existing profile
-        profile = self.student_repository.get(student_id, profile_version=1)
+        try:
+            profile = self.student_repository.get(student_id, profile_version=1)
+        except DynamoDBError as e:
+            logger.error(
+                f"Failed to get student profile",
+                extra={
+                    "student_id": student_id,
+                    "error": str(e),
+                    "request_id": request_id,
+                },
+            )
+            raise
 
         if profile is None:
             # Create new profile
@@ -196,7 +211,18 @@ class TextProcessingPipeline:
                 student_id=student_id,
                 grade_level=grade,
             )
-            profile = self.student_repository.create(profile)
+            try:
+                profile = self.student_repository.create(profile)
+            except DynamoDBError as e:
+                logger.error(
+                    f"Failed to create student profile",
+                    extra={
+                        "student_id": student_id,
+                        "error": str(e),
+                        "request_id": request_id,
+                    },
+                )
+                raise
             logger.info(
                 f"Created new student profile",
                 extra={
@@ -251,18 +277,19 @@ class TextProcessingPipeline:
 
         # Add each extracted word to profile
         for extracted_word in extracted_words:
-            # Determine context from example (simplified)
-            # In production, this could be more sophisticated
+            # Determine context from example using word boundaries
+            # In production, this could be more sophisticated (e.g., NLP-based)
             contexts = ["general"]
             if extracted_word.example:
                 example_lower = extracted_word.example.lower()
-                if any(subject in example_lower for subject in ["science", "scientific"]):
+                # Use word boundaries to avoid substring matches (e.g., "science" in "conscience")
+                if re.search(r"\bscience\b|\bscientific\b", example_lower):
                     contexts.append("science")
-                if any(subject in example_lower for subject in ["math", "mathematical", "calculate"]):
+                if re.search(r"\bmath\b|\bmathematical\b|\bcalculate\b|\bcalculation\b", example_lower):
                     contexts.append("math")
-                if any(subject in example_lower for subject in ["history", "historical", "past"]):
+                if re.search(r"\bhistory\b|\bhistorical\b|\bpast\b", example_lower):
                     contexts.append("history")
-                if any(subject in example_lower for subject in ["english", "literature", "writing"]):
+                if re.search(r"\benglish\b|\bliterature\b|\bwriting\b|\bauthor\b|\bpoem\b", example_lower):
                     contexts.append("ela")
 
             # Create vocabulary entry
@@ -283,7 +310,18 @@ class TextProcessingPipeline:
         profile.last_updated = datetime.now(timezone.utc)
 
         # Save updated profile
-        updated_profile = self.student_repository.update(profile)
+        try:
+            updated_profile = self.student_repository.update(profile)
+        except DynamoDBError as e:
+            logger.error(
+                f"Failed to update student profile",
+                extra={
+                    "student_id": profile.student_id,
+                    "error": str(e),
+                    "request_id": request_id,
+                },
+            )
+            raise
 
         logger.info(
             f"Updated student profile with {len(extracted_words)} words",
@@ -404,7 +442,18 @@ class TextProcessingPipeline:
             },
         )
 
-        persisted = self.recommendation_repository.create(recommendation)
+        try:
+            persisted = self.recommendation_repository.create(recommendation)
+        except DynamoDBError as e:
+            logger.error(
+                f"Failed to persist recommendations",
+                extra={
+                    "student_id": recommendation.student_id,
+                    "error": str(e),
+                    "request_id": request_id,
+                },
+            )
+            raise
 
         logger.info(
             f"Persisted recommendations",
