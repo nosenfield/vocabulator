@@ -23,7 +23,8 @@
 **Phase 4: API Layer** - IN PROGRESS (2025-11-11)
 - ✅ Task 4.1 - FastAPI Application Setup (COMPLETE)
 - ✅ Task 4.2 - Request/Response Models (COMPLETE)
-- [ ] Task 4.3 - Upload Endpoints (NEXT)
+- ✅ Task 4.3 - Upload Endpoints (COMPLETE)
+- [ ] Task 4.4 - Student Profile Endpoints (NEXT)
 
 ### Active Decisions
 - **Tech Stack Finalized**: Python 3.11+, FastAPI, OpenAI SDK, AWS (Lambda/Batch/Fargate/DynamoDB/S3)
@@ -37,7 +38,15 @@
 ## Recent Changes
 
 ### Last 3 Significant Changes
-1. **Task 4.2 Complete** - Request/Response Models (2025-11-11)
+1. **Task 4.3 Complete** - Upload Endpoints (2025-11-11)
+   - Created POST /api/v1/transcripts/upload endpoint
+   - Created POST /api/v1/writing/upload endpoint
+   - Integrated with TextProcessingPipeline for vocabulary extraction
+   - S3 storage for raw transcripts and writing samples
+   - Error handling with proper HTTP status codes
+   - Request ID tracking for correlation
+   - Comprehensive test suite (5 tests, all passing)
+2. **Task 4.2 Complete** - Request/Response Models (2025-11-11)
    - Created comprehensive Pydantic request/response models for all API endpoints
    - Request models: TranscriptUpload, WritingUpload, CreateStudent, UpdateStudent, UpdateRecommendationStatus, BatchProcess
    - Response models: Upload responses, StudentProfile, StudentsList, Recommendations, BatchStatus, ErrorResponse
