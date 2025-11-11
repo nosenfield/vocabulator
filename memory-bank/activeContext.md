@@ -20,8 +20,9 @@
 - ✅ Task 1.5 - Common Core Vocabulary Database (COMPLETE)
 
 ### Current Phase
-**Phase 3: Processing Layer** - ✅ COMPLETE (2025-11-11)
-**Next Phase**: Phase 4 - API Layer
+**Phase 4: API Layer** - IN PROGRESS (2025-11-11)
+- ✅ Task 4.1 - FastAPI Application Setup (COMPLETE)
+- [ ] Task 4.2 - Request/Response Models (NEXT)
 
 ### Active Decisions
 - **Tech Stack Finalized**: Python 3.11+, FastAPI, OpenAI SDK, AWS (Lambda/Batch/Fargate/DynamoDB/S3)
@@ -35,7 +36,14 @@
 ## Recent Changes
 
 ### Last 3 Significant Changes
-1. **Task 3.3 Complete** - AWS Batch Integration (2025-11-11)
+1. **Task 4.1 Complete** - FastAPI Application Setup (2025-11-11)
+   - Created FastAPI application with dependency injection
+   - Set up dependency functions for DynamoDB, S3, repositories, pipeline, and batch client
+   - Configured CORS middleware
+   - Added health check endpoint (/health)
+   - Implemented lifespan context manager for startup/shutdown
+   - Comprehensive test suite (11 tests, all passing)
+2. **Task 3.3 Complete** - AWS Batch Integration (2025-11-11)
    - Created BatchClient wrapper for AWS Batch job submission and tracking
    - Implemented batch job handler script for Fargate containers
    - Created Dockerfile for batch job containers (non-root user for security)
@@ -164,10 +172,11 @@
 ## Next Steps
 
 ### Immediate (Next Session)
-- [x] Phase 3 Complete - All Processing Layer tasks done (3.1-3.3) (2025-11-11)
-- [ ] Begin Phase 4: API Layer
-  - [ ] Task 4.1 - FastAPI Application Setup
-  - [ ] Task 4.2 - Request/Response Models
+- [x] Task 4.1 - FastAPI Application Setup (2025-11-11)
+- [ ] Task 4.2 - Request/Response Models (NEXT)
+  - Create Pydantic request/response models for all endpoints
+  - Define validation rules and field constraints
+  - Add examples and descriptions for OpenAPI docs
   - [ ] Task 4.3 - Upload Endpoints
   - [ ] Task 4.4 - Student Profile Endpoints
   - [ ] Task 4.5 - Recommendation Endpoints
