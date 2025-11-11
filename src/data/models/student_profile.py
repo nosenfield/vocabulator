@@ -4,7 +4,8 @@ This module defines the StudentProfile model and related data structures
 for tracking student vocabulary and proficiency.
 """
 
-from datetime import datetime
+from datetime import datetime, timezone
+from decimal import Decimal
 from typing import Dict, List, Optional
 from pydantic import BaseModel, Field, field_validator
 
@@ -77,11 +78,11 @@ class StudentProfile(BaseModel):
     )
     profile_version: int = Field(default=1, ge=1, description="Schema version")
     created_at: datetime = Field(
-        default_factory=datetime.now,
+        default_factory=lambda: datetime.now(timezone.utc),
         description="Creation timestamp",
     )
     last_updated: datetime = Field(
-        default_factory=datetime.now,
+        default_factory=lambda: datetime.now(timezone.utc),
         description="Last update timestamp",
     )
     
@@ -114,12 +115,12 @@ class StudentProfile(BaseModel):
                 # Update first_seen if this is earlier
                 if entry.first_seen < existing_entry.first_seen:
                     existing_entry.first_seen = entry.first_seen
-                self.last_updated = datetime.now()
+                self.last_updated = datetime.now(timezone.utc)
                 return
         
         # Add new entry
         self.vocabulary_list.append(entry)
-        self.last_updated = datetime.now()
+        self.last_updated = datetime.now(timezone.utc)
     
     def calculate_proficiency_score(self) -> float:
         """Calculate proficiency score based on vocabulary.
@@ -190,7 +191,7 @@ class StudentProfile(BaseModel):
                 }
                 for entry in self.vocabulary_list
             ],
-            "proficiency_score": self.proficiency_score,
+            "proficiency_score": Decimal(str(self.proficiency_score)),
             "created_at": self.created_at.isoformat(),
             "last_updated": self.last_updated.isoformat(),
         }
@@ -216,13 +217,18 @@ class StudentProfile(BaseModel):
             )
             vocabulary_list.append(entry)
         
+        # Convert Decimal to float for proficiency_score if needed
+        proficiency_score = data.get("proficiency_score", 0.0)
+        if isinstance(proficiency_score, Decimal):
+            proficiency_score = float(proficiency_score)
+
         return cls(
             student_id=data["student_id"],
             grade_level=data["grade_level"],
             vocabulary_list=vocabulary_list,
-            proficiency_score=data.get("proficiency_score", 0.0),
+            proficiency_score=proficiency_score,
             profile_version=data.get("profile_version", 1),
-            created_at=datetime.fromisoformat(data.get("created_at", datetime.now().isoformat())),
-            last_updated=datetime.fromisoformat(data.get("last_updated", datetime.now().isoformat())),
+            created_at=datetime.fromisoformat(data.get("created_at", datetime.now(timezone.utc).isoformat())),
+            last_updated=datetime.fromisoformat(data.get("last_updated", datetime.now(timezone.utc).isoformat())),
         )
 

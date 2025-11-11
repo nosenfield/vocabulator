@@ -5,6 +5,7 @@ for tracking vocabulary word recommendations for students.
 """
 
 from datetime import datetime, timedelta, timezone
+from decimal import Decimal
 from enum import Enum
 from typing import Dict, List, Optional
 from pydantic import BaseModel, Field, field_validator
@@ -133,7 +134,7 @@ class VocabularyRecommendation(BaseModel):
                     "word": word.word,
                     "definition": word.definition,
                     "grade_level": word.grade_level,
-                    "difficulty_score": word.difficulty_score,
+                    "difficulty_score": Decimal(str(word.difficulty_score)),
                     "rationale": word.rationale,
                     "example_sentences": word.example_sentences,
                 }
@@ -157,11 +158,16 @@ class VocabularyRecommendation(BaseModel):
         # Convert words list
         words = []
         for word_data in data.get("words", []):
+            # Convert Decimal to float for difficulty_score if needed
+            difficulty_score = word_data.get("difficulty_score", 0.5)
+            if isinstance(difficulty_score, Decimal):
+                difficulty_score = float(difficulty_score)
+
             word = RecommendedWord(
                 word=word_data["word"],
                 definition=word_data["definition"],
                 grade_level=word_data["grade_level"],
-                difficulty_score=word_data.get("difficulty_score", 0.5),
+                difficulty_score=difficulty_score,
                 rationale=word_data.get("rationale", ""),
                 example_sentences=word_data.get("example_sentences", []),
             )
