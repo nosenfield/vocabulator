@@ -50,7 +50,7 @@ class TestOpenAIClientInitialization:
     def test_init_with_api_key(self):
         """Test initialization with explicit API key."""
         client = OpenAIClient(api_key="sk-test-dummy-key-not-real")
-        assert client.api_key == "test-key"
+        assert client.api_key == "sk-test-dummy-key-not-real"
         assert client.max_retries == 3
         assert client.timeout == 30
 
