@@ -22,7 +22,8 @@
 ### Current Phase
 **Phase 4: API Layer** - IN PROGRESS (2025-11-11)
 - ✅ Task 4.1 - FastAPI Application Setup (COMPLETE)
-- [ ] Task 4.2 - Request/Response Models (NEXT)
+- ✅ Task 4.2 - Request/Response Models (COMPLETE)
+- [ ] Task 4.3 - Upload Endpoints (NEXT)
 
 ### Active Decisions
 - **Tech Stack Finalized**: Python 3.11+, FastAPI, OpenAI SDK, AWS (Lambda/Batch/Fargate/DynamoDB/S3)
@@ -36,7 +37,15 @@
 ## Recent Changes
 
 ### Last 3 Significant Changes
-1. **Task 4.1 Complete** - FastAPI Application Setup (2025-11-11)
+1. **Task 4.2 Complete** - Request/Response Models (2025-11-11)
+   - Created comprehensive Pydantic request/response models for all API endpoints
+   - Request models: TranscriptUpload, WritingUpload, CreateStudent, UpdateStudent, UpdateRecommendationStatus, BatchProcess
+   - Response models: Upload responses, StudentProfile, StudentsList, Recommendations, BatchStatus, ErrorResponse
+   - Field validation with patterns, min/max lengths, and custom validators
+   - OpenAPI schema examples for all models
+   - Updated to Pydantic v2 ConfigDict pattern (reduced deprecation warnings)
+   - Comprehensive test suite (20 tests, all passing)
+2. **Task 4.1 Complete** - FastAPI Application Setup (2025-11-11)
    - Created FastAPI application with dependency injection
    - Set up dependency functions for DynamoDB, S3, repositories, pipeline, and batch client
    - Configured CORS middleware

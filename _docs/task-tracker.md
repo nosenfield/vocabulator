@@ -18,7 +18,7 @@ Simple progress tracker for the Vocabulator MVP. Reference: [task-list.md](task-
 
 ## Progress Summary
 
-**Overall:** 17/71 tasks complete (23.9%)
+**Overall:** 18/71 tasks complete (25.4%)
 
 **By Phase:**
 - Phase 0: 4/4 (100%)
@@ -80,10 +80,10 @@ Simple progress tracker for the Vocabulator MVP. Reference: [task-list.md](task-
 
 ## Phase 4: API Layer
 
-**Progress:** 1/6 (17%)
+**Progress:** 2/6 (33%)
 
 - [x] 4.1 - FastAPI Application Setup
-- [ ] 4.2 - Request/Response Models
+- [x] 4.2 - Request/Response Models
 - [ ] 4.3 - Upload Endpoints
 - [ ] 4.4 - Student Profile Endpoints
 - [ ] 4.5 - Recommendation Endpoints
