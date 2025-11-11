@@ -51,10 +51,51 @@ Resources:
         - Key: Project
           Value: Vocabulator
 
+  VocabularyRecommendationsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub '${TablePrefix}-${Environment}-VocabularyRecommendations'
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: student_id
+          AttributeType: S
+        - AttributeName: recommendation_date
+          AttributeType: S
+        - AttributeName: status
+          AttributeType: S
+      KeySchema:
+        - AttributeName: student_id
+          KeyType: HASH
+        - AttributeName: recommendation_date
+          KeyType: RANGE
+      GlobalSecondaryIndexes:
+        - IndexName: status-recommendation_date-index
+          KeySchema:
+            - AttributeName: status
+              KeyType: HASH
+            - AttributeName: recommendation_date
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+      TimeToLiveSpecification:
+        AttributeName: expires_at
+        Enabled: true
+      Tags:
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Project
+          Value: Vocabulator
+
 Outputs:
   StudentProfilesTableName:
     Description: Name of the StudentProfiles table
     Value: !Ref StudentProfilesTable
     Export:
       Name: !Sub '${AWS::StackName}-StudentProfiles-TableName'
+  
+  VocabularyRecommendationsTableName:
+    Description: Name of the VocabularyRecommendations table
+    Value: !Ref VocabularyRecommendationsTable
+    Export:
+      Name: !Sub '${AWS::StackName}-VocabularyRecommendations-TableName'
 

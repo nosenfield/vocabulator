@@ -5,10 +5,18 @@ from src.data.models.student_profile import (
     VocabularyEntry,
     ProficiencyScore,
 )
+from src.data.models.recommendation import (
+    VocabularyRecommendation,
+    RecommendedWord,
+    RecommendationStatus,
+)
 
 __all__ = [
     "StudentProfile",
     "VocabularyEntry",
     "ProficiencyScore",
+    "VocabularyRecommendation",
+    "RecommendedWord",
+    "RecommendationStatus",
 ]
 
