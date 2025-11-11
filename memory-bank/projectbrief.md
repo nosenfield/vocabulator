@@ -1,57 +1,83 @@
 # Project Brief: vocabulator
 
 **Version**: 1.0
-**Last Updated**: [DATE]
+**Last Updated**: 2025-11-10
 
 ## Project Overview
 
 ### What We're Building
-[One paragraph description]
+Vocabulator is an AI-powered personalized vocabulary recommendation engine for middle school students (grades 6-8). The system analyzes student conversation transcripts and writing samples to identify vocabulary gaps and generate personalized word recommendations aligned with Common Core standards.
 
 ### Core Problem
-[What problem does this solve?]
+Middle school educators struggle with manually identifying vocabulary gaps in students' language use. This process is time-consuming and often fails to provide personalized recommendations that align with each student's current proficiency level. The lack of tailored vocabulary development opportunities may hinder students' language acquisition and overall academic performance.
 
 ### Target Users
-[Who will use this?]
+- **Primary**: Middle school educators (grades 6-8)
+- **Secondary**: School administrators and curriculum coordinators
 
 ### Success Criteria
-[How do we know we succeeded?]
+- Increase in the rate of novel words properly used by students over time
+- Reduction in teacher time spent on manual vocabulary gap analysis
+- Positive feedback from educators regarding the usefulness of vocabulary recommendations
+- System processes 500+ students efficiently
+- Cost-effective operation ($51/month target for 500 students)
 
 ---
 
 ## MVP Scope
 
 ### Must Have
-- [ ] Feature 1
-- [ ] Feature 2
-- [ ] Feature 3
+- Upload and process student transcripts and writing samples
+- Extract vocabulary from text using AI
+- Identify vocabulary gaps vs Common Core standards
+- Generate personalized word recommendations (10-15 words per student)
+- Store student profiles and recommendations in DynamoDB
+- Generate HTML reports for teachers
+- Batch processing for full-day transcripts
+- Anonymous student IDs (COPPA-compliant)
 
 ### Explicitly Out of Scope
-- Feature X
-- Feature Y
-- Feature Z
+- Real-time processing (batch processing only for MVP)
+- Student-facing interface (teacher-only for MVP)
+- Mobile app (web-based reports only)
+- Advanced analytics and dashboards (basic reports only)
+- Multi-language support (English only for MVP)
+- Integration with LMS systems (manual upload for MVP)
 
 ---
 
 ## Technical Constraints
 
 ### Performance Targets
-- [Metric 1]: [Target]
-- [Metric 2]: [Target]
+- API response time: < 200ms (p95) for simple queries
+- Batch processing: Process 50 students in < 5 minutes
+- DynamoDB queries: < 100ms (p95)
+- S3 upload/download: < 2s for typical files (< 1MB)
 
 ### Platform Requirements
-- [Platform 1]
-- [Platform 2]
+- AWS (Lambda, DynamoDB, S3, Batch, Fargate)
+- Python 3.11+
+- OpenAI API (GPT-4o-mini, GPT-4o)
+- LocalStack for local development
 
 ### Dependencies
-- [External system 1]
-- [External system 2]
+- OpenAI API (for vocabulary extraction and analysis)
+- AWS services (Lambda, DynamoDB, S3, Batch, Fargate)
+- Common Core vocabulary corpus (grades 6-8)
 
 ---
 
 ## Project Timeline
 
-- **MVP Target**: [Date]
+- **MVP Target**: 6-8 weeks (1 developer, 200-260 hours)
 - **Key Milestones**:
-  - [Milestone 1]: [Date]
-  - [Milestone 2]: [Date]
+  - Phase 0: Project Setup & Foundation - ✅ COMPLETE (2025-11-10)
+  - Phase 1: Data Layer & Storage - ✅ COMPLETE (2025-11-10)
+  - Phase 2: AI/ML Layer - In Progress
+  - Phase 3: Processing Layer - Planned
+  - Phase 4: API Layer - Planned
+  - Phase 5: Frontend Layer - Planned
+  - Phase 6: Infrastructure & Deployment - Planned
+  - Phase 7: Testing & Quality Assurance - Planned
+  - Phase 8: Documentation & Polish - Planned
+  - Phase 9: MVP Launch Preparation - Planned
