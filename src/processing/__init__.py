@@ -10,6 +10,7 @@ from src.processing.text_analyzer import (
     hash_text,
     normalize_word,
 )
+from src.processing.text_processing_pipeline import TextProcessingPipeline
 
 __all__ = [
     "chunk_text",
@@ -21,5 +22,6 @@ __all__ = [
     "GapIdentifier",
     "GapWord",
     "Recommender",
+    "TextProcessingPipeline",
 ]
 
