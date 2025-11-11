@@ -1,0 +1,418 @@
+[
+  {
+    "word": "analyze",
+    "grade_level": 6,
+    "definition": "examine in detail to understand",
+    "subject_areas": [
+      "math",
+      "science",
+      "ela"
+    ],
+    "complexity_tier": 2,
+    "word_family": [
+      "analysis",
+      "analytical",
+      "analyzer"
+    ]
+  },
+  {
+    "word": "evaluate",
+    "grade_level": 6,
+    "definition": "assess the value or quality of something",
+    "subject_areas": [
+      "math",
+      "ela"
+    ],
+    "complexity_tier": 2,
+    "word_family": [
+      "evaluation",
+      "evaluative"
+    ]
+  },
+  {
+    "word": "compare",
+    "grade_level": 6,
+    "definition": "examine similarities and differences",
+    "subject_areas": [
+      "math",
+      "science",
+      "ela"
+    ],
+    "complexity_tier": 1,
+    "word_family": [
+      "comparison",
+      "comparable"
+    ]
+  },
+  {
+    "word": "contrast",
+    "grade_level": 6,
+    "definition": "show differences between things",
+    "subject_areas": [
+      "ela"
+    ],
+    "complexity_tier": 1,
+    "word_family": [
+      "contrasting"
+    ]
+  },
+  {
+    "word": "examine",
+    "grade_level": 6,
+    "definition": "inspect closely",
+    "subject_areas": [
+      "science",
+      "ela"
+    ],
+    "complexity_tier": 1,
+    "word_family": [
+      "examination",
+      "examiner"
+    ]
+  },
+  {
+    "word": "summarize",
+    "grade_level": 6,
+    "definition": "give a brief statement of main points",
+    "subject_areas": [
+      "ela"
+    ],
+    "complexity_tier": 1,
+    "word_family": [
+      "summary",
+      "summarization"
+    ]
+  },
+  {
+    "word": "explain",
+    "grade_level": 6,
+    "definition": "make clear or understandable",
+    "subject_areas": [
+      "math",
+      "science",
+      "ela"
+    ],
+    "complexity_tier": 1,
+    "word_family": [
+      "explanation",
+      "explanatory"
+    ]
+  },
+  {
+    "word": "describe",
+    "grade_level": 6,
+    "definition": "give a detailed account",
+    "subject_areas": [
+      "ela",
+      "science"
+    ],
+    "complexity_tier": 1,
+    "word_family": [
+      "description",
+      "descriptive"
+    ]
+  },
+  {
+    "word": "demonstrate",
+    "grade_level": 6,
+    "definition": "show or prove by reasoning or evidence",
+    "subject_areas": [
+      "math",
+      "science"
+    ],
+    "complexity_tier": 2,
+    "word_family": [
+      "demonstration",
+      "demonstrative"
+    ]
+  },
+  {
+    "word": "illustrate",
+    "grade_level": 6,
+    "definition": "explain or make clear with examples",
+    "subject_areas": [
+      "ela",
+      "math"
+    ],
+    "complexity_tier": 2,
+    "word_family": [
+      "illustration",
+      "illustrative"
+    ]
+  },
+  {
+    "word": "infer",
+    "grade_level": 6,
+    "definition": "deduce or conclude from evidence",
+    "subject_areas": [
+      "ela",
+      "science"
+    ],
+    "complexity_tier": 2,
+    "word_family": [
+      "inference",
+      "inferential"
+    ]
+  },
+  {
+    "word": "conclude",
+    "grade_level": 6,
+    "definition": "arrive at a judgment or decision",
+    "subject_areas": [
+      "ela",
+      "math"
+    ],
+    "complexity_tier": 1,
+    "word_family": [
+      "conclusion",
+      "conclusive"
+    ]
+  },
+  {
+    "word": "reason",
+    "grade_level": 6,
+    "definition": "think logically about something",
+    "subject_areas": [
+      "math",
+      "ela"
+    ],
+    "complexity_tier": 1,
+    "word_family": [
+      "reasoning",
+      "reasonable"
+    ]
+  },
+  {
+    "word": "justify",
+    "grade_level": 6,
+    "definition": "show or prove to be right or reasonable",
+    "subject_areas": [
+      "math",
+      "ela"
+    ],
+    "complexity_tier": 2,
+    "word_family": [
+      "justification",
+      "justifiable"
+    ]
+  },
+  {
+    "word": "support",
+    "grade_level": 6,
+    "definition": "provide evidence or backing for",
+    "subject_areas": [
+      "ela",
+      "science"
+    ],
+    "complexity_tier": 1,
+    "word_family": [
+      "supportive",
+      "supporter"
+    ]
+  },
+  {
+    "word": "evidence",
+    "grade_level": 6,
+    "definition": "facts or information indicating whether something is true",
+    "subject_areas": [
+      "science",
+      "ela"
+    ],
+    "complexity_tier": 1,
+    "word_family": [
+      "evident",
+      "evidently"
+    ]
+  },
+  {
+    "word": "fact",
+    "grade_level": 6,
+    "definition": "a thing that is known to be true",
+    "subject_areas": [
+      "science",
+      "ela"
+    ],
+    "complexity_tier": 1,
+    "word_family": [
+      "factual",
+      "factually"
+    ]
+  },
+  {
+    "word": "opinion",
+    "grade_level": 6,
+    "definition": "a view or judgment formed about something",
+    "subject_areas": [
+      "ela"
+    ],
+    "complexity_tier": 1,
+    "word_family": [
+      "opinionated"
+    ]
+  },
+  {
+    "word": "claim",
+    "grade_level": 6,
+    "definition": "state or assert that something is the case",
+    "subject_areas": [
+      "ela",
+      "science"
+    ],
+    "complexity_tier": 1,
+    "word_family": [
+      "claimant"
+    ]
+  },
+  {
+    "word": "argument",
+    "grade_level": 6,
+    "definition": "a reason or set of reasons given in support of an idea",
+    "subject_areas": [
+      "ela",
+      "math"
+    ],
+    "complexity_tier": 2,
+    "word_family": [
+      "argue",
+      "argumentative"
+    ]
+  },
+  {
+    "word": "calculate",
+    "grade_level": 6,
+    "definition": "determine mathematically",
+    "subject_areas": [
+      "math"
+    ],
+    "complexity_tier": 1,
+    "word_family": [
+      "calculation",
+      "calculator"
+    ]
+  },
+  {
+    "word": "measure",
+    "grade_level": 6,
+    "definition": "determine the size or amount of something",
+    "subject_areas": [
+      "math",
+      "science"
+    ],
+    "complexity_tier": 1,
+    "word_family": [
+      "measurement",
+      "measurable"
+    ]
+  },
+  {
+    "word": "observe",
+    "grade_level": 6,
+    "definition": "notice or perceive something",
+    "subject_areas": [
+      "science"
+    ],
+    "complexity_tier": 1,
+    "word_family": [
+      "observation",
+      "observable"
+    ]
+  },
+  {
+    "word": "predict",
+    "grade_level": 6,
+    "definition": "say or estimate that something will happen",
+    "subject_areas": [
+      "science",
+      "math"
+    ],
+    "complexity_tier": 1,
+    "word_family": [
+      "prediction",
+      "predictable"
+    ]
+  },
+  {
+    "word": "classify",
+    "grade_level": 6,
+    "definition": "arrange in categories",
+    "subject_areas": [
+      "science",
+      "math"
+    ],
+    "complexity_tier": 2,
+    "word_family": [
+      "classification",
+      "classifiable"
+    ]
+  },
+  {
+    "word": "organize",
+    "grade_level": 6,
+    "definition": "arrange systematically",
+    "subject_areas": [
+      "ela",
+      "science"
+    ],
+    "complexity_tier": 1,
+    "word_family": [
+      "organization",
+      "organizational"
+    ]
+  },
+  {
+    "word": "interpret",
+    "grade_level": 6,
+    "definition": "explain the meaning of",
+    "subject_areas": [
+      "ela",
+      "math"
+    ],
+    "complexity_tier": 2,
+    "word_family": [
+      "interpretation",
+      "interpreter"
+    ]
+  },
+  {
+    "word": "represent",
+    "grade_level": 6,
+    "definition": "stand for or symbolize",
+    "subject_areas": [
+      "math",
+      "ela"
+    ],
+    "complexity_tier": 2,
+    "word_family": [
+      "representation",
+      "representative"
+    ]
+  },
+  {
+    "word": "identify",
+    "grade_level": 6,
+    "definition": "recognize or establish as being a particular person or thing",
+    "subject_areas": [
+      "science",
+      "ela"
+    ],
+    "complexity_tier": 1,
+    "word_family": [
+      "identification",
+      "identifiable"
+    ]
+  },
+  {
+    "word": "define",
+    "grade_level": 6,
+    "definition": "state or describe the nature or scope of",
+    "subject_areas": [
+      "ela",
+      "math"
+    ],
+    "complexity_tier": 1,
+    "word_family": [
+      "definition",
+      "definable"
+    ]
+  }
+]

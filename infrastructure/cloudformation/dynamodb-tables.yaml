@@ -86,6 +86,27 @@ Resources:
         - Key: Project
           Value: Vocabulator
 
+  CommonCoreVocabularyTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub '${TablePrefix}-${Environment}-CommonCoreVocabulary'
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: grade_level
+          AttributeType: N
+        - AttributeName: word
+          AttributeType: S
+      KeySchema:
+        - AttributeName: grade_level
+          KeyType: HASH
+        - AttributeName: word
+          KeyType: RANGE
+      Tags:
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Project
+          Value: Vocabulator
+
 Outputs:
   StudentProfilesTableName:
     Description: Name of the StudentProfiles table
@@ -98,4 +119,10 @@ Outputs:
     Value: !Ref VocabularyRecommendationsTable
     Export:
       Name: !Sub '${AWS::StackName}-VocabularyRecommendations-TableName'
+  
+  CommonCoreVocabularyTableName:
+    Description: Name of the CommonCoreVocabulary table
+    Value: !Ref CommonCoreVocabularyTable
+    Export:
+      Name: !Sub '${AWS::StackName}-CommonCoreVocabulary-TableName'
 
