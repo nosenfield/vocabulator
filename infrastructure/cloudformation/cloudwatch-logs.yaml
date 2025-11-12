@@ -44,7 +44,7 @@ Resources:
     Condition: HasSnsTopic
     Properties:
       AlarmName: !Sub 'vocabulator-${Environment}-lambda-error-rate'
-      AlarmDescription: 'Alarm when Lambda error rate exceeds 5%'
+      AlarmDescription: 'Alarm when Lambda errors exceed 5 in 5-minute period (indicates >5% error rate at typical load)'
       MetricName: Errors
       Namespace: AWS/Lambda
       Statistic: Sum
@@ -69,7 +69,7 @@ Resources:
     Condition: HasSnsTopic
     Properties:
       AlarmName: !Sub 'vocabulator-${Environment}-batch-failure-rate'
-      AlarmDescription: 'Alarm when Batch job failure rate exceeds 10%'
+      AlarmDescription: 'Alarm when Batch job failures exceed 10 in 5-minute period (indicates >10% failure rate at typical load)'
       MetricName: FailedJobs
       Namespace: AWS/Batch
       Statistic: Sum
@@ -105,6 +105,81 @@ Resources:
       Dimensions:
         - Name: Currency
           Value: USD
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - !Ref SnsTopicArn
+      Tags:
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Project
+          Value: Vocabulator
+
+  LambdaThrottleAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Condition: HasSnsTopic
+    Properties:
+      AlarmName: !Sub 'vocabulator-${Environment}-lambda-throttles'
+      AlarmDescription: 'Alarm when Lambda throttles occur'
+      MetricName: Throttles
+      Namespace: AWS/Lambda
+      Statistic: Sum
+      Period: 300
+      EvaluationPeriods: 1
+      Threshold: 1
+      ComparisonOperator: GreaterThanThreshold
+      Dimensions:
+        - Name: FunctionName
+          Value: !Sub 'vocabulator-${Environment}-api'
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - !Ref SnsTopicArn
+      Tags:
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Project
+          Value: Vocabulator
+
+  LambdaDurationAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Condition: HasSnsTopic
+    Properties:
+      AlarmName: !Sub 'vocabulator-${Environment}-lambda-duration'
+      AlarmDescription: 'Alarm when Lambda duration exceeds 25 seconds (80% of 30s timeout)'
+      MetricName: Duration
+      Namespace: AWS/Lambda
+      Statistic: Average
+      Period: 300
+      EvaluationPeriods: 2
+      Threshold: 25000
+      ComparisonOperator: GreaterThanThreshold
+      Dimensions:
+        - Name: FunctionName
+          Value: !Sub 'vocabulator-${Environment}-api'
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - !Ref SnsTopicArn
+      Tags:
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Project
+          Value: Vocabulator
+
+  DynamoDBThrottleAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Condition: HasSnsTopic
+    Properties:
+      AlarmName: !Sub 'vocabulator-${Environment}-dynamodb-throttles'
+      AlarmDescription: 'Alarm when DynamoDB throttling events occur (monitors all Vocabulator tables)'
+      MetricName: UserErrors
+      Namespace: AWS/DynamoDB
+      Statistic: Sum
+      Period: 300
+      EvaluationPeriods: 1
+      Threshold: 1
+      ComparisonOperator: GreaterThanThreshold
+      # No dimensions = monitors all DynamoDB tables in account
+      # In production, consider creating per-table alarms for better granularity
+      # Filter by table name in CloudWatch console if needed
       TreatMissingData: notBreaching
       AlarmActions:
         - !Ref SnsTopicArn

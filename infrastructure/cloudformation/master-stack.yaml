@@ -40,7 +40,12 @@ Parameters:
   
   SnsTopicArn:
     Type: String
-    Description: ARN of the SNS topic for alarm notifications (optional)
+    Description: ARN of the SNS topic for alarm notifications (optional, will create if EmailAddress provided)
+    Default: ''
+  
+  EmailAddress:
+    Type: String
+    Description: Email address for alarm notifications (optional, creates SNS topic if provided)
     Default: ''
 
 Resources:
@@ -48,7 +53,7 @@ Resources:
   DynamoDBStack:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: !Sub 'https://s3.amazonaws.com/${TemplatesBucket}/dynamodb-tables.yaml'
+      TemplateURL: !Sub 'https://s3.${AWS::Region}.amazonaws.com/${TemplatesBucket}/dynamodb-tables.yaml'
       Parameters:
         Environment: !Ref Environment
         TablePrefix: vocabulator
@@ -62,7 +67,7 @@ Resources:
   S3Stack:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: !Sub 'https://s3.amazonaws.com/${TemplatesBucket}/s3-buckets.yaml'
+      TemplateURL: !Sub 'https://s3.${AWS::Region}.amazonaws.com/${TemplatesBucket}/s3-buckets.yaml'
       Parameters:
         Environment: !Ref Environment
         BucketPrefix: vocabulator
@@ -72,21 +77,53 @@ Resources:
         - Key: Project
           Value: Vocabulator
 
-  # Stack 3: CloudWatch Logs
-  CloudWatchStack:
+  # Stack 3: SNS Topics (if email provided)
+  SNSStack:
     Type: AWS::CloudFormation::Stack
+    Condition: HasEmailAddress
     Properties:
-      TemplateURL: !Sub 'https://s3.amazonaws.com/${TemplatesBucket}/cloudwatch-logs.yaml'
+      TemplateURL: !Sub 'https://s3.${AWS::Region}.amazonaws.com/${TemplatesBucket}/sns-topics.yaml'
       Parameters:
         Environment: !Ref Environment
-        SnsTopicArn: !Ref SnsTopicArn
+        EmailAddress: !Ref EmailAddress
       Tags:
         - Key: Environment
           Value: !Ref Environment
         - Key: Project
           Value: Vocabulator
 
-  # Stack 4: IAM Roles (depends on DynamoDB, S3, CloudWatch, and optionally Batch)
+  # Stack 4: CloudWatch Logs
+  CloudWatchStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub 'https://s3.${AWS::Region}.amazonaws.com/${TemplatesBucket}/cloudwatch-logs.yaml'
+      Parameters:
+        Environment: !Ref Environment
+        SnsTopicArn: !If [HasEmailAddress, !GetAtt SNSStack.Outputs.AlarmTopicArn, !Ref SnsTopicArn]
+      Tags:
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Project
+          Value: Vocabulator
+
+  # Stack 5: CloudWatch Dashboard
+  DashboardStack:
+    Type: AWS::CloudFormation::Stack
+    DependsOn:
+      - ApiStack
+    Properties:
+      TemplateURL: !Sub 'https://s3.${AWS::Region}.amazonaws.com/${TemplatesBucket}/cloudwatch-dashboard.yaml'
+      Parameters:
+        Environment: !Ref Environment
+        LambdaFunctionName: !GetAtt ApiStack.Outputs.ApiLambdaFunctionName
+        BatchJobQueueName: !If [HasEcrImage, !GetAtt BatchStack.Outputs.BatchJobQueueName, '']
+      Tags:
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Project
+          Value: Vocabulator
+
+  # Stack 6: IAM Roles (depends on DynamoDB, S3, CloudWatch, and optionally Batch)
   IAMStack:
     Type: AWS::CloudFormation::Stack
     DependsOn:
@@ -94,7 +131,7 @@ Resources:
       - S3Stack
       - CloudWatchStack
     Properties:
-      TemplateURL: !Sub 'https://s3.amazonaws.com/${TemplatesBucket}/iam-roles.yaml'
+      TemplateURL: !Sub 'https://s3.${AWS::Region}.amazonaws.com/${TemplatesBucket}/iam-roles.yaml'
       Parameters:
         Environment: !Ref Environment
         DataBucketArn: !GetAtt S3Stack.Outputs.DataBucketArn
@@ -110,7 +147,7 @@ Resources:
         - Key: Project
           Value: Vocabulator
 
-  # Stack 5: Batch Resources (depends on IAM and CloudWatch)
+  # Stack 7: Batch Resources (depends on IAM and CloudWatch)
   BatchStack:
     Type: AWS::CloudFormation::Stack
     Condition: HasEcrImage
@@ -118,7 +155,7 @@ Resources:
       - IAMStack
       - CloudWatchStack
     Properties:
-      TemplateURL: !Sub 'https://s3.amazonaws.com/${TemplatesBucket}/batch-resources.yaml'
+      TemplateURL: !Sub 'https://s3.${AWS::Region}.amazonaws.com/${TemplatesBucket}/batch-resources.yaml'
       Parameters:
         Environment: !Ref Environment
         EcrImageUri: !Ref EcrImageUri
@@ -133,7 +170,7 @@ Resources:
         - Key: Project
           Value: Vocabulator
 
-  # Stack 6: API Gateway + Lambda (depends on all previous stacks)
+  # Stack 8: API Gateway + Lambda (depends on all previous stacks)
   ApiStack:
     Type: AWS::CloudFormation::Stack
     DependsOn:
@@ -142,7 +179,7 @@ Resources:
       - IAMStack
       - CloudWatchStack
     Properties:
-      TemplateURL: !Sub 'https://s3.amazonaws.com/${TemplatesBucket}/api-gateway-lambda.yaml'
+      TemplateURL: !Sub 'https://s3.${AWS::Region}.amazonaws.com/${TemplatesBucket}/api-gateway-lambda.yaml'
       Parameters:
         Environment: !Ref Environment
         LambdaCodeS3Bucket: !Ref LambdaCodeS3Bucket
@@ -164,6 +201,7 @@ Resources:
 
 Conditions:
   HasEcrImage: !Not [!Equals [!Ref EcrImageUri, '']]
+  HasEmailAddress: !Not [!Equals [!Ref EmailAddress, '']]
 
 Outputs:
   ApiGatewayUrl:
@@ -192,6 +230,5 @@ Outputs:
   
   BatchJobQueueName:
     Description: Name of the AWS Batch job queue
-    Value: !GetAtt BatchStack.Outputs.BatchJobQueueName
-    Condition: HasEcrImage
+    Value: !If [HasEcrImage, !GetAtt BatchStack.Outputs.BatchJobQueueName, '']
 
