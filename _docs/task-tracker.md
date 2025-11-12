@@ -18,7 +18,7 @@ Simple progress tracker for the Vocabulator MVP. Reference: [task-list.md](task-
 
 ## Progress Summary
 
-**Overall:** 40/71 tasks complete (56.3%)
+**Overall:** 41/71 tasks complete (57.7%)
 
 **By Phase:**
 - Phase 0: 4/4 (100%)
@@ -124,11 +124,11 @@ Simple progress tracker for the Vocabulator MVP. Reference: [task-list.md](task-
 
 ## Phase 8: Documentation & Polish
 
-**Progress:** 2/4 (50%)
+**Progress:** 3/4 (75%)
 
 - [x] 8.1 - API Documentation (P0)
 - [x] 8.2 - Developer Onboarding Guide (P0)
-- [ ] 8.3 - User Documentation (Teachers) (P1)
+- [x] 8.3 - User Documentation (Teachers) (P1)
 - [ ] 8.4 - README & Project Overview (P1)
 
 ---
@@ -147,8 +147,8 @@ Simple progress tracker for the Vocabulator MVP. Reference: [task-list.md](task-
 ## Completion Log
 
 ### 2025-11-12
-- Completed: 8.1, 8.2
-- Phase 8 progress: 2/4 (50%)
+- Completed: 8.1, 8.2, 8.3
+- Phase 8 progress: 3/4 (75%)
 
 ### 2025-11-12
 - Completed: 7.1, 7.2, 7.3
