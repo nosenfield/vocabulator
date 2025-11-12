@@ -326,17 +326,23 @@
 - [x] Phase 5 Complete - All Frontend Layer tasks done (5.1-5.2) (2025-11-12)
   - [x] Task 5.1 - HTML Report Templates (2025-11-12)
   - [x] Task 5.2 - Report Generation Service (2025-11-12)
+- [x] Phase 6 Complete - All Infrastructure & Deployment tasks done (6.1-6.5) (2025-01-11)
+  - [x] Task 6.1 - CloudFormation Templates (2025-01-11)
+  - [x] Task 6.2 - Lambda Deployment Package (2025-01-11)
+  - [x] Task 6.3 - CI/CD Pipeline (2025-01-11)
+  - [x] Task 6.4 - Monitoring & Alerting Setup (2025-01-11)
+  - [x] Task 6.5 - Deployment Scripts & Documentation (2025-01-11)
 
 ### Priority 2 (This Week)
-- [ ] Begin Phase 6: Infrastructure & Deployment
-  - CloudFormation templates for AWS resources
-  - Lambda deployment package
-  - CI/CD pipeline setup
+- [ ] Begin Phase 7: Testing & Quality Assurance
+  - Integration test suite
+  - End-to-end workflow tests
+  - Performance testing
 
 ### Priority 3 (This Month)
-- [ ] Complete Phase 6: Infrastructure & Deployment
-- [ ] Begin Phase 7: Testing & Quality Assurance
-- [ ] Build end-to-end workflow (Upload → Extract → Analyze → Recommend → Report)
+- [ ] Complete Phase 7: Testing & Quality Assurance
+- [ ] Begin Phase 8: Documentation & User Guides
+- [ ] Prepare for MVP launch (Phase 9)
 
 ---
 
@@ -358,8 +364,10 @@
 - None yet - clean slate for MVP
 
 ### Medium Priority
-- Consider AWS SAM vs raw CloudFormation (can decide during Phase 6)
+- Consider AWS SAM vs raw CloudFormation (decided: raw CloudFormation for MVP)
 - Evaluate caching strategy (Redis vs in-memory) when performance tested
+- Add Batch metrics to CloudWatch dashboard (currently optional component)
+- Create per-table DynamoDB alarms for production (currently monitors all tables)
 
 ---
 
