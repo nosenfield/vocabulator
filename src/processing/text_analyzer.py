@@ -191,7 +191,7 @@ def hash_text(text: str) -> str:
     Returns:
         MD5 hash of text
     """
-    return hashlib.md5(text.encode("utf-8")).hexdigest()
+    return hashlib.md5(text.encode("utf-8"), usedforsecurity=False).hexdigest()
 
 
 def extract_sentences_with_word(text: str, word: str) -> List[str]:
