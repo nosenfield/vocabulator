@@ -1,0 +1,183 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'API Gateway and Lambda function for Vocabulator MVP'
+
+Parameters:
+  Environment:
+    Type: String
+    Default: development
+    AllowedValues:
+      - development
+      - staging
+      - production
+    Description: Environment name
+  
+  LambdaCodeS3Bucket:
+    Type: String
+    Description: S3 bucket containing Lambda deployment package
+  
+  LambdaCodeS3Key:
+    Type: String
+    Description: S3 key of Lambda deployment package
+  
+  LambdaExecutionRoleArn:
+    Type: String
+    Description: ARN of the Lambda execution role
+  
+  DataBucketName:
+    Type: String
+    Description: Name of the data S3 bucket
+  
+  ReportsBucketName:
+    Type: String
+    Description: Name of the reports S3 bucket
+  
+  StudentProfilesTableName:
+    Type: String
+    Description: Name of the StudentProfiles DynamoDB table
+  
+  VocabularyRecommendationsTableName:
+    Type: String
+    Description: Name of the VocabularyRecommendations DynamoDB table
+  
+  CommonCoreVocabularyTableName:
+    Type: String
+    Description: Name of the CommonCoreVocabulary DynamoDB table
+  
+  BatchJobQueueName:
+    Type: String
+    Description: Name of the AWS Batch job queue
+  
+  BatchJobDefinitionName:
+    Type: String
+    Description: Name of the AWS Batch job definition
+  
+  LogGroupName:
+    Type: String
+    Description: Name of the CloudWatch Logs group
+
+Resources:
+  ApiLambdaFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub 'vocabulator-${Environment}-api'
+      Runtime: python3.11
+      Handler: lambda_handler.lambda_handler
+      Code:
+        S3Bucket: !Ref LambdaCodeS3Bucket
+        S3Key: !Ref LambdaCodeS3Key
+      Role: !Ref LambdaExecutionRoleArn
+      Timeout: 60
+      MemorySize: 1024
+      Environment:
+        Variables:
+          ENVIRONMENT: !Ref Environment
+          AWS_REGION: !Ref AWS::Region
+          S3_BUCKET_NAME: !Ref DataBucketName
+          REPORTS_BUCKET_NAME: !Ref ReportsBucketName
+          DYNAMODB_TABLE_PREFIX: !Sub 'vocabulator-${Environment}'
+          STUDENT_PROFILES_TABLE_NAME: !Ref StudentProfilesTableName
+          VOCABULARY_RECOMMENDATIONS_TABLE_NAME: !Ref VocabularyRecommendationsTableName
+          COMMON_CORE_VOCABULARY_TABLE_NAME: !Ref CommonCoreVocabularyTableName
+          BATCH_JOB_QUEUE: !Ref BatchJobQueueName
+          BATCH_JOB_DEFINITION: !Ref BatchJobDefinitionName
+          LOG_LEVEL: INFO
+      Tags:
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Project
+          Value: Vocabulator
+
+  ApiGatewayRestApi:
+    Type: AWS::ApiGateway::RestApi
+    Properties:
+      Name: !Sub 'vocabulator-${Environment}-api'
+      Description: 'Vocabulator API Gateway'
+      EndpointConfiguration:
+        Types:
+          - REGIONAL
+      Policy:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal: '*'
+            Action: execute-api:Invoke
+            Resource: '*'
+      Tags:
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Project
+          Value: Vocabulator
+
+  ApiGatewayResourceProxy:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      RestApiId: !Ref ApiGatewayRestApi
+      ParentId: !GetAtt ApiGatewayRestApi.RootResourceId
+      PathPart: '{proxy+}'
+
+  ApiGatewayMethodAny:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      RestApiId: !Ref ApiGatewayRestApi
+      ResourceId: !Ref ApiGatewayResourceProxy
+      HttpMethod: ANY
+      AuthorizationType: NONE
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ApiLambdaFunction.Arn}/invocations'
+        PassthroughBehavior: WHEN_NO_MATCH
+      MethodResponses: []
+
+  ApiGatewayMethodRoot:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      RestApiId: !Ref ApiGatewayRestApi
+      ResourceId: !GetAtt ApiGatewayRestApi.RootResourceId
+      HttpMethod: ANY
+      AuthorizationType: NONE
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ApiLambdaFunction.Arn}/invocations'
+        PassthroughBehavior: WHEN_NO_MATCH
+      MethodResponses: []
+
+  ApiLambdaPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref ApiLambdaFunction
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub 'arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGatewayRestApi}/*/*'
+
+  ApiGatewayDeployment:
+    Type: AWS::ApiGateway::Deployment
+    DependsOn:
+      - ApiGatewayMethodAny
+      - ApiGatewayMethodRoot
+      - ApiLambdaPermission
+    Properties:
+      RestApiId: !Ref ApiGatewayRestApi
+      StageName: !Sub '${Environment}'
+      Description: !Sub 'Deployment for ${Environment} environment'
+
+Outputs:
+  ApiGatewayUrl:
+    Description: URL of the API Gateway
+    Value: !Sub 'https://${ApiGatewayRestApi}.execute-api.${AWS::Region}.amazonaws.com/${Environment}'
+    Export:
+      Name: !Sub '${AWS::StackName}-ApiGateway-Url'
+  
+  ApiLambdaFunctionArn:
+    Description: ARN of the API Lambda function
+    Value: !GetAtt ApiLambdaFunction.Arn
+    Export:
+      Name: !Sub '${AWS::StackName}-ApiLambdaFunction-Arn'
+  
+  ApiLambdaFunctionName:
+    Description: Name of the API Lambda function
+    Value: !Ref ApiLambdaFunction
+    Export:
+      Name: !Sub '${AWS::StackName}-ApiLambdaFunction-Name'
+

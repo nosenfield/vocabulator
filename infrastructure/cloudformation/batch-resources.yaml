@@ -1,0 +1,152 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'AWS Batch resources for Vocabulator MVP'
+
+Parameters:
+  Environment:
+    Type: String
+    Default: development
+    AllowedValues:
+      - development
+      - staging
+      - production
+    Description: Environment name
+  
+  EcrImageUri:
+    Type: String
+    Description: URI of the ECR container image for batch jobs
+  
+  BatchExecutionRoleArn:
+    Type: String
+    Description: ARN of the Batch execution role
+  
+  BatchTaskRoleArn:
+    Type: String
+    Description: ARN of the Batch task role
+  
+  LogGroupName:
+    Type: String
+    Description: Name of the CloudWatch Logs group for batch jobs
+  
+  SubnetIds:
+    Type: CommaDelimitedList
+    Description: List of subnet IDs for Fargate tasks (at least 2 subnets in different AZs)
+  
+  SecurityGroupId:
+    Type: String
+    Description: Security group ID for Fargate tasks
+
+Resources:
+  BatchServiceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub 'vocabulator-${Environment}-batch-service-role'
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: batch.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSBatchServiceRole
+      Tags:
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Project
+          Value: Vocabulator
+
+  BatchComputeEnvironment:
+    Type: AWS::Batch::ComputeEnvironment
+    Properties:
+      ComputeEnvironmentName: !Sub 'vocabulator-${Environment}-compute-env'
+      Type: MANAGED
+      State: ENABLED
+      ServiceRole: !GetAtt BatchServiceRole.Arn
+      ComputeResources:
+        Type: FARGATE_SPOT
+        MaxvCpus: 256
+        MinvCpus: 0
+        Subnets: !Ref SubnetIds
+        SecurityGroupIds:
+          - !Ref SecurityGroupId
+        Tags:
+          - Key: Environment
+            Value: !Ref Environment
+          - Key: Project
+            Value: Vocabulator
+
+  BatchJobQueue:
+    Type: AWS::Batch::JobQueue
+    Properties:
+      JobQueueName: !Sub 'vocabulator-${Environment}-batch-queue'
+      State: ENABLED
+      Priority: 1
+      ComputeEnvironmentOrder:
+        - Order: 1
+          ComputeEnvironment: !Ref BatchComputeEnvironment
+      Tags:
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Project
+          Value: Vocabulator
+
+  BatchJobDefinition:
+    Type: AWS::Batch::JobDefinition
+    Properties:
+      JobDefinitionName: !Sub 'vocabulator-${Environment}-batch-job-def'
+      Type: container
+      PlatformCapabilities:
+        - FARGATE
+      ContainerProperties:
+        Image: !Ref EcrImageUri
+        JobRoleArn: !Ref BatchTaskRoleArn
+        ExecutionRoleArn: !Ref BatchExecutionRoleArn
+        ResourceRequirements:
+          - Type: MEMORY
+            Value: '4096'
+          - Type: VCPU
+            Value: '2'
+        Environment:
+          - Name: ENVIRONMENT
+            Value: !Ref Environment
+          - Name: AWS_REGION
+            Value: !Ref AWS::Region
+        LogConfiguration:
+          LogDriver: awslogs
+          Options:
+            awslogs-group: !Ref LogGroupName
+            awslogs-region: !Ref AWS::Region
+            awslogs-stream-prefix: batch
+        FargatePlatformConfiguration:
+          PlatformVersion: LATEST
+      Tags:
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Project
+          Value: Vocabulator
+
+Outputs:
+  BatchJobQueueName:
+    Description: Name of the Batch job queue
+    Value: !Ref BatchJobQueue
+    Export:
+      Name: !Sub '${AWS::StackName}-BatchJobQueue-Name'
+  
+  BatchJobQueueArn:
+    Description: ARN of the Batch job queue
+    Value: !GetAtt BatchJobQueue.Arn
+    Export:
+      Name: !Sub '${AWS::StackName}-BatchJobQueue-Arn'
+  
+  BatchJobDefinitionName:
+    Description: Name of the Batch job definition
+    Value: !Ref BatchJobDefinition
+    Export:
+      Name: !Sub '${AWS::StackName}-BatchJobDefinition-Name'
+  
+  BatchJobDefinitionArn:
+    Description: ARN of the Batch job definition
+    Value: !GetAtt BatchJobDefinition.Arn
+    Export:
+      Name: !Sub '${AWS::StackName}-BatchJobDefinition-Arn'
+
