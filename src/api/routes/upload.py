@@ -10,7 +10,7 @@ from uuid import uuid4
 
 from fastapi import APIRouter, Depends, HTTPException, status
 
-from src.api.main import (
+from src.api.dependencies import (
     get_s3_client,
     get_student_repository,
     get_text_processing_pipeline,
@@ -19,6 +19,16 @@ from src.api.models.requests import TranscriptUploadRequest, WritingUploadReques
 from src.api.models.responses import (
     TranscriptUploadResponse,
     WritingUploadResponse,
+)
+from src.api.utils.errors import (
+    create_error_response,
+    create_internal_error_response,
+    create_not_found_error_response,
+)
+from src.api.utils.s3_paths import (
+    build_s3_path,
+    format_date_for_path,
+    format_datetime_for_path,
 )
 from src.data.repositories.student_repository import StudentRepository
 from src.data.s3_client import S3Client, S3Error
@@ -47,10 +57,11 @@ async def upload_transcript(
     
     This endpoint:
     1. Validates the request
-    2. Stores the raw transcript in S3
-    3. Processes the transcript through the vocabulary extraction pipeline
-    4. Updates the student profile with extracted vocabulary
-    5. Generates vocabulary recommendations
+    2. Verifies student profile exists (returns 404 if not found)
+    3. Stores the raw transcript in S3
+    4. Processes the transcript through the vocabulary extraction pipeline
+    5. Updates the student profile with extracted vocabulary
+    6. Generates vocabulary recommendations
     
     Args:
         request: Transcript upload request with student_id, text, session_date, grade_level
@@ -77,8 +88,30 @@ async def upload_transcript(
             },
         )
         
-        # Step 1: Store raw transcript in S3
-        s3_key = f"transcripts/raw/{request.student_id}/{request.session_date.isoformat()}.txt"
+        # Step 1: Verify student profile exists before proceeding
+        profile = student_repo.get(request.student_id)
+        if not profile:
+            logger.warning(
+                f"Student profile not found for transcript upload: {request.student_id}",
+                extra={"request_id": request_id},
+            )
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=create_not_found_error_response(
+                    resource_type="student",
+                    resource_id=request.student_id,
+                    request_id=request_id,
+                ),
+            )
+        
+        # Step 2: Store raw transcript in S3
+        s3_key = build_s3_path(
+            "transcripts",
+            "raw",
+            request.student_id,
+            format_date_for_path(request.session_date),
+            extension="txt",
+        )
         try:
             s3_client.upload(
                 key=s3_key,
@@ -98,14 +131,15 @@ async def upload_transcript(
             )
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail={
-                    "error": "s3_upload_failed",
-                    "message": "Failed to store transcript in S3",
-                    "request_id": request_id,
-                },
+                detail=create_error_response(
+                    error_code="s3_upload_failed",
+                    message="Failed to store transcript in S3",
+                    request_id=request_id,
+                    s3_key=s3_key,
+                ),
             ) from e
         
-        # Step 2: Process transcript through pipeline
+        # Step 3: Process transcript through pipeline
         try:
             recommendation = await pipeline.process_text(
                 text=request.text,
@@ -114,8 +148,8 @@ async def upload_transcript(
                 request_id=request_id,
             )
             
-            # Get updated profile to calculate words_extracted
-            profile = await student_repo.get(request.student_id)
+            # Get updated profile to calculate words_extracted (sync method)
+            profile = student_repo.get(request.student_id)
             words_extracted = len(profile.vocabulary_list) if profile else 0
             
             logger.info(
@@ -127,7 +161,7 @@ async def upload_transcript(
                 },
             )
             
-            # Step 3: Generate profile URL
+            # Step 4: Generate profile URL
             profile_url = f"/api/v1/students/{request.student_id}/profile"
             
             return TranscriptUploadResponse(
@@ -144,11 +178,12 @@ async def upload_transcript(
             )
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail={
-                    "error": "validation_error",
-                    "message": str(e),
-                    "request_id": request_id,
-                },
+                detail=create_error_response(
+                    error_code="validation_error",
+                    message=str(e),
+                    request_id=request_id,
+                    student_id=request.student_id,
+                ),
             ) from e
         except Exception as e:
             logger.error(
@@ -158,11 +193,12 @@ async def upload_transcript(
             )
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail={
-                    "error": "processing_error",
-                    "message": "Failed to process transcript",
-                    "request_id": request_id,
-                },
+                detail=create_error_response(
+                    error_code="processing_error",
+                    message="Failed to process transcript",
+                    request_id=request_id,
+                    student_id=request.student_id,
+                ),
             ) from e
             
     except HTTPException:
@@ -175,11 +211,10 @@ async def upload_transcript(
         )
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail={
-                "error": "internal_error",
-                "message": "An unexpected error occurred",
-                "request_id": request_id,
-            },
+            detail=create_internal_error_response(
+                message="An unexpected error occurred",
+                request_id=request_id,
+            ),
         ) from e
 
 
@@ -200,10 +235,11 @@ async def upload_writing(
     
     This endpoint:
     1. Validates the request
-    2. Stores the raw writing sample in S3
-    3. Processes the writing sample through the vocabulary extraction pipeline
-    4. Updates the student profile with extracted vocabulary
-    5. Generates vocabulary recommendations
+    2. Verifies student profile exists (returns 404 if not found)
+    3. Stores the raw writing sample in S3
+    4. Processes the writing sample through the vocabulary extraction pipeline
+    5. Updates the student profile with extracted vocabulary
+    6. Generates vocabulary recommendations
     
     Args:
         request: Writing upload request with student_id, text, assignment_id (optional), grade_level
@@ -230,9 +266,31 @@ async def upload_writing(
             },
         )
         
-        # Step 1: Store raw writing sample in S3
-        assignment_id = request.assignment_id or f"writing-{datetime.now(timezone.utc).isoformat().replace(':', '-')}"
-        s3_key = f"writing-samples/raw/{request.student_id}/{assignment_id}.txt"
+        # Step 1: Verify student profile exists before proceeding
+        profile = student_repo.get(request.student_id)
+        if not profile:
+            logger.warning(
+                f"Student profile not found for writing upload: {request.student_id}",
+                extra={"request_id": request_id},
+            )
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=create_not_found_error_response(
+                    resource_type="student",
+                    resource_id=request.student_id,
+                    request_id=request_id,
+                ),
+            )
+        
+        # Step 2: Store raw writing sample in S3
+        assignment_id = request.assignment_id or f"writing-{format_datetime_for_path(datetime.now(timezone.utc), include_time=True)}"
+        s3_key = build_s3_path(
+            "writing-samples",
+            "raw",
+            request.student_id,
+            assignment_id,
+            extension="txt",
+        )
         
         try:
             s3_client.upload(
@@ -253,14 +311,15 @@ async def upload_writing(
             )
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail={
-                    "error": "s3_upload_failed",
-                    "message": "Failed to store writing sample in S3",
-                    "request_id": request_id,
-                },
+                detail=create_error_response(
+                    error_code="s3_upload_failed",
+                    message="Failed to store writing sample in S3",
+                    request_id=request_id,
+                    s3_key=s3_key,
+                ),
             ) from e
         
-        # Step 2: Process writing sample through pipeline
+        # Step 3: Process writing sample through pipeline
         try:
             recommendation = await pipeline.process_text(
                 text=request.text,
@@ -270,7 +329,7 @@ async def upload_writing(
             )
             
             # Get updated profile to calculate words_extracted
-            profile = await student_repo.get(request.student_id)
+            profile = student_repo.get(request.student_id)
             words_extracted = len(profile.vocabulary_list) if profile else 0
             
             logger.info(
@@ -296,11 +355,12 @@ async def upload_writing(
             )
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail={
-                    "error": "validation_error",
-                    "message": str(e),
-                    "request_id": request_id,
-                },
+                detail=create_error_response(
+                    error_code="validation_error",
+                    message=str(e),
+                    request_id=request_id,
+                    student_id=request.student_id,
+                ),
             ) from e
         except Exception as e:
             logger.error(
@@ -310,11 +370,12 @@ async def upload_writing(
             )
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail={
-                    "error": "processing_error",
-                    "message": "Failed to process writing sample",
-                    "request_id": request_id,
-                },
+                detail=create_error_response(
+                    error_code="processing_error",
+                    message="Failed to process writing sample",
+                    request_id=request_id,
+                    student_id=request.student_id,
+                ),
             ) from e
             
     except HTTPException:
@@ -327,9 +388,8 @@ async def upload_writing(
         )
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail={
-                "error": "internal_error",
-                "message": "An unexpected error occurred",
-                "request_id": request_id,
-            },
+            detail=create_internal_error_response(
+                message="An unexpected error occurred",
+                request_id=request_id,
+            ),
         ) from e

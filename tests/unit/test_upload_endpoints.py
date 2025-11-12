@@ -8,12 +8,12 @@ from datetime import date
 from unittest.mock import AsyncMock, Mock, patch
 from fastapi.testclient import TestClient
 
-from src.api.main import (
-    app,
+from src.api.dependencies import (
     get_s3_client,
     get_student_repository,
     get_text_processing_pipeline,
 )
+from src.api.main import app
 from src.api.models.requests import TranscriptUploadRequest, WritingUploadRequest
 from src.api.models.responses import TranscriptUploadResponse, WritingUploadResponse
 from src.data.models.recommendation import VocabularyRecommendation, RecommendationStatus
@@ -45,7 +45,7 @@ def mock_get_s3_client():
 def mock_get_student_repository():
     """Mock student repository dependency."""
     mock_repo = Mock()
-    mock_repo.get = AsyncMock(
+    mock_repo.get = Mock(  # Sync method, not async
         return_value=StudentProfile(
             student_id="STU-001",
             grade_level=7,
