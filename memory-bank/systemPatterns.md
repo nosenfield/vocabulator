@@ -57,6 +57,20 @@ src/
 │   ├── parallel_executor.py         # Async parallel processing
 │   └── batch_client.py              # AWS Batch integration
 ├── api/               # FastAPI application
+│   ├── main.py        # Application setup and route registration
+│   ├── dependencies.py # Dependency injection functions
+│   ├── routes/         # API endpoint routes
+│   │   ├── upload.py
+│   │   ├── profiles.py
+│   │   ├── recommendations.py
+│   │   └── batch.py
+│   ├── models/         # Request/response models
+│   │   ├── requests.py
+│   │   └── responses.py
+│   └── utils/         # API utilities
+│       ├── errors.py   # Standardized error responses
+│       ├── s3_paths.py # Safe S3 path construction
+│       └── validation.py # Shared validation utilities
 ├── vocabulary/        # Vocabulary corpus and utilities
 └── utils/             # Shared utilities (config, logger)
 ```
@@ -197,7 +211,67 @@ class ParallelExecutor:
 - Progress tracking support
 - Request ID propagation for correlation
 
-### Pattern 6: Conditional Credential Handling
+### Pattern 6: FastAPI Dependency Injection
+**When to use**: Shared resources and logic across endpoints
+**Implementation**: FastAPI Depends with generator functions
+**Example**:
+```python
+from fastapi import Depends
+from typing import Annotated
+
+def get_student_repository() -> Generator[StudentRepository, None, None]:
+    """Dependency injection for StudentRepository."""
+    repo = StudentRepository(table_name=get_config().get_dynamodb_table_name("StudentProfiles"))
+    try:
+        yield repo
+    finally:
+        logger.debug("Cleaning up StudentRepository")
+
+@router.get("/students/{student_id}/profile")
+async def get_profile(
+    student_id: str,
+    student_repo: Annotated[StudentRepository, Depends(get_student_repository)],
+):
+    # Use student_repo
+    pass
+```
+
+**Benefits**:
+- Clean separation of concerns
+- Easy to mock for testing (app.dependency_overrides)
+- Automatic resource cleanup
+- Type-safe dependency injection
+
+### Pattern 7: Standardized Error Responses
+**When to use**: Consistent error handling across all API endpoints
+**Implementation**: Helper functions creating structured error responses
+**Example**:
+```python
+from src.api.utils.errors import (
+    create_not_found_error_response,
+    create_validation_error_response,
+    create_internal_error_response,
+)
+
+# In endpoint
+if not profile:
+    raise HTTPException(
+        status_code=status.HTTP_404_NOT_FOUND,
+        detail=create_not_found_error_response(
+            resource_type="student",
+            resource_id=student_id,
+            request_id=request_id,
+        ),
+    )
+```
+
+**Benefits**:
+- Consistent error format across API
+- Request ID correlation for debugging
+- Clear error messages for clients
+- Easy to extend with new error types
+
+### Pattern 8: Conditional Credential Handling
 **When to use**: Local development vs production
 **Implementation**: Check for endpoint_url (LocalStack)
 **Example**:

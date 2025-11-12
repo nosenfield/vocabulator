@@ -5,7 +5,7 @@
 ## Current Focus
 
 ### What We're Working On Right Now
-**COMPLETE**: Phase 3 - Processing Layer
+**COMPLETE**: Phase 4 - API Layer
 - ✅ Task 3.1 - Text Processing Pipeline (COMPLETE)
 - ✅ Task 3.2 - Parallel Processing Executor (COMPLETE)
 - ✅ Task 3.3 - AWS Batch Integration (COMPLETE)
@@ -43,7 +43,11 @@
 1. **Phase 4 Complete** - All API Layer tasks done (2025-11-11)
    - Task 4.5: Recommendation endpoints (GET list, PATCH status)
    - Task 4.6: Batch processing endpoints (POST submit, GET status)
+   - Extracted student ID validation to shared utility (DRY principle)
+   - Fixed progress calculation bug (uses current time)
+   - Fixed error response types (validation vs internal errors)
    - All 6 tasks complete, 24 tests total, all passing
+   - 8 REST endpoints fully functional
 2. **Task 4.4 Complete** - Student Profile Endpoints (2025-11-11)
    - Created CRUD endpoints for student profiles (GET, POST, PUT, LIST)
    - Fixed circular import by creating src/api/dependencies.py
@@ -52,7 +56,7 @@
    - Added student profile existence check in upload endpoints
    - Fixed security issues (path traversal, CORS headers)
    - Comprehensive test suite (10 tests, all passing)
-2. **Task 4.3 Complete** - Upload Endpoints (2025-11-11)
+3. **Task 4.3 Complete** - Upload Endpoints (2025-11-11)
    - Created POST /api/v1/transcripts/upload endpoint
    - Created POST /api/v1/writing/upload endpoint
    - Integrated with TextProcessingPipeline for vocabulary extraction
@@ -60,183 +64,39 @@
    - Error handling with proper HTTP status codes
    - Request ID tracking for correlation
    - Comprehensive test suite (5 tests, all passing)
-2. **Task 4.2 Complete** - Request/Response Models (2025-11-11)
-   - Created comprehensive Pydantic request/response models for all API endpoints
-   - Request models: TranscriptUpload, WritingUpload, CreateStudent, UpdateStudent, UpdateRecommendationStatus, BatchProcess
-   - Response models: Upload responses, StudentProfile, StudentsList, Recommendations, BatchStatus, ErrorResponse
-   - Field validation with patterns, min/max lengths, and custom validators
-   - OpenAPI schema examples for all models
-   - Updated to Pydantic v2 ConfigDict pattern (reduced deprecation warnings)
-   - Comprehensive test suite (20 tests, all passing)
-2. **Task 4.1 Complete** - FastAPI Application Setup (2025-11-11)
-   - Created FastAPI application with dependency injection
-   - Set up dependency functions for DynamoDB, S3, repositories, pipeline, and batch client
-   - Configured CORS middleware
-   - Added health check endpoint (/health)
-   - Implemented lifespan context manager for startup/shutdown
-   - Comprehensive test suite (11 tests, all passing)
-2. **Task 3.3 Complete** - AWS Batch Integration (2025-11-11)
-   - Created BatchClient wrapper for AWS Batch job submission and tracking
-   - Implemented batch job handler script for Fargate containers
-   - Created Dockerfile for batch job containers (non-root user for security)
-   - Job submission with configurable resources (memory, vCPUs, timeout)
-   - Resource requirement validation (Fargate limits: memory 512-30720 MB, vCPUs 0.25-4)
-   - Job status tracking with BatchJobInfo dataclass
-   - Fail-fast config validation (requires job_queue and job_definition)
-   - Security: S3 path validation to prevent path traversal attacks
-   - Comprehensive test suite (15 test cases including missing config validation)
-   - Error handling with BatchJobError exception
-2. **Task 3.2 Complete** - Parallel Processing Executor (2025-11-11)
-   - Created ParallelExecutor for concurrent batch processing
-   - Uses asyncio with semaphore-controlled concurrency
-   - ProcessingTask and ProcessingResult dataclasses
-   - Progress callback support
-   - Comprehensive test suite (9 test cases)
-3. **Task 3.1 Complete** - Text Processing Pipeline (2025-11-11)
-   - Created TextProcessingPipeline orchestrating end-to-end workflow
-   - Integrated Extract → Update Profile → Identify Gaps → Generate Recommendations → Persist
-   - Error handling for DynamoDB operations
-   - Context detection with regex word boundaries
-   - Comprehensive test suite (6 test cases)
-   - Created recommendation prompt templates with pedagogical principles
-   - Implemented Recommender class with OpenAI GPT-4o integration
-   - Generates definitions, example sentences, and usage tips
-   - Orders recommendations by difficulty (easiest first)
-   - Converts difficulty scores from 1-10 to 0.0-1.0 scale
-   - Comprehensive test suite (373 lines)
-2. **Task 2.3 Complete** - Vocabulary Gap Analysis Prompts & Logic (2025-01-01)
-   - Created gap analysis prompt templates with ZPD principles
-   - Implemented GapIdentifier with OpenAI GPT-4o integration
-   - Added ZPD difficulty calculation algorithm
-   - Word difficulty scoring relative to student grade level
-   - Filters out words student already knows
-   - Comprehensive test suite (397 lines)
-3. **Code Review Fixes** - OpenAI Client & Cost Tracker improvements (2025-01-01)
-   - Restructured retry logic for clarity and explicit flow
-   - Added debug logging for retry-after header extraction
-   - Implemented strict mode for model validation (configurable)
-   - Switched cost calculations to Decimal for precision
-   - Added pricing date tracking and documentation
-4. **Task 2.2 Complete** - Vocabulary Extraction Prompts & Logic (2025-01-01)
-   - Created extraction prompt templates
-   - Implemented VocabularyExtractor with OpenAI integration
-   - Added text preprocessing utilities
-   - Comprehensive test suite
-5. **Task 2.1 Complete** - OpenAI Client Wrapper (2025-01-01)
-   - Implemented OpenAIClient with retry logic
-   - Added CostTracker for API usage tracking
-   - Support for GPT-4o and GPT-4o-mini models
-4. **Task 1.5 Complete** - Common Core Vocabulary Database (2025-11-10)
-   - Implemented VocabularyWord model and CommonCoreLoader
-   - Created corpus JSON files for grades 6, 7, 8 (70 words sample)
-   - Added grade level mapper utilities
-   - Created seed script for loading vocabulary into DynamoDB
-   - Updated CloudFormation template with CommonCoreVocabulary table
-   - 12 unit tests passing
-2. **Task 1.4 Complete** - S3 Client & File Operations (2025-11-10)
-   - Implemented S3Client wrapper with upload/download/list/delete operations
-   - Automatic multipart upload for large files (>5MB)
-   - Presigned URL generation for secure temporary access
-   - Path builder following bucket structure (transcripts, writing-samples, reports)
-   - Server-side encryption (AES256) by default
-   - 13 unit tests (require LocalStack for integration tests)
-3. **Task 1.3 Complete** - Vocabulary Recommendation Data Model & Repository (2025-11-10)
-   - Implemented VocabularyRecommendation model with TTL support (30-day expiration)
-   - RecommendationRepository with CRUD operations and status tracking
-   - GSI queries by status and date range filtering
-   - 9 model tests passing, 9 integration tests (require LocalStack)
-   - Updated CloudFormation template with VocabularyRecommendations table
-4. **Task 1.2 Complete** - Student Profile Data Model & Repository (2025-11-10)
-   - Implemented StudentProfile Pydantic model with validation
-   - StudentRepository extending BaseRepository with vocabulary management
-   - Proficiency score calculation algorithm
-   - Grade-level queries using GSI
-   - 10 model tests passing, 9 integration tests (require LocalStack)
-   - Updated CloudFormation template with StudentProfiles table
-5. **Task 1.1 Complete** - DynamoDB Client & Base Repository (2025-11-10)
-   - Implemented DynamoDBClient wrapper with retry logic and error handling
-   - BaseRepository pattern with generic type support
-   - Batch operations, query/scan with pagination
-   - GSI support and conditional credential handling (LocalStack vs production)
-   - Comprehensive test suite (44+ tests)
-6. **Task 0.4 Complete** - Logging Utility Setup (2025-11-10)
-   - Implemented src/utils/logger.py with structured JSON logging
-   - Created comprehensive test suite (20 tests, all passing)
-   - Correlation ID support using contextvars for request tracing
-   - Environment-based log level configuration (DEBUG in dev, INFO in prod)
-   - Sensitive data masking (API keys, student IDs, AWS secrets)
-   - Logger factory function for component-specific loggers
-   - CloudWatch Logs integration stub (for future implementation)
-2. **Task 0.3 Complete** - Configuration Management System (2025-11-10)
-   - Implemented src/utils/config.py with Pydantic models
-   - Created comprehensive test suite (12 tests, all passing)
-   - Support for multiple environments (development, staging, production)
-   - Type-safe configuration loading with validation
-   - Missing config error handling with clear messages
-   - Helper methods for DynamoDB table names and AWS endpoints
-   - Added pydantic-settings to requirements.txt
-2. **Task 0.2 Complete** - Project Structure Creation (2025-11-10)
-   - Created complete directory structure per architecture.md (src/, tests/, infrastructure/)
-   - Added __init__.py files to all Python packages (20+ packages)
-   - Created tests/conftest.py with pytest fixtures and markers
-   - Created placeholder README files (src/, tests/, infrastructure/)
-   - Updated test_setup.py to verify complete directory structure
-   - Verified all package imports work correctly
-   - Updated pyproject.toml to temporarily disable coverage (until pytest-cov installed)
-2. **Task 0.1 Complete** - Development Environment Setup (2025-11-10)
-   - Created requirements.txt and requirements-dev.txt with pinned dependencies
-   - Set up pyproject.toml with black, ruff, mypy configuration
-   - Created .pre-commit-config.yaml for code quality hooks
-   - Set up docker-compose.yml for LocalStack
-   - Created .env.example with all required environment variables
-   - Added test_setup.py for environment verification
-   - Created setup-dev-env.sh script for automated setup
-   - Updated .gitignore with Python, AWS, and LocalStack patterns
-2. **Restructured best-practices.md** - Chunked into 12 modular topic guides (466 lines master + 12 detailed practice files) - 2025-11-10
-3. **Restructured task-list.md** - Chunked into modular phase guides for easier navigation (401 lines master + 4 detailed phase files) - 2025-11-10
-4. **Created architecture.md** (42 pages) - Complete system architecture with tech stack justification, directory structure, data flow, security strategy, cost estimates - 2025-11-10
-5. **Created task-list.md** (38 pages → now modular) - Detailed MVP roadmap with 9 phases, 71 tasks, time estimates, acceptance criteria - 2025-11-10
-6. **Created best-practices.md** (51 pages → now modular) - Comprehensive coding standards for Python, FastAPI, OpenAI, AWS, testing, security - 2025-11-10
-7. **Created required-reading.md** (28 pages) - Curated developer onboarding guide with ~29 hours of essential reading - 2025-11-10
 
 ---
 
 ## Next Steps
 
 ### Immediate (Next Session)
-- [x] Task 4.1 - FastAPI Application Setup (2025-11-11)
-- [ ] Task 4.2 - Request/Response Models (NEXT)
-  - Create Pydantic request/response models for all endpoints
-  - Define validation rules and field constraints
-  - Add examples and descriptions for OpenAPI docs
-  - [ ] Task 4.3 - Upload Endpoints
-  - [ ] Task 4.4 - Student Profile Endpoints
-  - [ ] Task 4.5 - Recommendation Endpoints
-  - [ ] Task 4.6 - Batch Processing Endpoints
+- [ ] Task 5.1 - HTML Report Templates (NEXT)
+  - Create Jinja2 templates for student vocabulary reports
+  - Design teacher-facing report layout
+  - Include vocabulary lists, recommendations, progress charts
+  - Responsive design for web viewing
 
 ### Near-Term (This Week)
-- [ ] Complete Phase 4: API Layer (FastAPI endpoints)
-  - FastAPI application setup with dependency injection
-  - Request/response models with Pydantic validation
-  - Upload endpoints for transcripts and writing samples
-  - Student profile endpoints (GET, POST, PUT)
-  - Recommendation endpoints (GET by student, GET by status)
-  - Batch processing endpoints (submit job, check status)
+- [ ] Begin Phase 5: Frontend Layer
+  - Task 5.1: HTML report templates with Jinja2
+  - Task 5.2: Report generation service
+  - Integrate report generation into processing pipeline
+  - Test report rendering with sample data
 
 ### Medium-Term (Next 2 Weeks)
-- [ ] Complete Phase 4: API Layer (FastAPI endpoints)
-- [ ] Begin Phase 5: Frontend Layer (HTML report templates)
-- [ ] Build end-to-end workflow (Upload → Extract → Analyze → Recommend)
+- [ ] Complete Phase 5: Frontend Layer
+- [ ] Begin Phase 6: Infrastructure & Deployment
+- [ ] Build end-to-end workflow (Upload → Extract → Analyze → Recommend → Report)
 
 ---
 
 ## Blockers / Open Questions
 
 ### Current Blockers
-**None** - Phase 3 complete, ready to begin Phase 4
+**None** - Phase 4 complete, ready to begin Phase 5
 
 ### Questions to Resolve
-1. **API Authentication**: Determine authentication strategy for API endpoints (API keys vs IAM roles) - Phase 4
+1. **API Authentication**: Determine authentication strategy for API endpoints (API keys vs IAM roles) - Deferred to Phase 6
 2. **Cost Monitoring**: Set up CloudWatch alarms for OpenAI API spending (can be done in Phase 6)
 
 ### Deferred Decisions (Post-MVP)
@@ -248,13 +108,39 @@
 
 ## Key Files Currently Modified
 
-### Documentation Created Today
-- `_docs/architecture.md` - Complete system architecture (42 pages)
-- `_docs/task-list.md` - MVP implementation roadmap (38 pages)
-- `_docs/best-practices.md` - Development standards guide (51 pages)
-- `_docs/required-reading.md` - Developer onboarding materials (28 pages)
-- `memory-bank/progress.md` - Updated with Phase 0 completion
-- `memory-bank/activeContext.md` - Updated with current state (this file)
+### Key Files Created (Phase 4 - API Layer)
+
+**Task 4.1 - FastAPI Application Setup:**
+- `src/api/main.py` - FastAPI application with dependency injection
+- `src/api/dependencies.py` - Dependency injection functions
+- `tests/unit/test_fastapi_app.py` - Application setup tests (11 tests)
+
+**Task 4.2 - Request/Response Models:**
+- `src/api/models/requests.py` - All API request models
+- `src/api/models/responses.py` - All API response models
+- `src/api/models/__init__.py` - Model exports
+- `tests/unit/test_api_models.py` - Model validation tests (20 tests)
+
+**Task 4.3 - Upload Endpoints:**
+- `src/api/routes/upload.py` - Transcript and writing upload endpoints
+- `tests/unit/test_upload_endpoints.py` - Upload endpoint tests (5 tests)
+
+**Task 4.4 - Student Profile Endpoints:**
+- `src/api/routes/profiles.py` - Student profile CRUD endpoints
+- `src/api/utils/errors.py` - Standardized error response utilities
+- `src/api/utils/s3_paths.py` - Safe S3 path construction utilities
+- `tests/unit/test_profile_endpoints.py` - Profile endpoint tests (10 tests)
+
+**Task 4.5 - Recommendation Endpoints:**
+- `src/api/routes/recommendations.py` - Recommendation retrieval and status update endpoints
+- `tests/unit/test_recommendation_endpoints.py` - Recommendation endpoint tests (7 tests)
+
+**Task 4.6 - Batch Processing Endpoints:**
+- `src/api/routes/batch.py` - Batch job submission and status endpoints
+- `tests/unit/test_batch_endpoints.py` - Batch endpoint tests (7 tests)
+
+**Shared Utilities:**
+- `src/api/utils/validation.py` - Shared validation utilities (student ID format)
 
 ### Key Files Created (Phase 3 - Processing Layer)
 
