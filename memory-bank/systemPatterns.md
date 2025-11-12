@@ -1,6 +1,6 @@
 # System Patterns: vocabulator
 
-**Last Updated**: 2025-11-11
+**Last Updated**: 2025-11-12
 
 ## Architecture Overview
 
@@ -72,6 +72,13 @@ src/
 │       ├── s3_paths.py # Safe S3 path construction
 │       └── validation.py # Shared validation utilities
 ├── vocabulary/        # Vocabulary corpus and utilities
+├── frontend/          # Frontend layer (HTML report generation)
+│   ├── templates.py   # Jinja2 template rendering functions
+│   ├── report_generator.py  # Report generation and S3 upload service
+│   └── templates/     # Jinja2 HTML templates
+│       ├── base.html
+│       ├── profile_report.html
+│       └── recommendations_report.html
 └── utils/             # Shared utilities (config, logger)
 ```
 
@@ -271,7 +278,65 @@ if not profile:
 - Clear error messages for clients
 - Easy to extend with new error types
 
-### Pattern 8: Conditional Credential Handling
+### Pattern 8: Template-Based Report Generation
+**When to use**: Generating HTML reports from structured data
+**Implementation**: Jinja2 templates with autoescape enabled
+**Example**:
+```python
+from jinja2 import Environment, FileSystemLoader, select_autoescape
+
+env = Environment(
+    loader=FileSystemLoader(str(TEMPLATES_DIR)),
+    autoescape=select_autoescape(["html", "xml"]),
+    trim_blocks=True,
+    lstrip_blocks=True,
+)
+
+def render_profile_report(profile: StudentProfile) -> str:
+    template = env.get_template("profile_report.html")
+    context = {
+        "student_id": profile.student_id,
+        "grade_level": profile.grade_level,
+        "vocabulary_list": [...],
+    }
+    return template.render(**context)
+```
+
+**Benefits**:
+- XSS protection via autoescape
+- Separation of presentation from logic
+- Reusable template structure (base template)
+- Responsive design support (CSS in templates)
+
+### Pattern 9: Report Generation Service Pattern
+**When to use**: Generating and uploading static reports to S3
+**Implementation**: Service class with S3 integration
+**Example**:
+```python
+class ReportGenerator:
+    def __init__(self, s3_client: Optional[S3Client] = None):
+        self.s3_client = s3_client or S3Client()
+    
+    def generate_profile_report(self, profile: StudentProfile, ...) -> str:
+        # Generate HTML
+        html_content = render_profile_report(profile)
+        html_bytes = html_content.encode("utf-8")
+        
+        # Upload to S3
+        s3_key = f"reports/{profile.student_id}/profile_{timestamp}.html"
+        self.s3_client.upload(key=s3_key, content=html_bytes, content_type="text/html")
+        
+        # Generate presigned URL
+        return self.s3_client.generate_presigned_url(key=s3_key, expiration_hours=168)
+```
+
+**Benefits**:
+- Centralized report generation logic
+- S3 integration with presigned URLs
+- Error handling with custom exceptions
+- Testable with mock S3 clients
+
+### Pattern 10: Conditional Credential Handling
 **When to use**: Local development vs production
 **Implementation**: Check for endpoint_url (LocalStack)
 **Example**:
@@ -338,10 +403,11 @@ else:
    - Identify gaps vs Common Core (GPT-4o)
    - Generate recommendations (GPT-4o)
    - Store recommendations (DynamoDB)
-   - Generate HTML report (Jinja2)
-   - Upload report to S3
+   - Generate HTML report (Jinja2 templates)
+   - Upload report to S3 (via ReportGenerator)
+   - Generate presigned URL for report access
 5. Job completion callback updates ProcessingJobs table
-6. Teacher accesses results via API
+6. Teacher accesses results via API or S3 presigned URLs
 
 ### State Management
 

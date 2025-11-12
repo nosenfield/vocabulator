@@ -1,6 +1,6 @@
 # Product Context: vocabulator
 
-**Last Updated**: 2025-11-10
+**Last Updated**: 2025-11-12
 
 ## Why This Project Exists
 

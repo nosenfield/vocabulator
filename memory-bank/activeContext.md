@@ -198,9 +198,25 @@
 **Infrastructure:**
 - `infrastructure/cloudformation/dynamodb-tables.yaml` - All DynamoDB tables (StudentProfiles, VocabularyRecommendations, CommonCoreVocabulary)
 
+### Key Files Created (Phase 5 - Frontend Layer)
+
+**Task 5.1 - HTML Report Templates:**
+- `src/frontend/templates.py` - Jinja2 template rendering functions
+- `src/frontend/templates/base.html` - Base template with responsive CSS
+- `src/frontend/templates/profile_report.html` - Student profile report template
+- `src/frontend/templates/recommendations_report.html` - Recommendations report template
+- `tests/unit/test_report_templates.py` - Template rendering tests (13 tests)
+
+**Task 5.2 - Report Generation Service:**
+- `src/frontend/report_generator.py` - ReportGenerator service for S3 upload
+- `tests/unit/test_report_generator.py` - Report generation tests (10 tests)
+
+**Frontend Module:**
+- `src/frontend/__init__.py` - Exports ReportGenerator, render functions
+
 ### Next Files to Create
-- `src/ai/openai_client.py` - OpenAI client wrapper (Task 2.1)
-- `src/ai/prompts.py` - Prompt templates (Task 2.2)
+- `infrastructure/cloudformation/api-gateway.yaml` - API Gateway + Lambda (Task 6.1)
+- `infrastructure/cloudformation/batch-resources.yaml` - AWS Batch setup (Task 6.1)
 
 ---
 
@@ -223,4 +239,4 @@
 - **Total Tasks**: 71 (63 P0, 8 P1)
 - **Test Coverage Target**: 60-80%
 
-**Status**: 🟢 On Track - Foundation phase complete, ready for development
+**Status**: 🟢 On Track - Phases 0-5 complete (42.3% of MVP), ready for Phase 6 (Infrastructure & Deployment)

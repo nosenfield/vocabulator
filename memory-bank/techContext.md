@@ -1,6 +1,6 @@
 # Technical Context: vocabulator
 
-**Last Updated**: 2025-11-10
+**Last Updated**: 2025-11-12
 
 ## Tech Stack
 
@@ -94,6 +94,7 @@ LOG_LEVEL=DEBUG                     # DEBUG, INFO, WARNING, ERROR
 - `pydantic@2.0+` - Data validation and settings management
 - `pydantic-settings@2.0+` - Settings management for Pydantic
 - `httpx@0.25+` - HTTP client (for async requests)
+- `jinja2@3.1+` - Template engine for HTML report generation
 
 ### Development Dependencies
 - `pytest@8.0+` - Testing framework
@@ -114,6 +115,8 @@ LOG_LEVEL=DEBUG                     # DEBUG, INFO, WARNING, ERROR
 **OpenAI SDK**: Official client, handles streaming, retries, and rate limiting
 
 **pytest**: Industry standard for Python testing, excellent fixture system, plugin ecosystem
+
+**Jinja2**: Template engine for generating HTML reports, XSS protection via autoescape, supports template inheritance
 
 ---
 
