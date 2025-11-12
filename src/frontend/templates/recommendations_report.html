@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+
+{% block title %}Vocabulary Recommendations - {{ student_id }}{% endblock %}
+
+{% block header %}Personalized Vocabulary Recommendations{% endblock %}
+
+{% block meta %}
+Student ID: {{ student_id }} • Generated: {{ recommendation_date }} • Status: {{ status|title }}
+{% endblock %}
+
+{% block content %}
+<!-- Summary Section -->
+<section class="section">
+    <div class="stat-grid">
+        <div class="stat-card">
+            <div class="stat-value">{{ word_count }}</div>
+            <div class="stat-label">Recommended Words</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">{{ status|title }}</div>
+            <div class="stat-label">Status</div>
+        </div>
+        {% if generated_by != "N/A" %}
+        <div class="stat-card">
+            <div class="stat-value" style="font-size: 1.2em;">{{ generated_by[:8] }}...</div>
+            <div class="stat-label">Batch Job</div>
+        </div>
+        {% endif %}
+    </div>
+</section>
+
+<!-- Recommendations List -->
+{% if words %}
+<section class="section">
+    <h2 class="section-title">Recommended Words</h2>
+    <p style="margin-bottom: 25px; color: #666;">
+        These words are carefully selected based on your current vocabulary level and learning progress.
+        Start with easier words and progress to more challenging ones.
+    </p>
+    
+    <div class="recommendations-grid">
+        {% for word in words %}
+        <div class="recommendation-card">
+            <div class="word-header">
+                <h3 class="word-title">{{ word.word }}</h3>
+                <span class="difficulty-badge 
+                    {% if word.difficulty_percent < 40 %}difficulty-easy
+                    {% elif word.difficulty_percent < 70 %}difficulty-medium
+                    {% else %}difficulty-hard{% endif %}">
+                    {% if word.difficulty_percent < 40 %}Easy
+                    {% elif word.difficulty_percent < 70 %}Medium
+                    {% else %}Hard{% endif %}
+                </span>
+            </div>
+            
+            <div class="definition">
+                <strong>Definition:</strong> {{ word.definition }}
+            </div>
+            
+            {% if word.rationale %}
+            <div class="rationale">
+                <strong>Why this word?</strong> {{ word.rationale }}
+            </div>
+            {% endif %}
+            
+            {% if word.example_sentences %}
+            <div class="examples">
+                <div class="examples-title">Example Sentences:</div>
+                <ul class="example-list">
+                    {% for sentence in word.example_sentences %}
+                    <li>{{ sentence }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+            
+            <div style="margin-top: 15px; font-size: 0.9em; color: #999;">
+                Grade Level: {{ word.grade_level }} • Difficulty: {{ word.difficulty_percent }}%
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+{% else %}
+<section class="section">
+    <p style="text-align: center; color: #666; padding: 40px;">
+        No recommendations available at this time. Complete vocabulary analysis to receive personalized word recommendations.
+    </p>
+</section>
+{% endif %}
+
+<!-- Learning Tips Section -->
+{% if words %}
+<section class="section">
+    <h2 class="section-title">Learning Tips</h2>
+    <div style="background: #f0f4ff; padding: 20px; border-radius: 8px; border-left: 4px solid #667eea;">
+        <ul style="list-style: none; padding-left: 0;">
+            <li style="margin-bottom: 10px; padding-left: 25px; position: relative;">
+                <span style="position: absolute; left: 0; color: #667eea; font-weight: bold;">✓</span>
+                Practice using each word in your own sentences
+            </li>
+            <li style="margin-bottom: 10px; padding-left: 25px; position: relative;">
+                <span style="position: absolute; left: 0; color: #667eea; font-weight: bold;">✓</span>
+                Start with easier words and gradually work up to harder ones
+            </li>
+            <li style="margin-bottom: 10px; padding-left: 25px; position: relative;">
+                <span style="position: absolute; left: 0; color: #667eea; font-weight: bold;">✓</span>
+                Review words regularly to reinforce learning
+            </li>
+            <li style="padding-left: 25px; position: relative;">
+                <span style="position: absolute; left: 0; color: #667eea; font-weight: bold;">✓</span>
+                Use words in different contexts to deepen understanding
+            </li>
+        </ul>
+    </div>
+</section>
+{% endif %}
+{% endblock %}
+
