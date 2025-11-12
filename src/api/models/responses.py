@@ -225,6 +225,45 @@ class RecommendationsResponse(BaseModel):
     )
 
 
+class RecommendationsListResponse(BaseModel):
+    """Response model for recommendation list query.
+    
+    Attributes:
+        recommendations: List of recommendations
+        total: Total number of recommendations
+    """
+    
+    recommendations: List[RecommendationsResponse] = Field(
+        ..., description="List of recommendations"
+    )
+    total: int = Field(..., ge=0, description="Total number of recommendations")
+    
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
+                "recommendations": [
+                    {
+                        "student_id": "STU-001",
+                        "recommendation_date": "2025-11-10",
+                        "words": [
+                            {
+                                "word": "analyze",
+                                "definition": "To examine in detail",
+                                "grade_level": 7,
+                                "difficulty_score": 0.5,
+                                "rationale": "High-frequency academic word",
+                                "example_sentences": ["Let's analyze the data."],
+                            }
+                        ],
+                        "status": "pending",
+                    }
+                ],
+                "total": 1,
+            }
+        }
+    )
+
+
 class RecommendationStatusResponse(BaseModel):
     """Response model for recommendation status update.
     

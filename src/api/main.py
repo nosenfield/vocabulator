@@ -68,11 +68,11 @@ async def health_check():
 
 
 # Import routes
-from src.api.routes import profiles, upload
+from src.api.routes import profiles, upload, recommendations, batch
 
 # Register route routers
 app.include_router(upload.router, prefix="/api/v1", tags=["upload"])
 app.include_router(profiles.router, prefix="/api/v1", tags=["profiles"])
-# app.include_router(recommendations.router, prefix="/api/v1", tags=["recommendations"])
-# app.include_router(batch.router, prefix="/api/v1", tags=["batch"])
+app.include_router(recommendations.router, prefix="/api/v1", tags=["recommendations"])
+app.include_router(batch.router, prefix="/api/v1", tags=["batch"])
 

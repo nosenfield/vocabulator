@@ -3,7 +3,6 @@
 This module provides CRUD endpoints for student profiles.
 """
 
-import re
 from typing import Annotated, Optional
 from uuid import uuid4
 
@@ -23,6 +22,7 @@ from src.api.utils.errors import (
     create_not_found_error_response,
     create_validation_error_response,
 )
+from src.api.utils.validation import validate_student_id as validate_student_id_format
 from src.data.models.student_profile import StudentProfile
 from src.data.repositories.student_repository import StudentRepository
 from src.utils.logger import get_logger
@@ -44,16 +44,18 @@ def validate_student_id(student_id: str) -> str:
     Raises:
         HTTPException: If student ID format is invalid
     """
-    if not re.match(r"^STU-\d{3}$", student_id):
+    try:
+        validate_student_id_format(student_id)
+    except ValueError as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=create_validation_error_response(
-                message="Student ID must match format: STU-XXX (e.g., STU-001)",
+                message=str(e),
                 request_id=None,
                 field="student_id",
                 student_id=student_id,
             ),
-        )
+        ) from e
     return student_id
 
 
