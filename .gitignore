@@ -42,6 +42,11 @@ out/
 .nuxt/
 .cache/
 
+# Lambda deployment packages
+.lambda-package/
+vocabulator-lambda.zip
+*.zip
+
 # OS
 .DS_Store
 Thumbs.db
