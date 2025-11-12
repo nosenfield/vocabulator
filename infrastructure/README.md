@@ -111,7 +111,23 @@ aws cloudformation update-stack \
 
 ## CloudFormation Deployment
 
+### Quick Start
+
+For automated deployment, use the deployment script:
+
+```bash
+# Upload templates to S3
+./scripts/upload-templates.sh
+
+# Deploy infrastructure
+./scripts/deploy-infrastructure.sh development
+```
+
+### Detailed Instructions
+
 See [cloudformation/README.md](cloudformation/README.md) for detailed CloudFormation deployment instructions.
+
+For comprehensive deployment guide, see [_docs/deployment-guide.md](../_docs/deployment-guide.md).
 
 ## Package Size Considerations
 
