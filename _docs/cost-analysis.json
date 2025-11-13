@@ -1,0 +1,99 @@
+{
+  "cost_analysis": {
+    "students": 500,
+    "openai_costs": {
+      "extraction": 2.625,
+      "analysis": 4.375,
+      "recommendation": 6.25,
+      "total": 13.25
+    },
+    "aws_costs": {
+      "lambda": 1.0,
+      "batch_fargate": 40.0,
+      "s3": 1.15,
+      "dynamodb": 1.5,
+      "cloudfront": 0.85,
+      "total": 44.5
+    },
+    "total_monthly_cost": 57.75,
+    "cost_per_student": 0.1155,
+    "target_cost": 51.0,
+    "within_target": false
+  },
+  "recommendations": {
+    "prompt_optimization": [
+      "\u2705 Found 4 prompt template files - review for optimization opportunities",
+      "  - Consider using shorter, more focused prompts where possible",
+      "  - Use few-shot examples sparingly (they increase token count)",
+      "  - Cache common prompt patterns to reduce redundant token usage"
+    ],
+    "caching": [
+      "Caching Opportunities:",
+      "  1. OpenAI API Responses:",
+      "     - Cache vocabulary extraction results for identical texts",
+      "     - Cache gap analysis for students with unchanged profiles",
+      "     - Use DynamoDB TTL for cache expiration (30 days)",
+      "  2. Common Core Vocabulary:",
+      "     - Load vocabulary corpus once and cache in memory",
+      "     - Consider Redis for distributed caching (if scaling)",
+      "  3. Student Profiles:",
+      "     - Cache frequently accessed profiles in Lambda memory",
+      "     - Use CloudFront for static report caching"
+    ],
+    "aws_sizing": [
+      "AWS Resource Sizing Review:",
+      "  1. Lambda Functions:",
+      "     - Current: 512MB-1GB memory",
+      "     - Recommendation: Monitor actual usage, reduce if possible",
+      "     - Cost impact: ~$0.20 per 1M requests per 128MB",
+      "  2. AWS Batch/Fargate:",
+      "     - Current: 2 vCPU, 4GB memory",
+      "     - Recommendation: Test with 1 vCPU, 2GB for smaller batches",
+      "     - Cost impact: ~50% reduction possible",
+      "  3. DynamoDB:",
+      "     - Current: On-demand billing",
+      "     - Recommendation: Monitor usage, consider provisioned capacity if predictable",
+      "     - Cost impact: Variable based on usage patterns",
+      "  4. S3 Storage:",
+      "     - Current: Standard storage",
+      "     - Recommendation: Use Intelligent-Tiering for old data",
+      "     - Cost impact: ~40% savings on infrequently accessed data"
+    ]
+  },
+  "budget_alarms": {
+    "budgets": [
+      {
+        "name": "vocabulator-monthly-budget",
+        "amount": 60.0,
+        "threshold": 80.0,
+        "period": "monthly"
+      },
+      {
+        "name": "vocabulator-openai-daily-budget",
+        "amount": 2.0,
+        "threshold": 1.5,
+        "period": "daily"
+      }
+    ],
+    "alarms": [
+      {
+        "name": "openai-cost-exceeded",
+        "metric": "OpenAICostPerStudent",
+        "threshold": 0.12239999999999998,
+        "comparison": "GreaterThanThreshold"
+      },
+      {
+        "name": "aws-monthly-cost-exceeded",
+        "metric": "AWSMonthlyCost",
+        "threshold": 25.0,
+        "comparison": "GreaterThanThreshold"
+      }
+    ]
+  },
+  "summary": {
+    "estimated_monthly_cost": 57.75,
+    "target_cost": 51.0,
+    "within_target": false,
+    "cost_per_student": 0.1155
+  }
+}
