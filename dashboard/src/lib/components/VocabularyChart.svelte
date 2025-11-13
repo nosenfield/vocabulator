@@ -137,6 +137,10 @@
 	});
 
 	// Update chart when vocabulary data changes
+	// Watch vocabularyList and currentVocabularySize explicitly to ensure reactivity
+	$: vocabularyListLength = vocabularyList?.length || 0;
+	$: watchedVocabularySize = currentVocabularySize || 0;
+	
 	$: if (chart && (vocabularyList || currentVocabularySize !== undefined)) {
 		const chartData = prepareChartData(vocabularyList, currentVocabularySize);
 		const yAxisMax = chartData.yAxisMax || 20;
