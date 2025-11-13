@@ -19,6 +19,11 @@ Parameters:
     Type: String
     Description: Name of the Batch job queue
     Default: ''
+  
+  AWSRegion:
+    Type: String
+    Default: us-east-1
+    Description: AWS region
 
 Resources:
   MonitoringDashboard:
@@ -39,7 +44,7 @@ Resources:
                 ],
                 "period": 300,
                 "stat": "Sum",
-                "region": "${AWS::Region}",
+                "region": "${AWSRegion}",
                 "title": "Lambda Function Metrics",
                 "yAxis": {
                   "left": {"label": "Count"},
@@ -57,7 +62,7 @@ Resources:
                 ],
                 "period": 300,
                 "stat": "Sum",
-                "region": "${AWS::Region}",
+                "region": "${AWSRegion}",
                 "title": "DynamoDB Metrics"
               }
             },
@@ -70,7 +75,7 @@ Resources:
                 ],
                 "period": 3600,
                 "stat": "Average",
-                "region": "${AWS::Region}",
+                "region": "${AWSRegion}",
                 "title": "S3 Storage Metrics"
               }
             },

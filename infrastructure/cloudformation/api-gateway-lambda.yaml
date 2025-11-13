@@ -71,7 +71,6 @@ Resources:
       Environment:
         Variables:
           ENVIRONMENT: !Ref Environment
-          AWS_REGION: !Ref AWS::Region
           S3_BUCKET_NAME: !Ref DataBucketName
           REPORTS_BUCKET_NAME: !Ref ReportsBucketName
           DYNAMODB_TABLE_PREFIX: !Sub 'vocabulator-${Environment}'

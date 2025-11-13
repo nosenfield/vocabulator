@@ -106,22 +106,23 @@ Resources:
         - Key: Project
           Value: Vocabulator
 
-  # Stack 5: CloudWatch Dashboard
-  DashboardStack:
-    Type: AWS::CloudFormation::Stack
-    DependsOn:
-      - ApiStack
-    Properties:
-      TemplateURL: !Sub 'https://s3.${AWS::Region}.amazonaws.com/${TemplatesBucket}/cloudwatch-dashboard.yaml'
-      Parameters:
-        Environment: !Ref Environment
-        LambdaFunctionName: !GetAtt ApiStack.Outputs.ApiLambdaFunctionName
-        BatchJobQueueName: !If [HasEcrImage, !GetAtt BatchStack.Outputs.BatchJobQueueName, '']
-      Tags:
-        - Key: Environment
-          Value: !Ref Environment
-        - Key: Project
-          Value: Vocabulator
+  # Stack 5: CloudWatch Dashboard (commented out - dashboard validation issue to fix later)
+  # DashboardStack:
+  #   Type: AWS::CloudFormation::Stack
+  #   DependsOn:
+  #     - ApiStack
+  #   Properties:
+  #     TemplateURL: !Sub 'https://s3.${AWS::Region}.amazonaws.com/${TemplatesBucket}/cloudwatch-dashboard.yaml'
+  #     Parameters:
+  #       Environment: !Ref Environment
+  #       LambdaFunctionName: !GetAtt ApiStack.Outputs.ApiLambdaFunctionName
+  #       BatchJobQueueName: !If [HasEcrImage, !GetAtt BatchStack.Outputs.BatchJobQueueName, '']
+  #       AWSRegion: !Ref AWS::Region
+  #     Tags:
+  #       - Key: Environment
+  #         Value: !Ref Environment
+  #       - Key: Project
+  #         Value: Vocabulator
 
   # Stack 6: IAM Roles (depends on DynamoDB, S3, CloudWatch, and optionally Batch)
   IAMStack:
