@@ -47,14 +47,14 @@ class GapIdentifier:
     """Identify vocabulary gaps using ZPD principles.
 
     Compares student vocabulary against Common Core standards and uses
-    OpenAI GPT-4o to identify appropriate challenge words.
+    OpenAI (default: gpt-4o-mini for speed) to identify appropriate challenge words.
     """
 
     def __init__(
         self,
         openai_client: Optional[OpenAIClient] = None,
         common_core_loader: Optional[CommonCoreLoader] = None,
-        model: str = "gpt-4o",
+        model: str = "gpt-4o-mini",  # Use faster model for gap analysis
         temperature: float = 0.7,
     ):
         """Initialize gap identifier.
@@ -62,7 +62,7 @@ class GapIdentifier:
         Args:
             openai_client: OpenAI client instance (creates new if None)
             common_core_loader: CommonCoreLoader instance (creates new if None)
-            model: Model to use for gap analysis (default: gpt-4o)
+            model: Model to use for gap analysis (default: gpt-4o-mini for speed)
             temperature: Sampling temperature (default: 0.7)
         """
         self.client = openai_client or OpenAIClient()

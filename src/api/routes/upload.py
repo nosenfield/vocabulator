@@ -105,11 +105,25 @@ async def mock_submit_assignment(
             )
             
             # Schedule recommendation generation in background
-            background_tasks.add_task(
-                pipeline.generate_recommendations_async,
-                student_id=request.student_id,
-                request_id=request_id,
-            )
+            # Wrap in error handler to log failures
+            async def generate_recommendations_with_error_handling():
+                try:
+                    await pipeline.generate_recommendations_async(
+                        student_id=request.student_id,
+                        request_id=request_id,
+                    )
+                except Exception as e:
+                    logger.error(
+                        f"Background recommendation generation failed",
+                        extra={
+                            "student_id": request.student_id,
+                            "request_id": request_id,
+                            "error": str(e),
+                        },
+                        exc_info=True,
+                    )
+            
+            background_tasks.add_task(generate_recommendations_with_error_handling)
             
             words_extracted = len(updated_profile.vocabulary_list) if updated_profile else 0
             
@@ -286,11 +300,25 @@ async def upload_transcript(
             )
             
             # Schedule recommendation generation in background
-            background_tasks.add_task(
-                pipeline.generate_recommendations_async,
-                student_id=request.student_id,
-                request_id=request_id,
-            )
+            # Wrap in error handler to log failures
+            async def generate_recommendations_with_error_handling():
+                try:
+                    await pipeline.generate_recommendations_async(
+                        student_id=request.student_id,
+                        request_id=request_id,
+                    )
+                except Exception as e:
+                    logger.error(
+                        f"Background recommendation generation failed",
+                        extra={
+                            "student_id": request.student_id,
+                            "request_id": request_id,
+                            "error": str(e),
+                        },
+                        exc_info=True,
+                    )
+            
+            background_tasks.add_task(generate_recommendations_with_error_handling)
             
             words_extracted = len(updated_profile.vocabulary_list) if updated_profile else 0
             
@@ -473,11 +501,25 @@ async def upload_writing(
             )
             
             # Schedule recommendation generation in background
-            background_tasks.add_task(
-                pipeline.generate_recommendations_async,
-                student_id=request.student_id,
-                request_id=request_id,
-            )
+            # Wrap in error handler to log failures
+            async def generate_recommendations_with_error_handling():
+                try:
+                    await pipeline.generate_recommendations_async(
+                        student_id=request.student_id,
+                        request_id=request_id,
+                    )
+                except Exception as e:
+                    logger.error(
+                        f"Background recommendation generation failed",
+                        extra={
+                            "student_id": request.student_id,
+                            "request_id": request_id,
+                            "error": str(e),
+                        },
+                        exc_info=True,
+                    )
+            
+            background_tasks.add_task(generate_recommendations_with_error_handling)
             
             words_extracted = len(updated_profile.vocabulary_list) if updated_profile else 0
             

@@ -57,7 +57,9 @@ class TextProcessingPipeline:
             default_grade_level: Default grade level for new profiles (default: 7)
         """
         self.extractor = extractor or VocabularyExtractor()
-        self.gap_identifier = gap_identifier or GapIdentifier()
+        # Use faster model for gap analysis (gpt-4o-mini is ~3x faster than gpt-4o)
+        self.gap_identifier = gap_identifier or GapIdentifier(model="gpt-4o-mini")
+        # Keep gpt-4o for recommendations (higher quality needed for definitions/examples)
         self.recommender = recommender or Recommender()
         self.student_repository = student_repository or StudentRepository()
         self.recommendation_repository = (
