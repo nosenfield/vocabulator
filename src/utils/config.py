@@ -185,7 +185,7 @@ class Config(BaseModel):
         
         # Default: allow localhost in development, empty list in production
         if self.environment == Environment.DEVELOPMENT:
-            return ["http://localhost:3000", "http://localhost:8000"]
+            return ["http://localhost:3000", "http://localhost:5173", "http://localhost:8000"]
         
         return []
 
