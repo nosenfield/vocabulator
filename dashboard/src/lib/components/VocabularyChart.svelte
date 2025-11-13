@@ -19,11 +19,12 @@
 		for (let i = CHART_DAYS - 1; i >= 0; i--) {
 			const date = new Date(today);
 			date.setDate(date.getDate() - i);
+			date.setHours(0, 0, 0, 0); // Normalize to start of day
 			days.push(date);
 		}
 
-		// Group vocabulary words by first_seen date
-		const wordsByDate = {};
+		// Parse all vocabulary entries with first_seen dates
+		const vocabularyEntries = [];
 		if (vocabularyList && Array.isArray(vocabularyList)) {
 			vocabularyList.forEach((entry) => {
 				if (entry.first_seen) {
@@ -34,45 +35,32 @@
 						return;
 					}
 					// Normalize to date (remove time component)
-					const dateKey = new Date(dateObj.getFullYear(), dateObj.getMonth(), dateObj.getDate()).toDateString();
-					if (!wordsByDate[dateKey]) {
-						wordsByDate[dateKey] = 0;
-					}
-					wordsByDate[dateKey] += 1;
+					const firstSeenDate = new Date(dateObj.getFullYear(), dateObj.getMonth(), dateObj.getDate());
+					firstSeenDate.setHours(0, 0, 0, 0);
+					vocabularyEntries.push({ firstSeen: firstSeenDate });
 				}
 			});
 		}
 
 		// Calculate cumulative vocabulary size for each day
+		// For each day, count how many words were first seen on or before that day
 		const labels = days.map((d) => d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
 		const data = [];
-		let cumulativeVocab = 0;
 
 		days.forEach((day) => {
-			const dateKey = day.toDateString();
-			// Add words that were first seen on this day
-			if (wordsByDate[dateKey]) {
-				cumulativeVocab += wordsByDate[dateKey];
-			}
-			// For days in the future or beyond the last word, use current vocabulary size
-			if (day > today || (day.getTime() === today.getTime() && cumulativeVocab === 0)) {
-				// If we have a current vocabulary size and haven't reached it yet, use it
-				if (currentVocabularySize > 0 && cumulativeVocab < currentVocabularySize) {
-					data.push(currentVocabularySize);
-				} else {
-					data.push(cumulativeVocab || null);
-				}
-			} else {
-				data.push(cumulativeVocab || null);
-			}
+			// Count words that were first seen on or before this day
+			const wordsKnownByThisDay = vocabularyEntries.filter(
+				(entry) => entry.firstSeen <= day
+			).length;
+			data.push(wordsKnownByThisDay);
 		});
 
 		// Ensure the last data point matches current vocabulary size
+		// This handles cases where vocabulary_size might differ slightly due to timing
 		if (currentVocabularySize > 0 && data.length > 0) {
 			const lastIndex = data.length - 1;
-			if (data[lastIndex] !== currentVocabularySize) {
-				data[lastIndex] = currentVocabularySize;
-			}
+			// Use the larger value to ensure we show the current state
+			data[lastIndex] = Math.max(data[lastIndex], currentVocabularySize);
 		}
 
 		return {
