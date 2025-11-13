@@ -105,12 +105,26 @@ async def mock_submit_assignment(
             )
             
             # Schedule recommendation generation in background
-            # Wrap in error handler to log failures
+            # FastAPI BackgroundTasks can handle async functions
             async def generate_recommendations_with_error_handling():
                 try:
+                    logger.info(
+                        f"Starting background recommendation generation",
+                        extra={
+                            "student_id": request.student_id,
+                            "request_id": request_id,
+                        },
+                    )
                     await pipeline.generate_recommendations_async(
                         student_id=request.student_id,
                         request_id=request_id,
+                    )
+                    logger.info(
+                        f"Background recommendation generation completed successfully",
+                        extra={
+                            "student_id": request.student_id,
+                            "request_id": request_id,
+                        },
                     )
                 except Exception as e:
                     logger.error(
@@ -119,6 +133,7 @@ async def mock_submit_assignment(
                             "student_id": request.student_id,
                             "request_id": request_id,
                             "error": str(e),
+                            "error_type": type(e).__name__,
                         },
                         exc_info=True,
                     )
@@ -300,12 +315,26 @@ async def upload_transcript(
             )
             
             # Schedule recommendation generation in background
-            # Wrap in error handler to log failures
+            # FastAPI BackgroundTasks can handle async functions
             async def generate_recommendations_with_error_handling():
                 try:
+                    logger.info(
+                        f"Starting background recommendation generation",
+                        extra={
+                            "student_id": request.student_id,
+                            "request_id": request_id,
+                        },
+                    )
                     await pipeline.generate_recommendations_async(
                         student_id=request.student_id,
                         request_id=request_id,
+                    )
+                    logger.info(
+                        f"Background recommendation generation completed successfully",
+                        extra={
+                            "student_id": request.student_id,
+                            "request_id": request_id,
+                        },
                     )
                 except Exception as e:
                     logger.error(
@@ -314,6 +343,7 @@ async def upload_transcript(
                             "student_id": request.student_id,
                             "request_id": request_id,
                             "error": str(e),
+                            "error_type": type(e).__name__,
                         },
                         exc_info=True,
                     )
@@ -501,12 +531,26 @@ async def upload_writing(
             )
             
             # Schedule recommendation generation in background
-            # Wrap in error handler to log failures
+            # FastAPI BackgroundTasks can handle async functions
             async def generate_recommendations_with_error_handling():
                 try:
+                    logger.info(
+                        f"Starting background recommendation generation",
+                        extra={
+                            "student_id": request.student_id,
+                            "request_id": request_id,
+                        },
+                    )
                     await pipeline.generate_recommendations_async(
                         student_id=request.student_id,
                         request_id=request_id,
+                    )
+                    logger.info(
+                        f"Background recommendation generation completed successfully",
+                        extra={
+                            "student_id": request.student_id,
+                            "request_id": request_id,
+                        },
                     )
                 except Exception as e:
                     logger.error(
@@ -515,6 +559,7 @@ async def upload_writing(
                             "student_id": request.student_id,
                             "request_id": request_id,
                             "error": str(e),
+                            "error_type": type(e).__name__,
                         },
                         exc_info=True,
                     )

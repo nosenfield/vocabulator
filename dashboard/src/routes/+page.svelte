@@ -143,33 +143,44 @@
 					window.scrollTo({ top: 0, behavior: 'smooth' });
 				}
 				
-				// Poll for recommendations (they're generated in background, may take 10-15 seconds)
-				// Poll every 3 seconds for up to 20 seconds
+				// Poll for recommendations (they're generated in background, may take 5-8 seconds)
+				// Poll every 3 seconds for up to 24 seconds
 				let pollCount = 0;
-				const maxPolls = 7; // 7 polls * 3 seconds = 21 seconds max
+				const maxPolls = 8; // 8 polls * 3 seconds = 24 seconds max
+				console.log('Starting to poll for recommendations...');
 				const pollInterval = setInterval(async () => {
 					pollCount++;
+					console.log(`Polling for recommendations (attempt ${pollCount}/${maxPolls})...`);
 					try {
 						const recommendations = await getStudentRecommendations(studentId);
+						console.log('Recommendations response:', recommendations);
 						const recommendationsList = recommendations.recommendations || recommendations || [];
+						console.log('Recommendations list:', recommendationsList);
+						
 						if (Array.isArray(recommendationsList) && recommendationsList.length > 0) {
 							// Check if first item has a 'words' property (it's a recommendation object)
 							if (recommendationsList[0].words && Array.isArray(recommendationsList[0].words)) {
 								// Flatten: extract all words from all recommendations
 								currentRecommendations = recommendationsList.flatMap(rec => rec.words || []);
+								console.log('Flattened recommendations:', currentRecommendations);
 							} else {
 								// Already a flat array of words
 								currentRecommendations = recommendationsList;
+								console.log('Using recommendations as-is:', currentRecommendations);
 							}
 							// Stop polling once we have recommendations
+							console.log(`Found ${currentRecommendations.length} recommendations, stopping poll`);
 							clearInterval(pollInterval);
+						} else {
+							console.log('No recommendations yet, continuing to poll...');
 						}
 					} catch (error) {
-						console.debug('Polling for recommendations:', error);
+						console.error('Error polling for recommendations:', error);
 					}
 					
 					// Stop polling after max attempts
 					if (pollCount >= maxPolls) {
+						console.log('Max poll attempts reached, stopping');
 						clearInterval(pollInterval);
 					}
 				}, 3000); // Poll every 3 seconds
