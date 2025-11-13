@@ -50,7 +50,8 @@
 			currentRecommendations = recommendations.recommendations || recommendations || [];
 			// For demo, use mock assignments - in real app, fetch from API
 			// Use mock assignments for timeline visualization
-			assignments = mockAssignments || [];
+			// Import is at top of file, use it here
+			assignments = Array.isArray(mockAssignments) ? mockAssignments : [];
 		} catch (error) {
 			console.error('Failed to load student data:', error);
 		} finally {
