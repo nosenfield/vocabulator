@@ -1,21 +1,36 @@
 // API base URL - must be set via environment variable
 // Note: import.meta.env is replaced at build time by Vite
-const API_BASE = import.meta.env.VITE_API_BASE;
-// In development, allow localhost fallback; in production, VITE_API_BASE must be set at build time
-const API_BASE_URL = API_BASE || (import.meta.env.DEV ? 'http://localhost:8000/api/v1' : null);
-if (!API_BASE_URL) {
-	// Production build requires VITE_API_BASE. Application will fail at runtime if not set.
-	// Fail fast during initialization to prevent runtime errors
-	// Use generic error message to avoid exposing configuration details
-	if (import.meta.env.PROD) {
-		// In production, log to error tracking service (not console)
-		// For now, throw generic error
-		throw new Error('Application configuration error');
-	} else {
-		// In development, provide helpful error message
-		console.error('VITE_API_BASE environment variable not set');
-		throw new Error('VITE_API_BASE environment variable is required. Set it in your .env file.');
+// Get API base URL - safe for both SSR and client-side
+function getApiBase() {
+	// During SSR, we can't make API calls anyway
+	// Return null to indicate API calls should not be made during SSR
+	if (typeof window === 'undefined') {
+		return null;
 	}
+	
+	// In browser environment, get the actual API base URL
+	// import.meta.env.VITE_API_BASE is replaced at build time by Vite
+	const API_BASE = import.meta.env.VITE_API_BASE;
+	
+	// In development, allow localhost fallback; in production, VITE_API_BASE must be set at build time
+	const API_BASE_URL = API_BASE || (import.meta.env.DEV ? 'http://localhost:8000/api/v1' : null);
+	
+	if (!API_BASE_URL) {
+		// Production build requires VITE_API_BASE. Application will fail at runtime if not set.
+		// Fail fast during initialization to prevent runtime errors
+		// Use generic error message to avoid exposing configuration details
+		if (import.meta.env.PROD) {
+			// In production, log to error tracking service (not console)
+			// For now, throw generic error
+			throw new Error('Application configuration error: VITE_API_BASE not set');
+		} else {
+			// In development, provide helpful error message
+			console.error('VITE_API_BASE environment variable not set');
+			throw new Error('VITE_API_BASE environment variable is required. Set it in your .env file.');
+		}
+	}
+	
+	return API_BASE_URL;
 }
 
 /**
@@ -67,9 +82,13 @@ export async function getStudents(gradeLevel = null) {
 		if (gradeLevel !== null && (typeof gradeLevel !== 'number' || gradeLevel < 6 || gradeLevel > 8)) {
 			throw new Error('Invalid grade level. Must be 6, 7, or 8');
 		}
+		const apiBase = getApiBase();
+		if (!apiBase) {
+			throw new Error('API calls cannot be made during server-side rendering');
+		}
 		const url = gradeLevel
-			? `${API_BASE_URL}/students?grade_level=${gradeLevel}`
-			: `${API_BASE_URL}/students`;
+			? `${apiBase}/students?grade_level=${gradeLevel}`
+			: `${apiBase}/students`;
 		const response = await fetch(url, {
 			headers: {
 				'X-Request-ID': requestId
@@ -99,7 +118,11 @@ export async function getStudentProfile(studentId) {
 	}
 	// Student ID already validated by regex, no need for additional sanitization
 	try {
-		const response = await fetch(`${API_BASE_URL}/students/${studentId}/profile`, {
+		const apiBase = getApiBase();
+		if (!apiBase) {
+			throw new Error('API calls cannot be made during server-side rendering');
+		}
+		const response = await fetch(`${apiBase}/students/${studentId}/profile`, {
 			headers: {
 				'X-Request-ID': requestId
 			}
@@ -128,7 +151,11 @@ export async function getStudentRecommendations(studentId) {
 	}
 	// Student ID already validated by regex, no need for additional sanitization
 	try {
-		const response = await fetch(`${API_BASE_URL}/students/${studentId}/recommendations`, {
+		const apiBase = getApiBase();
+		if (!apiBase) {
+			throw new Error('API calls cannot be made during server-side rendering');
+		}
+		const response = await fetch(`${apiBase}/students/${studentId}/recommendations`, {
 			headers: {
 				'X-Request-ID': requestId
 			}
@@ -152,7 +179,11 @@ export async function getStudentRecommendations(studentId) {
 export async function syncWithGoogleClassroom() {
 	const requestId = generateRequestId();
 	try {
-		const response = await fetch(`${API_BASE_URL}/mock/sync-google-classroom`, {
+		const apiBase = getApiBase();
+		if (!apiBase) {
+			throw new Error('API calls cannot be made during server-side rendering');
+		}
+		const response = await fetch(`${apiBase}/mock/sync-google-classroom`, {
 			method: 'POST',
 			headers: {
 				'X-Request-ID': requestId,
@@ -168,6 +199,36 @@ export async function syncWithGoogleClassroom() {
 		const message = error instanceof Error ? error.message : 'Unknown error occurred';
 		console.error(`[${requestId}] Failed to sync with Google Classroom:`, message);
 		throw new Error(`Failed to sync with Google Classroom: ${message} [Request ID: ${requestId}]`);
+	}
+}
+
+/**
+ * Mock: Clear all students (calls backend to delete all mock students)
+ * @returns {Promise<Object>} Response with deletion status
+ */
+export async function clearStudents() {
+	const requestId = generateRequestId();
+	try {
+		const apiBase = getApiBase();
+		if (!apiBase) {
+			throw new Error('API calls cannot be made during server-side rendering');
+		}
+		const response = await fetch(`${apiBase}/mock/clear-students`, {
+			method: 'DELETE',
+			headers: {
+				'X-Request-ID': requestId,
+				'Content-Type': 'application/json'
+			}
+		});
+		if (!response.ok) {
+			const message = `Failed to clear students: HTTP ${response.status} [Request ID: ${requestId}]`;
+			throw new Error(message);
+		}
+		return await response.json();
+	} catch (error) {
+		const message = error instanceof Error ? error.message : 'Unknown error occurred';
+		console.error(`[${requestId}] Failed to clear students:`, message);
+		throw new Error(`Failed to clear students: ${message} [Request ID: ${requestId}]`);
 	}
 }
 
@@ -229,7 +290,11 @@ export async function submitAssignments(studentId, assignment) {
 		let gradeLevel = assignment.grade_level;
 		if (!gradeLevel) {
 			try {
-				const profileResponse = await fetch(`${API_BASE_URL}/students/${studentId}/profile`, {
+				const apiBase = getApiBase();
+				if (!apiBase) {
+					throw new Error('API calls cannot be made during server-side rendering');
+				}
+				const profileResponse = await fetch(`${apiBase}/students/${studentId}/profile`, {
 					headers: {
 						'X-Request-ID': requestId
 					}
@@ -247,10 +312,14 @@ export async function submitAssignments(studentId, assignment) {
 			}
 		}
 
+		const apiBase = getApiBase();
+		if (!apiBase) {
+			throw new Error('API calls cannot be made during server-side rendering');
+		}
 		const endpoint =
 			sanitizedType === 'writing'
-				? `${API_BASE_URL}/writing/upload`
-				: `${API_BASE_URL}/transcripts/upload`;
+				? `${apiBase}/writing/upload`
+				: `${apiBase}/transcripts/upload`;
 
 		// Build request body based on endpoint type
 		let requestBody;

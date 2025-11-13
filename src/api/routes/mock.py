@@ -184,21 +184,63 @@ async def clear_mock_students(
                     extra={"request_id": request_id, "student_id": student_id},
                 )
         
-        # Also delete any other students that might exist (STU-973, STU-719, STU-783, etc.)
-        # These are from previous test runs
-        extra_student_ids = ["STU-973", "STU-719", "STU-783"]
+        # Also delete any other students that might exist (STU-973, STU-719, STU-783, STU-999, etc.)
+        # These are from previous test runs or accidentally created
+        # Query by student_id to find all profile versions and delete them all
+        extra_student_ids = ["STU-973", "STU-719", "STU-783", "STU-999"]
         for student_id in extra_student_ids:
             try:
-                student = student_repo.get(student_id)
-                if student:
-                    student_repo.delete(student_id, student.profile_version)
+                # Query all profile versions for this student_id
+                # Query by partition key (student_id) to get all versions
+                # Use the repository's query method which handles the partition key correctly
+                profiles = student_repo.query(
+                    partition_value=student_id,
+                )
+                
+                if profiles:
+                    # Delete all versions found
+                    for profile in profiles:
+                        profile_version = profile.profile_version if hasattr(profile, 'profile_version') else 1
+                        try:
+                            student_repo.delete(student_id, profile_version=profile_version)
+                            deleted_count += 1
+                            logger.debug(
+                                f"Deleted extra student {student_id} v{profile_version}",
+                                extra={"request_id": request_id, "student_id": student_id, "profile_version": profile_version},
+                            )
+                        except Exception as delete_error:
+                            logger.warning(
+                                f"Failed to delete {student_id} v{profile_version}: {delete_error}",
+                                extra={"request_id": request_id, "student_id": student_id, "profile_version": profile_version},
+                            )
+                else:
+                    # If query returns nothing, try direct delete with version 1 as fallback
+                    try:
+                        student_repo.delete(student_id, profile_version=1)
+                        deleted_count += 1
+                        logger.debug(
+                            f"Deleted extra student {student_id} (fallback delete)",
+                            extra={"request_id": request_id, "student_id": student_id},
+                        )
+                    except Exception:
+                        logger.debug(
+                            f"Extra student {student_id} does not exist, skipping",
+                            extra={"request_id": request_id, "student_id": student_id},
+                        )
+            except Exception as e:
+                # If query fails, try direct delete as last resort
+                try:
+                    student_repo.delete(student_id, profile_version=1)
                     deleted_count += 1
                     logger.debug(
-                        f"Deleted extra student {student_id}",
+                        f"Deleted extra student {student_id} (exception fallback)",
                         extra={"request_id": request_id, "student_id": student_id},
                     )
-            except Exception:
-                # Ignore errors for extra students
+                except Exception as delete_error:
+                    logger.debug(
+                        f"Could not delete extra student {student_id}: {delete_error}",
+                        extra={"request_id": request_id, "student_id": student_id},
+                    )
                 pass
         
         logger.info(
