@@ -1,6 +1,6 @@
 <script>
 	import { onMount } from 'svelte';
-	import { currentView, students, educator, selectedClass, filteredStudents, classes } from '$lib/stores';
+	import { currentView, students, educator, selectedClass, filteredStudents, classes, sortColumn, sortDirection, sortedStudents } from '$lib/stores';
 	import { getStudents, syncWithGoogleClassroom } from '$lib/api';
 	import Header from '$lib/components/Header.svelte';
 	import StudentStats from '$lib/components/StudentStats.svelte';
@@ -139,7 +139,9 @@
 			if (succeeded > 0) {
 				await loadStudentData(studentId);
 				// Scroll to top of page to show updated stats and chart
-				window.scrollTo({ top: 0, behavior: 'smooth' });
+				if (typeof window !== 'undefined') {
+					window.scrollTo({ top: 0, behavior: 'smooth' });
+				}
 			}
 		} catch (error) {
 			console.error('Failed to submit assignments:', error);
@@ -156,6 +158,22 @@
 
 	function backToDashboard() {
 		currentView.set('teacher');
+	}
+
+	function handleSort(column) {
+		if ($sortColumn === column) {
+			// Toggle direction if same column
+			sortDirection.set($sortDirection === 'asc' ? 'desc' : 'asc');
+		} else {
+			// New column, default to ascending
+			sortColumn.set(column);
+			sortDirection.set('asc');
+		}
+	}
+
+	function getSortIcon(column) {
+		if ($sortColumn !== column) return '⇅';
+		return $sortDirection === 'asc' ? '↑' : '↓';
 	}
 </script>
 
@@ -207,17 +225,72 @@
 				<table class="table table-hover">
 					<thead>
 						<tr>
-							<th>Student ID</th>
-							<th>Grade</th>
-							<th>Class</th>
-							<th>Vocabulary Size</th>
-							<th>Proficiency Score</th>
+							<th>
+								<button
+									class="btn btn-link text-decoration-none p-0 fw-bold text-start"
+									on:click={() => handleSort('first_name')}
+									type="button"
+								>
+									Name {getSortIcon('first_name')}
+								</button>
+							</th>
+							<th>
+								<button
+									class="btn btn-link text-decoration-none p-0 fw-bold text-start"
+									on:click={() => handleSort('student_id')}
+									type="button"
+								>
+									Student ID {getSortIcon('student_id')}
+								</button>
+							</th>
+							<th>
+								<button
+									class="btn btn-link text-decoration-none p-0 fw-bold text-start"
+									on:click={() => handleSort('grade_level')}
+									type="button"
+								>
+									Grade {getSortIcon('grade_level')}
+								</button>
+							</th>
+							<th>
+								<button
+									class="btn btn-link text-decoration-none p-0 fw-bold text-start"
+									on:click={() => handleSort('class')}
+									type="button"
+								>
+									Class {getSortIcon('class')}
+								</button>
+							</th>
+							<th>
+								<button
+									class="btn btn-link text-decoration-none p-0 fw-bold text-start"
+									on:click={() => handleSort('vocabulary_size')}
+									type="button"
+								>
+									Vocabulary Size {getSortIcon('vocabulary_size')}
+								</button>
+							</th>
+							<th>
+								<button
+									class="btn btn-link text-decoration-none p-0 fw-bold text-start"
+									on:click={() => handleSort('proficiency_score')}
+									type="button"
+								>
+									Proficiency Score {getSortIcon('proficiency_score')}
+								</button>
+							</th>
 							<th>Action</th>
 						</tr>
 					</thead>
 					<tbody>
-						{#each $filteredStudents as student}
+						{#each $sortedStudents as student}
 							<tr>
+								<td>
+									{student.first_name || 'N/A'}
+									{#if student.last_initial}
+										{student.last_initial}.
+									{/if}
+								</td>
 								<td>{student.student_id}</td>
 								<td>{student.grade_level}</td>
 								<td>{student.class || student.metadata?.class || 'N/A'}</td>
@@ -255,9 +328,8 @@
 				</div>
 			</div>
 		{:else if currentStudentProfile}
-			<StudentStats studentProfile={currentStudentProfile} />
-
-			<VocabularyChart
+			<StudentStats
+				studentProfile={currentStudentProfile}
 				vocabularyList={currentStudentProfile.vocabulary_list || []}
 				currentVocabularySize={currentStudentProfile.vocabulary_size || 0}
 			/>
@@ -272,3 +344,21 @@
 		{/if}
 	{/if}
 </div>
+
+<style>
+	th button {
+		color: inherit;
+		border: none;
+		cursor: pointer;
+		transition: opacity 0.2s;
+	}
+	
+	th button:hover {
+		opacity: 0.7;
+	}
+	
+	th button:focus {
+		outline: 2px solid #0d6efd;
+		outline-offset: 2px;
+	}
+</style>

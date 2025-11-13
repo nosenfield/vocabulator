@@ -112,28 +112,28 @@ def generate_vocabulary_entries(size: int, grade_level: int) -> List[VocabularyE
 # Mock student data - 18 students across 3 classes
 MOCK_STUDENTS = [
     # 7A-ELA (6 students)
-    {"student_id": "STU-001", "grade_level": 7, "class": "7A-ELA", "vocab_size": 120, "proficiency_range": (70, 85)},
-    {"student_id": "STU-002", "grade_level": 7, "class": "7A-ELA", "vocab_size": 95, "proficiency_range": (60, 75)},
-    {"student_id": "STU-003", "grade_level": 7, "class": "7A-ELA", "vocab_size": 110, "proficiency_range": (65, 80)},
-    {"student_id": "STU-004", "grade_level": 7, "class": "7A-ELA", "vocab_size": 85, "proficiency_range": (50, 65)},
-    {"student_id": "STU-005", "grade_level": 7, "class": "7A-ELA", "vocab_size": 130, "proficiency_range": (75, 90)},
-    {"student_id": "STU-006", "grade_level": 7, "class": "7A-ELA", "vocab_size": 100, "proficiency_range": (55, 70)},
+    {"student_id": "STU-001", "first_name": "Alex", "last_initial": "S", "grade_level": 7, "class": "7A-ELA", "vocab_size": 120, "proficiency_range": (70, 85)},
+    {"student_id": "STU-002", "first_name": "Jordan", "last_initial": "M", "grade_level": 7, "class": "7A-ELA", "vocab_size": 95, "proficiency_range": (60, 75)},
+    {"student_id": "STU-003", "first_name": "Taylor", "last_initial": "R", "grade_level": 7, "class": "7A-ELA", "vocab_size": 110, "proficiency_range": (65, 80)},
+    {"student_id": "STU-004", "first_name": "Morgan", "last_initial": "K", "grade_level": 7, "class": "7A-ELA", "vocab_size": 85, "proficiency_range": (50, 65)},
+    {"student_id": "STU-005", "first_name": "Casey", "last_initial": "L", "grade_level": 7, "class": "7A-ELA", "vocab_size": 130, "proficiency_range": (75, 90)},
+    {"student_id": "STU-006", "first_name": "Riley", "last_initial": "B", "grade_level": 7, "class": "7A-ELA", "vocab_size": 100, "proficiency_range": (55, 70)},
     
     # 7B-ELA (6 students)
-    {"student_id": "STU-007", "grade_level": 7, "class": "7B-ELA", "vocab_size": 105, "proficiency_range": (65, 80)},
-    {"student_id": "STU-008", "grade_level": 7, "class": "7B-ELA", "vocab_size": 90, "proficiency_range": (55, 70)},
-    {"student_id": "STU-009", "grade_level": 7, "class": "7B-ELA", "vocab_size": 115, "proficiency_range": (70, 85)},
-    {"student_id": "STU-010", "grade_level": 7, "class": "7B-ELA", "vocab_size": 80, "proficiency_range": (45, 60)},
-    {"student_id": "STU-011", "grade_level": 7, "class": "7B-ELA", "vocab_size": 125, "proficiency_range": (75, 90)},
-    {"student_id": "STU-012", "grade_level": 7, "class": "7B-ELA", "vocab_size": 95, "proficiency_range": (60, 75)},
+    {"student_id": "STU-007", "first_name": "Avery", "last_initial": "C", "grade_level": 7, "class": "7B-ELA", "vocab_size": 105, "proficiency_range": (65, 80)},
+    {"student_id": "STU-008", "first_name": "Quinn", "last_initial": "D", "grade_level": 7, "class": "7B-ELA", "vocab_size": 90, "proficiency_range": (55, 70)},
+    {"student_id": "STU-009", "first_name": "Sage", "last_initial": "F", "grade_level": 7, "class": "7B-ELA", "vocab_size": 115, "proficiency_range": (70, 85)},
+    {"student_id": "STU-010", "first_name": "River", "last_initial": "G", "grade_level": 7, "class": "7B-ELA", "vocab_size": 80, "proficiency_range": (45, 60)},
+    {"student_id": "STU-011", "first_name": "Phoenix", "last_initial": "H", "grade_level": 7, "class": "7B-ELA", "vocab_size": 125, "proficiency_range": (75, 90)},
+    {"student_id": "STU-012", "first_name": "Blake", "last_initial": "J", "grade_level": 7, "class": "7B-ELA", "vocab_size": 95, "proficiency_range": (60, 75)},
     
     # 8A-ELA (6 students)
-    {"student_id": "STU-013", "grade_level": 8, "class": "8A-ELA", "vocab_size": 140, "proficiency_range": (80, 95)},
-    {"student_id": "STU-014", "grade_level": 8, "class": "8A-ELA", "vocab_size": 120, "proficiency_range": (70, 85)},
-    {"student_id": "STU-015", "grade_level": 8, "class": "8A-ELA", "vocab_size": 110, "proficiency_range": (65, 80)},
-    {"student_id": "STU-016", "grade_level": 8, "class": "8A-ELA", "vocab_size": 100, "proficiency_range": (60, 75)},
-    {"student_id": "STU-017", "grade_level": 8, "class": "8A-ELA", "vocab_size": 135, "proficiency_range": (75, 90)},
-    {"student_id": "STU-018", "grade_level": 8, "class": "8A-ELA", "vocab_size": 115, "proficiency_range": (70, 85)},
+    {"student_id": "STU-013", "first_name": "Cameron", "last_initial": "N", "grade_level": 8, "class": "8A-ELA", "vocab_size": 140, "proficiency_range": (80, 95)},
+    {"student_id": "STU-014", "first_name": "Dakota", "last_initial": "P", "grade_level": 8, "class": "8A-ELA", "vocab_size": 120, "proficiency_range": (70, 85)},
+    {"student_id": "STU-015", "first_name": "Emery", "last_initial": "T", "grade_level": 8, "class": "8A-ELA", "vocab_size": 110, "proficiency_range": (65, 80)},
+    {"student_id": "STU-016", "first_name": "Finley", "last_initial": "V", "grade_level": 8, "class": "8A-ELA", "vocab_size": 100, "proficiency_range": (60, 75)},
+    {"student_id": "STU-017", "first_name": "Hayden", "last_initial": "W", "grade_level": 8, "class": "8A-ELA", "vocab_size": 135, "proficiency_range": (75, 90)},
+    {"student_id": "STU-018", "first_name": "Jamie", "last_initial": "Z", "grade_level": 8, "class": "8A-ELA", "vocab_size": 115, "proficiency_range": (70, 85)},
 ]
 
 
@@ -149,6 +149,8 @@ def seed_students() -> None:
     
     for student_data in MOCK_STUDENTS:
         student_id = student_data["student_id"]
+        first_name = student_data.get("first_name")
+        last_initial = student_data.get("last_initial")
         grade_level = student_data["grade_level"]
         class_name = student_data["class"]
         vocab_size = student_data["vocab_size"]
@@ -162,6 +164,8 @@ def seed_students() -> None:
                 updated_count += 1
                 # Update existing student
                 existing.grade_level = grade_level
+                existing.first_name = first_name
+                existing.last_initial = last_initial
                 existing.vocabulary_list = generate_vocabulary_entries(vocab_size, grade_level)
                 existing.calculate_proficiency_score()
                 # Adjust to target range
@@ -186,6 +190,8 @@ def seed_students() -> None:
         now = datetime.now(timezone.utc)
         student = StudentProfile(
             student_id=student_id,
+            first_name=first_name,
+            last_initial=last_initial,
             grade_level=grade_level,
             vocabulary_list=vocabulary,
             proficiency_score=0.0,  # Will be calculated

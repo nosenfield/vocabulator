@@ -56,6 +56,8 @@ class StudentProfile(BaseModel):
     
     Attributes:
         student_id: Anonymous student identifier
+        first_name: Student's first name
+        last_initial: Student's last name initial (single uppercase letter)
         grade_level: Student's grade level (6-8)
         vocabulary_list: List of vocabulary words the student knows
         proficiency_score: Calculated proficiency score (0-100)
@@ -65,6 +67,18 @@ class StudentProfile(BaseModel):
     """
     
     student_id: str = Field(..., description="Anonymous student identifier")
+    first_name: Optional[str] = Field(
+        default=None,
+        min_length=1,
+        max_length=50,
+        description="Student's first name",
+    )
+    last_initial: Optional[str] = Field(
+        default=None,
+        min_length=1,
+        max_length=1,
+        description="Student's last name initial (single uppercase letter)",
+    )
     grade_level: int = Field(..., ge=6, le=8, description="Grade level (6-8)")
     vocabulary_list: List[VocabularyEntry] = Field(
         default_factory=list,
@@ -96,6 +110,15 @@ class StudentProfile(BaseModel):
         """Validate grade level is 6-8."""
         if v not in [6, 7, 8]:
             raise ValueError("grade_level must be 6, 7, or 8")
+        return v
+    
+    @field_validator("last_initial")
+    @classmethod
+    def validate_last_initial(cls, v: Optional[str]) -> Optional[str]:
+        """Validate last initial is a single uppercase letter."""
+        if v is not None:
+            if not v.isalpha() or not v.isupper():
+                raise ValueError("last_initial must be a single uppercase letter (A-Z)")
         return v
     
     def add_vocabulary(self, entry: VocabularyEntry) -> None:
@@ -199,6 +222,11 @@ class StudentProfile(BaseModel):
             "created_at": self.created_at.isoformat(),
             "last_updated": self.last_updated.isoformat(),
         }
+        # Include name fields if they exist
+        if self.first_name is not None:
+            result["first_name"] = self.first_name
+        if self.last_initial is not None:
+            result["last_initial"] = self.last_initial
         # Include metadata if it exists (for class information)
         # Always include metadata dict, even if empty, to ensure it's persisted
         result["metadata"] = self.metadata if self.metadata else {}
@@ -238,6 +266,8 @@ class StudentProfile(BaseModel):
             profile_version=data.get("profile_version", 1),
             created_at=datetime.fromisoformat(data.get("created_at", datetime.now(timezone.utc).isoformat())),
             last_updated=datetime.fromisoformat(data.get("last_updated", datetime.now(timezone.utc).isoformat())),
+            first_name=data.get("first_name"),
+            last_initial=data.get("last_initial"),
         )
         # Set metadata if it exists in the data, otherwise use empty dict
         # This ensures metadata is always set, even if not in DynamoDB item

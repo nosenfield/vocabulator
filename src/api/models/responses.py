@@ -89,6 +89,8 @@ class StudentProfileResponse(BaseModel):
     
     Attributes:
         student_id: Student identifier
+        first_name: Student's first name
+        last_initial: Student's last name initial (single uppercase letter)
         grade_level: Student grade level (6-8)
         vocabulary_size: Number of unique vocabulary words
         vocabulary_list: List of vocabulary entries (for timeline visualization)
@@ -98,6 +100,14 @@ class StudentProfileResponse(BaseModel):
     """
     
     student_id: str = Field(..., description="Student identifier")
+    first_name: Optional[str] = Field(
+        default=None,
+        description="Student's first name",
+    )
+    last_initial: Optional[str] = Field(
+        default=None,
+        description="Student's last name initial (single uppercase letter)",
+    )
     grade_level: int = Field(..., ge=6, le=8, description="Student grade level")
     vocabulary_size: int = Field(..., ge=0, description="Number of unique vocabulary words")
     vocabulary_list: List[VocabularyEntryResponse] = Field(
@@ -117,6 +127,8 @@ class StudentProfileResponse(BaseModel):
         json_schema_extra={
             "example": {
                 "student_id": "STU-001",
+                "first_name": "Alex",
+                "last_initial": "S",
                 "grade_level": 7,
                 "vocabulary_size": 150,
                 "proficiency_score": 75.5,
@@ -132,6 +144,8 @@ class StudentListItem(BaseModel):
     
     Attributes:
         student_id: Student identifier
+        first_name: Student's first name
+        last_initial: Student's last name initial (single uppercase letter)
         grade_level: Student grade level (6-8)
         vocabulary_size: Number of unique vocabulary words
         proficiency_score: Calculated proficiency score (0-100)
@@ -143,6 +157,14 @@ class StudentListItem(BaseModel):
     )
     
     student_id: str = Field(..., description="Student identifier")
+    first_name: Optional[str] = Field(
+        default=None,
+        description="Student's first name",
+    )
+    last_initial: Optional[str] = Field(
+        default=None,
+        description="Student's last name initial (single uppercase letter)",
+    )
     grade_level: int = Field(..., ge=6, le=8, description="Student grade level")
     vocabulary_size: int = Field(..., ge=0, description="Number of unique vocabulary words")
     proficiency_score: float = Field(

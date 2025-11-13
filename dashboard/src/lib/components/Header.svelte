@@ -21,7 +21,11 @@
 			<option disabled>──────────</option>
 			{#each $students as student}
 				<option value={student.student_id}>
-					{student.student_id} - Grade {student.grade_level}
+					{student.first_name || 'N/A'}
+					{#if student.last_initial}
+						{student.last_initial}.
+					{/if}
+					({student.student_id}) - Grade {student.grade_level}
 				</option>
 			{/each}
 		</select>

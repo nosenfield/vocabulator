@@ -120,6 +120,8 @@ class CreateStudentRequest(BaseModel):
     
     Attributes:
         student_id: Anonymous student identifier (format: STU-XXX)
+        first_name: Student's first name
+        last_initial: Student's last name initial (single uppercase letter)
         grade_level: Student grade level (6-8)
     """
     
@@ -129,6 +131,18 @@ class CreateStudentRequest(BaseModel):
         description="Student identifier (format: STU-001)",
         examples=["STU-001"],
     )
+    first_name: Optional[str] = Field(
+        default=None,
+        min_length=1,
+        max_length=50,
+        description="Student's first name",
+    )
+    last_initial: Optional[str] = Field(
+        default=None,
+        min_length=1,
+        max_length=1,
+        description="Student's last name initial (single uppercase letter)",
+    )
     grade_level: int = Field(
         ...,
         ge=6,
@@ -136,10 +150,21 @@ class CreateStudentRequest(BaseModel):
         description="Student grade level (6-8)",
     )
     
+    @field_validator("last_initial")
+    @classmethod
+    def validate_last_initial(cls, v: Optional[str]) -> Optional[str]:
+        """Validate last initial is a single uppercase letter."""
+        if v is not None:
+            if not v.isalpha() or not v.isupper():
+                raise ValueError("last_initial must be a single uppercase letter (A-Z)")
+        return v
+    
     model_config = ConfigDict(
         json_schema_extra={
             "example": {
                 "student_id": "STU-001",
+                "first_name": "Alex",
+                "last_initial": "S",
                 "grade_level": 7,
             }
         }
@@ -152,9 +177,23 @@ class UpdateStudentRequest(BaseModel):
     All fields are optional for partial updates.
     
     Attributes:
+        first_name: Student's first name
+        last_initial: Student's last name initial (single uppercase letter)
         grade_level: Student grade level (6-8)
     """
     
+    first_name: Optional[str] = Field(
+        default=None,
+        min_length=1,
+        max_length=50,
+        description="Student's first name",
+    )
+    last_initial: Optional[str] = Field(
+        default=None,
+        min_length=1,
+        max_length=1,
+        description="Student's last name initial (single uppercase letter)",
+    )
     grade_level: Optional[int] = Field(
         default=None,
         ge=6,
@@ -162,9 +201,20 @@ class UpdateStudentRequest(BaseModel):
         description="Student grade level (6-8)",
     )
     
+    @field_validator("last_initial")
+    @classmethod
+    def validate_last_initial(cls, v: Optional[str]) -> Optional[str]:
+        """Validate last initial is a single uppercase letter."""
+        if v is not None:
+            if not v.isalpha() or not v.isupper():
+                raise ValueError("last_initial must be a single uppercase letter (A-Z)")
+        return v
+    
     model_config = ConfigDict(
         json_schema_extra={
             "example": {
+                "first_name": "Alex",
+                "last_initial": "S",
                 "grade_level": 8,
             }
         }

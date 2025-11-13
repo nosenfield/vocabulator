@@ -137,11 +137,12 @@
 	});
 
 	// Update chart when vocabulary data changes
-	// Watch vocabularyList and currentVocabularySize explicitly to ensure reactivity
+	// Extract values to ensure Svelte detects changes to nested properties
 	$: vocabularyListLength = vocabularyList?.length || 0;
 	$: watchedVocabularySize = currentVocabularySize || 0;
 	
-	$: if (chart && (vocabularyList || currentVocabularySize !== undefined)) {
+	// Use the extracted values in the condition to ensure reactivity
+	$: if (chart && (vocabularyListLength > 0 || watchedVocabularySize > 0 || vocabularyList || currentVocabularySize !== undefined)) {
 		const chartData = prepareChartData(vocabularyList, currentVocabularySize);
 		const yAxisMax = chartData.yAxisMax || 20;
 		chart.data = {
@@ -153,19 +154,15 @@
 	}
 </script>
 
-<div class="card mb-3">
-	<div class="card-header bg-primary text-white">
-		<h5 class="mb-0">Vocabulary Growth (Last {CHART_DAYS} Days)</h5>
+<div>
+	<h6 class="mb-3">Vocabulary Growth (Last {CHART_DAYS} Days)</h6>
+	<div style="position: relative; height: 300px;">
+		<canvas bind:this={chartCanvas}></canvas>
 	</div>
-	<div class="card-body">
-		<div style="position: relative; height: 300px;">
-			<canvas bind:this={chartCanvas}></canvas>
-		</div>
-		{#if (!vocabularyList || vocabularyList.length === 0)}
-			<p class="text-muted text-center mt-2">
-				No vocabulary data available. Submit assignments to see vocabulary growth.
-			</p>
-		{/if}
-	</div>
+	{#if (!vocabularyList || vocabularyList.length === 0)}
+		<p class="text-muted text-center mt-2">
+			No vocabulary data available. Submit assignments to see vocabulary growth.
+		</p>
+	{/if}
 </div>
 

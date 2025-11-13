@@ -216,6 +216,17 @@ def generate_writing_sample(grade_level: int, sample_type: str = "essay") -> str
     return writing
 
 
+# Common first names for middle school students
+FIRST_NAMES = [
+    "Alex", "Jordan", "Taylor", "Morgan", "Casey", "Riley", "Avery", "Quinn",
+    "Sage", "River", "Phoenix", "Blake", "Cameron", "Dakota", "Emery", "Finley",
+    "Hayden", "Jamie", "Sam", "Chris", "Drew", "Lee", "Pat", "Terry"
+]
+
+# Last name initials (A-Z)
+LAST_INITIALS = list("ABCDEFGHIJKLMNOPQRSTUVWXYZ")
+
+
 def generate_student_profile(
     student_id: str,
     grade_level: int,
@@ -233,6 +244,10 @@ def generate_student_profile(
     """
     if vocabulary_size is None:
         vocabulary_size = random.randint(50, 200)
+    
+    # Generate random name
+    first_name = random.choice(FIRST_NAMES)
+    last_initial = random.choice(LAST_INITIALS)
     
     # Select appropriate words for grade level
     if grade_level == 6:
@@ -274,6 +289,8 @@ def generate_student_profile(
     
     profile = StudentProfile(
         student_id=student_id,
+        first_name=first_name,
+        last_initial=last_initial,
         grade_level=grade_level,
         vocabulary_list=vocabulary_list
     )

@@ -132,6 +132,8 @@ async def get_student_profile(
         
         return StudentProfileResponse(
             student_id=profile.student_id,
+            first_name=profile.first_name,
+            last_initial=profile.last_initial,
             grade_level=profile.grade_level,
             vocabulary_size=len(profile.vocabulary_list),
             vocabulary_list=vocabulary_entries,
@@ -226,6 +228,8 @@ async def list_students(
             students.append(
             StudentListItem(
                 student_id=profile.student_id,
+                first_name=profile.first_name,
+                last_initial=profile.last_initial,
                 grade_level=profile.grade_level,
                 vocabulary_size=len(profile.vocabulary_list),
                 proficiency_score=profile.proficiency_score,
@@ -314,6 +318,8 @@ async def create_student(
         profile = StudentProfile(
             student_id=request.student_id,
             grade_level=request.grade_level,
+            first_name=request.first_name,
+            last_initial=request.last_initial,
             vocabulary_list=[],
             proficiency_score=0.0,
         )
@@ -338,6 +344,8 @@ async def create_student(
         
         return StudentProfileResponse(
             student_id=created_profile.student_id,
+            first_name=created_profile.first_name,
+            last_initial=created_profile.last_initial,
             grade_level=created_profile.grade_level,
             vocabulary_size=len(created_profile.vocabulary_list),
             vocabulary_list=vocabulary_entries,
@@ -424,6 +432,10 @@ async def update_student(
         # Apply updates
         if request.grade_level is not None:
             profile.grade_level = request.grade_level
+        if request.first_name is not None:
+            profile.first_name = request.first_name
+        if request.last_initial is not None:
+            profile.last_initial = request.last_initial
         
         # Update profile (repository will recalculate proficiency score) (sync method)
         updated_profile = student_repo.update(profile)
@@ -457,6 +469,8 @@ async def update_student(
         
         return StudentProfileResponse(
             student_id=updated_profile.student_id,
+            first_name=updated_profile.first_name,
+            last_initial=updated_profile.last_initial,
             grade_level=updated_profile.grade_level,
             vocabulary_size=len(updated_profile.vocabulary_list),
             vocabulary_list=vocabulary_entries,
