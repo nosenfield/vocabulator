@@ -187,10 +187,12 @@ async def list_students(
         if grade_level:
             profiles = student_repo.list_by_grade_level(grade_level)
         else:
-            # For now, if no grade filter, return empty list
-            # In a full implementation, we'd have a list_all method
-            # For MVP, we'll require grade_level filter
-            profiles = []
+            # If no grade filter, query all grade levels (6, 7, 8) and combine results
+            all_profiles = []
+            for grade in [6, 7, 8]:
+                grade_profiles = student_repo.list_by_grade_level(grade)
+                all_profiles.extend(grade_profiles)
+            profiles = all_profiles
         
         # Convert to response items
         students = [
