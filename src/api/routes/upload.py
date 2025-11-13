@@ -8,7 +8,7 @@ from datetime import datetime, timezone
 from typing import Annotated
 from uuid import uuid4
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
 
 from src.api.dependencies import (
     get_s3_client,
@@ -49,6 +49,7 @@ router = APIRouter()
 )
 async def mock_submit_assignment(
     request: WritingUploadRequest,
+    background_tasks: BackgroundTasks,
     pipeline: Annotated[TextProcessingPipeline, Depends(get_text_processing_pipeline)],
     student_repo: Annotated[StudentRepository, Depends(get_student_repository)],
 ) -> WritingUploadResponse:
@@ -93,21 +94,27 @@ async def mock_submit_assignment(
                 ),
             )
         
-        # Process through pipeline (this handles vocabulary extraction and profile update)
+        # Process quickly (extract vocabulary and update profile only)
+        # Recommendations will be generated in the background
         try:
-            recommendation = await pipeline.process_text(
+            updated_profile = await pipeline.process_text_quick(
                 text=request.text,
                 student_id=request.student_id,
                 grade_level=request.grade_level,
                 request_id=request_id,
             )
             
-            # Get updated profile to calculate words_extracted
-            profile = student_repo.get_by_id(request.student_id)
-            words_extracted = len(profile.vocabulary_list) if profile else 0
+            # Schedule recommendation generation in background
+            background_tasks.add_task(
+                pipeline.generate_recommendations_async,
+                student_id=request.student_id,
+                request_id=request_id,
+            )
+            
+            words_extracted = len(updated_profile.vocabulary_list) if updated_profile else 0
             
             logger.info(
-                "Mock assignment processed successfully",
+                "Mock assignment processed successfully (quick mode)",
                 extra={
                     "student_id": request.student_id,
                     "words_extracted": words_extracted,
@@ -177,6 +184,7 @@ async def mock_submit_assignment(
 )
 async def upload_transcript(
     request: TranscriptUploadRequest,
+    background_tasks: BackgroundTasks,
     pipeline: Annotated[TextProcessingPipeline, Depends(get_text_processing_pipeline)],
     s3_client: Annotated[S3Client, Depends(get_s3_client)],
     student_repo: Annotated[StudentRepository, Depends(get_student_repository)],
@@ -267,21 +275,27 @@ async def upload_transcript(
                 ),
             ) from e
         
-        # Step 3: Process transcript through pipeline
+        # Step 3: Process transcript quickly (extract vocabulary and update profile only)
+        # Recommendations will be generated in the background
         try:
-            recommendation = await pipeline.process_text(
+            updated_profile = await pipeline.process_text_quick(
                 text=request.text,
                 student_id=request.student_id,
                 grade_level=request.grade_level,
                 request_id=request_id,
             )
             
-            # Get updated profile to calculate words_extracted (sync method)
-            profile = student_repo.get(request.student_id)
-            words_extracted = len(profile.vocabulary_list) if profile else 0
+            # Schedule recommendation generation in background
+            background_tasks.add_task(
+                pipeline.generate_recommendations_async,
+                student_id=request.student_id,
+                request_id=request_id,
+            )
+            
+            words_extracted = len(updated_profile.vocabulary_list) if updated_profile else 0
             
             logger.info(
-                "Transcript processed successfully",
+                "Transcript processed successfully (quick mode)",
                 extra={
                     "student_id": request.student_id,
                     "words_extracted": words_extracted,
@@ -355,6 +369,7 @@ async def upload_transcript(
 )
 async def upload_writing(
     request: WritingUploadRequest,
+    background_tasks: BackgroundTasks,
     pipeline: Annotated[TextProcessingPipeline, Depends(get_text_processing_pipeline)],
     s3_client: Annotated[S3Client, Depends(get_s3_client)],
     student_repo: Annotated[StudentRepository, Depends(get_student_repository)],
@@ -447,21 +462,27 @@ async def upload_writing(
                 ),
             ) from e
         
-        # Step 3: Process writing sample through pipeline
+        # Step 3: Process writing sample quickly (extract vocabulary and update profile only)
+        # Recommendations will be generated in the background
         try:
-            recommendation = await pipeline.process_text(
+            updated_profile = await pipeline.process_text_quick(
                 text=request.text,
                 student_id=request.student_id,
                 grade_level=request.grade_level,
                 request_id=request_id,
             )
             
-            # Get updated profile to calculate words_extracted
-            profile = student_repo.get(request.student_id)
-            words_extracted = len(profile.vocabulary_list) if profile else 0
+            # Schedule recommendation generation in background
+            background_tasks.add_task(
+                pipeline.generate_recommendations_async,
+                student_id=request.student_id,
+                request_id=request_id,
+            )
+            
+            words_extracted = len(updated_profile.vocabulary_list) if updated_profile else 0
             
             logger.info(
-                "Writing sample processed successfully",
+                "Writing sample processed successfully (quick mode)",
                 extra={
                     "student_id": request.student_id,
                     "words_extracted": words_extracted,

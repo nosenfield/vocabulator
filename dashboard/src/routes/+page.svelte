@@ -135,13 +135,44 @@
 				};
 			}
 
-			// Reload student data to show updates
+			// Reload student data immediately to show chart updates (vocabulary is ready)
 			if (succeeded > 0) {
 				await loadStudentData(studentId);
 				// Scroll to top of page to show updated stats and chart
 				if (typeof window !== 'undefined') {
 					window.scrollTo({ top: 0, behavior: 'smooth' });
 				}
+				
+				// Poll for recommendations (they're generated in background, may take 10-15 seconds)
+				// Poll every 3 seconds for up to 20 seconds
+				let pollCount = 0;
+				const maxPolls = 7; // 7 polls * 3 seconds = 21 seconds max
+				const pollInterval = setInterval(async () => {
+					pollCount++;
+					try {
+						const recommendations = await getStudentRecommendations(studentId);
+						const recommendationsList = recommendations.recommendations || recommendations || [];
+						if (Array.isArray(recommendationsList) && recommendationsList.length > 0) {
+							// Check if first item has a 'words' property (it's a recommendation object)
+							if (recommendationsList[0].words && Array.isArray(recommendationsList[0].words)) {
+								// Flatten: extract all words from all recommendations
+								currentRecommendations = recommendationsList.flatMap(rec => rec.words || []);
+							} else {
+								// Already a flat array of words
+								currentRecommendations = recommendationsList;
+							}
+							// Stop polling once we have recommendations
+							clearInterval(pollInterval);
+						}
+					} catch (error) {
+						console.debug('Polling for recommendations:', error);
+					}
+					
+					// Stop polling after max attempts
+					if (pollCount >= maxPolls) {
+						clearInterval(pollInterval);
+					}
+				}, 3000); // Poll every 3 seconds
 			}
 		} catch (error) {
 			console.error('Failed to submit assignments:', error);

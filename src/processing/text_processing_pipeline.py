@@ -132,11 +132,142 @@ class TextProcessingPipeline:
                 "student_id": student_id,
                 "extracted_words": len(extracted_words),
                 "gap_words": len(gap_words),
-                "recommendations": len(recommendation.words),
                 "request_id": request_id,
             },
         )
 
+        return recommendation
+
+    async def process_text_quick(
+        self,
+        text: str,
+        student_id: str,
+        grade_level: Optional[int] = None,
+        request_id: Optional[str] = None,
+    ) -> StudentProfile:
+        """Process student text quickly (extract vocabulary and update profile only).
+        
+        This method skips gap analysis and recommendation generation for faster
+        response times. Use this when you want immediate feedback and can generate
+        recommendations asynchronously.
+        
+        Args:
+            text: Student text to process (transcript or writing sample)
+            student_id: Anonymous student identifier
+            grade_level: Optional grade level (uses profile grade if not provided)
+            request_id: Optional request ID for correlation
+            
+        Returns:
+            Updated StudentProfile instance
+            
+        Raises:
+            ValueError: If student_id is invalid
+            OpenAIError: If extraction fails
+            DynamoDBError: If database operations fail
+        """
+        if not student_id or not student_id.strip():
+            raise ValueError("student_id is required")
+        
+        logger.info(
+            f"Starting quick text processing (extract + update only)",
+            extra={
+                "student_id": student_id,
+                "text_length": len(text) if text else 0,
+                "request_id": request_id,
+            },
+        )
+        
+        # Step 1: Extract vocabulary from text
+        extracted_words = await self._extract_vocabulary(text, request_id)
+        
+        # Step 2: Get or create student profile
+        student_profile = await self._get_or_create_profile(
+            student_id, grade_level, request_id
+        )
+        
+        # Step 3: Update profile with extracted words
+        updated_profile = await self._update_profile_with_words(
+            student_profile, extracted_words, request_id
+        )
+        
+        logger.info(
+            f"Quick text processing completed",
+            extra={
+                "student_id": student_id,
+                "extracted_words": len(extracted_words),
+                "vocabulary_size": len(updated_profile.vocabulary_list),
+                "request_id": request_id,
+            },
+        )
+        
+        return updated_profile
+    
+    async def generate_recommendations_async(
+        self,
+        student_id: str,
+        request_id: Optional[str] = None,
+    ) -> VocabularyRecommendation:
+        """Generate recommendations asynchronously for a student.
+        
+        This method is designed to be called in the background after quick processing.
+        It retrieves the latest profile, identifies gaps, and generates recommendations.
+        
+        Args:
+            student_id: Anonymous student identifier
+            request_id: Optional request ID for correlation
+            
+        Returns:
+            VocabularyRecommendation with generated recommendations
+            
+        Raises:
+            ValueError: If student_id is invalid
+            OpenAIError: If analysis fails
+            DynamoDBError: If database operations fail
+        """
+        if not student_id or not student_id.strip():
+            raise ValueError("student_id is required")
+        
+        logger.info(
+            f"Starting async recommendation generation",
+            extra={
+                "student_id": student_id,
+                "request_id": request_id,
+            },
+        )
+        
+        # Get current profile
+        profile = await self._get_or_create_profile(
+            student_id, None, request_id
+        )
+        
+        # Create empty extracted words list (we're working with existing profile)
+        # In a real scenario, we might want to pass recent extracted words
+        from src.ai.vocabulary_extractor import ExtractedWord
+        extracted_words: list[ExtractedWord] = []
+        
+        # Step 4: Identify vocabulary gaps
+        gap_words = await self._identify_gaps(
+            extracted_words, profile, request_id
+        )
+        
+        # Step 5: Generate recommendations
+        recommendation = await self._generate_recommendations(
+            gap_words, profile, request_id
+        )
+        
+        # Step 6: Persist recommendations
+        await self._persist_recommendations(recommendation, request_id)
+        
+        logger.info(
+            f"Async recommendation generation completed",
+            extra={
+                "student_id": student_id,
+                "gap_words": len(gap_words),
+                "recommendations": len(recommendation.words),
+                "request_id": request_id,
+            },
+        )
+        
         return recommendation
 
     async def _extract_vocabulary(
