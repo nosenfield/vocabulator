@@ -119,10 +119,22 @@ async def get_student_profile(
             },
         )
         
+        # Convert vocabulary entries to response format
+        vocabulary_entries = [
+            {
+                "word": entry.word,
+                "first_seen": entry.first_seen.isoformat(),
+                "usage_count": entry.usage_count,
+                "contexts": entry.contexts,
+            }
+            for entry in profile.vocabulary_list
+        ]
+        
         return StudentProfileResponse(
             student_id=profile.student_id,
             grade_level=profile.grade_level,
             vocabulary_size=len(profile.vocabulary_list),
+            vocabulary_list=vocabulary_entries,
             proficiency_score=profile.proficiency_score,
             created_at=profile.created_at,
             last_updated=profile.last_updated,
@@ -313,10 +325,22 @@ async def create_student(
             extra={"request_id": request_id},
         )
         
+        # Convert vocabulary entries to response format
+        vocabulary_entries = [
+            {
+                "word": entry.word,
+                "first_seen": entry.first_seen.isoformat(),
+                "usage_count": entry.usage_count,
+                "contexts": entry.contexts,
+            }
+            for entry in created_profile.vocabulary_list
+        ]
+        
         return StudentProfileResponse(
             student_id=created_profile.student_id,
             grade_level=created_profile.grade_level,
             vocabulary_size=len(created_profile.vocabulary_list),
+            vocabulary_list=vocabulary_entries,
             proficiency_score=created_profile.proficiency_score,
             created_at=created_profile.created_at,
             last_updated=created_profile.last_updated,

@@ -51,11 +51,36 @@ def generate_vocabulary_entries(size: int, grade_level: int) -> List[VocabularyE
     """
     # Select words appropriate for grade level
     # Mix of academic vocabulary and common words
-    selected_words = random.sample(ACADEMIC_VOCABULARY, min(size, len(ACADEMIC_VOCABULARY)))
+    # If size exceeds available vocabulary, we'll cycle through with variations
+    # to ensure each student gets a unique set of words
+    max_unique = len(ACADEMIC_VOCABULARY)
     
-    # If we need more words, repeat some with different contexts
-    while len(selected_words) < size:
-        selected_words.append(random.choice(ACADEMIC_VOCABULARY))
+    if size <= max_unique:
+        # Can use unique words
+        selected_words = random.sample(ACADEMIC_VOCABULARY, size)
+    else:
+        # Need more words than available - use all words, then add variations
+        # Shuffle to get different order for each student
+        selected_words = list(ACADEMIC_VOCABULARY)
+        random.shuffle(selected_words)
+        
+        # Add more words by cycling through with different combinations
+        # This ensures students have different vocabulary sets
+        while len(selected_words) < size:
+            # Pick a random word and add it (will be deduplicated later if needed)
+            word = random.choice(ACADEMIC_VOCABULARY)
+            # Only add if we don't already have enough unique words
+            # For demo purposes, allow some repetition to reach target size
+            if selected_words.count(word) < 3:  # Allow up to 3 instances of same word
+                selected_words.append(word)
+            else:
+                # If we've used this word too much, pick another
+                available = [w for w in ACADEMIC_VOCABULARY if selected_words.count(w) < 3]
+                if available:
+                    selected_words.append(random.choice(available))
+                else:
+                    # All words used, just add any word
+                    selected_words.append(random.choice(ACADEMIC_VOCABULARY))
     
     subject_areas = ["science", "literature", "social studies", "math", "ela"]
     

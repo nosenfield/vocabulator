@@ -234,7 +234,10 @@
 		{:else if currentStudentProfile}
 			<StudentStats studentProfile={currentStudentProfile} />
 
-			<VocabularyChart {assignments} />
+			<VocabularyChart
+				vocabularyList={currentStudentProfile.vocabulary_list || []}
+				currentVocabularySize={currentStudentProfile.vocabulary_size || 0}
+			/>
 
 			<RecommendationsList recommendations={currentRecommendations} />
 

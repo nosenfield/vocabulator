@@ -3,16 +3,18 @@
 	import Chart from 'chart.js/auto';
 
 	export let assignments = [];
+	export let vocabularyList = []; // Vocabulary entries from student profile
+	export let currentVocabularySize = 0; // Current vocabulary size from profile
 
 	let chartCanvas;
 	let chart;
 
 	const CHART_DAYS = 30;
-	const AVG_WORDS_PER_ASSIGNMENT = 10;
 
-	function prepareChartData(assignments) {
+	function prepareChartData(vocabularyList, currentVocabularySize) {
 		// Generate last 30 days
 		const today = new Date();
+		today.setHours(0, 0, 0, 0); // Normalize to start of day
 		const days = [];
 		for (let i = CHART_DAYS - 1; i >= 0; i--) {
 			const date = new Date(today);
@@ -20,41 +22,58 @@
 			days.push(date);
 		}
 
-		// Group assignments by date
-		const assignmentsByDate = {};
-		assignments.forEach((assignment) => {
-			if (assignment.date) {
-				// Validate date before using
-				const dateObj = new Date(assignment.date);
-				if (isNaN(dateObj.getTime())) {
-					// Skip invalid dates and log warning for debugging
-					console.warn('Invalid assignment date:', assignment.date);
-					return;
+		// Group vocabulary words by first_seen date
+		const wordsByDate = {};
+		if (vocabularyList && Array.isArray(vocabularyList)) {
+			vocabularyList.forEach((entry) => {
+				if (entry.first_seen) {
+					// Parse first_seen date (ISO format from API)
+					const dateObj = new Date(entry.first_seen);
+					if (isNaN(dateObj.getTime())) {
+						console.warn('Invalid first_seen date:', entry.first_seen);
+						return;
+					}
+					// Normalize to date (remove time component)
+					const dateKey = new Date(dateObj.getFullYear(), dateObj.getMonth(), dateObj.getDate()).toDateString();
+					if (!wordsByDate[dateKey]) {
+						wordsByDate[dateKey] = 0;
+					}
+					wordsByDate[dateKey] += 1;
 				}
-				const dateKey = dateObj.toDateString();
-				if (!assignmentsByDate[dateKey]) {
-					assignmentsByDate[dateKey] = [];
-				}
-				assignmentsByDate[dateKey].push(assignment);
-			}
-		});
+			});
+		}
 
-		// Calculate vocabulary size for each day
-		// For demo purposes, we'll simulate growth based on assignment count
-		// In real implementation, this would come from student profile history
+		// Calculate cumulative vocabulary size for each day
 		const labels = days.map((d) => d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
 		const data = [];
 		let cumulativeVocab = 0;
 
 		days.forEach((day) => {
 			const dateKey = day.toDateString();
-			if (assignmentsByDate[dateKey] && assignmentsByDate[dateKey].length > 0) {
-				// Simulate vocabulary growth: each assignment adds words
-				const wordsAdded = assignmentsByDate[dateKey].length * AVG_WORDS_PER_ASSIGNMENT;
-				cumulativeVocab += wordsAdded;
+			// Add words that were first seen on this day
+			if (wordsByDate[dateKey]) {
+				cumulativeVocab += wordsByDate[dateKey];
 			}
-			data.push(cumulativeVocab || null);
+			// For days in the future or beyond the last word, use current vocabulary size
+			if (day > today || (day.getTime() === today.getTime() && cumulativeVocab === 0)) {
+				// If we have a current vocabulary size and haven't reached it yet, use it
+				if (currentVocabularySize > 0 && cumulativeVocab < currentVocabularySize) {
+					data.push(currentVocabularySize);
+				} else {
+					data.push(cumulativeVocab || null);
+				}
+			} else {
+				data.push(cumulativeVocab || null);
+			}
 		});
+
+		// Ensure the last data point matches current vocabulary size
+		if (currentVocabularySize > 0 && data.length > 0) {
+			const lastIndex = data.length - 1;
+			if (data[lastIndex] !== currentVocabularySize) {
+				data[lastIndex] = currentVocabularySize;
+			}
+		}
 
 		return {
 			labels,
@@ -76,7 +95,7 @@
 		if (!chartCanvas) return;
 
 		const ctx = chartCanvas.getContext('2d');
-		const chartData = prepareChartData(assignments);
+		const chartData = prepareChartData(vocabularyList, currentVocabularySize);
 
 		chart = new Chart(ctx, {
 			type: 'line',
@@ -119,9 +138,9 @@
 		}
 	});
 
-	// Update chart when assignments change
-	$: if (chart && assignments) {
-		const chartData = prepareChartData(assignments);
+	// Update chart when vocabulary data changes
+	$: if (chart && (vocabularyList || currentVocabularySize !== undefined)) {
+		const chartData = prepareChartData(vocabularyList, currentVocabularySize);
 		chart.data = chartData;
 		chart.update();
 	}
@@ -135,9 +154,9 @@
 		<div style="position: relative; height: 300px;">
 			<canvas bind:this={chartCanvas}></canvas>
 		</div>
-		{#if assignments.length === 0}
+		{#if (!vocabularyList || vocabularyList.length === 0)}
 			<p class="text-muted text-center mt-2">
-				No assignment data available. Submit assignments to see vocabulary growth.
+				No vocabulary data available. Submit assignments to see vocabulary growth.
 			</p>
 		{/if}
 	</div>

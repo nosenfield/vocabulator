@@ -68,6 +68,22 @@ class WritingUploadResponse(BaseModel):
     )
 
 
+class VocabularyEntryResponse(BaseModel):
+    """Response model for a vocabulary entry.
+    
+    Attributes:
+        word: The vocabulary word
+        first_seen: Timestamp when word was first encountered (ISO format)
+        usage_count: Number of times word has been used
+        contexts: List of subject areas where word was used
+    """
+    
+    word: str = Field(..., description="The vocabulary word")
+    first_seen: str = Field(..., description="When word was first encountered (ISO format)")
+    usage_count: int = Field(..., ge=1, description="Number of times word used")
+    contexts: List[str] = Field(default_factory=list, description="Subject areas")
+
+
 class StudentProfileResponse(BaseModel):
     """Response model for student profile.
     
@@ -75,6 +91,7 @@ class StudentProfileResponse(BaseModel):
         student_id: Student identifier
         grade_level: Student grade level (6-8)
         vocabulary_size: Number of unique vocabulary words
+        vocabulary_list: List of vocabulary entries (for timeline visualization)
         proficiency_score: Calculated proficiency score (0-100)
         created_at: Profile creation timestamp
         last_updated: Last update timestamp
@@ -83,6 +100,10 @@ class StudentProfileResponse(BaseModel):
     student_id: str = Field(..., description="Student identifier")
     grade_level: int = Field(..., ge=6, le=8, description="Student grade level")
     vocabulary_size: int = Field(..., ge=0, description="Number of unique vocabulary words")
+    vocabulary_list: List[VocabularyEntryResponse] = Field(
+        default_factory=list,
+        description="List of vocabulary entries with first_seen dates for timeline visualization"
+    )
     proficiency_score: float = Field(
         ...,
         ge=0.0,
