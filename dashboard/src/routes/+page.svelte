@@ -47,7 +47,23 @@
 				getStudentRecommendations(studentId)
 			]);
 			currentStudentProfile = profile;
-			currentRecommendations = recommendations.recommendations || recommendations || [];
+			
+			// Flatten recommendations: API returns array of recommendation objects,
+			// each containing a words array. We need to extract all words from all recommendations.
+			const recommendationsList = recommendations.recommendations || recommendations || [];
+			if (Array.isArray(recommendationsList) && recommendationsList.length > 0) {
+				// Check if first item has a 'words' property (it's a recommendation object)
+				if (recommendationsList[0].words && Array.isArray(recommendationsList[0].words)) {
+					// Flatten: extract all words from all recommendations
+					currentRecommendations = recommendationsList.flatMap(rec => rec.words || []);
+				} else {
+					// Already a flat array of words
+					currentRecommendations = recommendationsList;
+				}
+			} else {
+				currentRecommendations = [];
+			}
+			
 			// For demo, use mock assignments - in real app, fetch from API
 			// Use mock assignments for timeline visualization
 			// Import is at top of file, use it here

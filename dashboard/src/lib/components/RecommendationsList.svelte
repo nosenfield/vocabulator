@@ -37,9 +37,7 @@
 								<small class="text-muted">
 									Difficulty: <span
 										class="badge"
-										class:bg-success={colorClass === 'success'}
-										class:bg-warning={colorClass === 'warning'}
-										class:bg-danger={colorClass === 'danger'}
+										style="background-color: #6f42c1;"
 									>
 										{Math.round(difficulty * 10)}/10
 									</span>
