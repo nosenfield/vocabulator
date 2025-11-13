@@ -239,8 +239,8 @@ class StudentProfile(BaseModel):
             created_at=datetime.fromisoformat(data.get("created_at", datetime.now(timezone.utc).isoformat())),
             last_updated=datetime.fromisoformat(data.get("last_updated", datetime.now(timezone.utc).isoformat())),
         )
-        # Set metadata if it exists in the data
-        if "metadata" in data:
-            profile.metadata = data["metadata"]
+        # Set metadata if it exists in the data, otherwise use empty dict
+        # This ensures metadata is always set, even if not in DynamoDB item
+        profile.metadata = data.get("metadata", {})
         return profile
 
