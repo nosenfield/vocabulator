@@ -190,6 +190,7 @@ Resources:
     DependsOn:
       - ApiGatewayMethodAny
       - ApiGatewayMethodRoot
+      - ApiGatewayCorsOptions
       - ApiLambdaPermission
     Properties:
       RestApiId: !Ref ApiGatewayRestApi
