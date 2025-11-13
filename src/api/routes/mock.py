@@ -57,35 +57,8 @@ async def sync_google_classroom(
     request_id = str(uuid4())
     
     try:
-        # Check if students already exist by trying to get a known student ID
-        # If STU-001 exists, assume students are already seeded
-        try:
-            existing_student = student_repo.get("STU-001")
-            if existing_student:
-                # Count students by checking known mock student IDs
-                student_count = 0
-                for i in range(1, MOCK_STUDENT_COUNT + 1):
-                    try:
-                        student = student_repo.get(f"STU-{i:03d}")
-                        if student:
-                            student_count += 1
-                    except Exception:
-                        pass
-                
-                logger.info(
-                    f"Mock students already exist ({student_count} found)",
-                    extra={"request_id": request_id},
-                )
-                return {
-                    "success": True,
-                    "message": f"Students already synced. Found {student_count} students.",
-                    "students_count": student_count,
-                    "new_students_added": 0,
-                    "request_id": request_id,
-                }
-        except Exception:
-            # STU-001 doesn't exist, proceed with seeding
-            pass
+        # Always run seeding to ensure all mock students exist with correct metadata
+        # This ensures class information is set even if students already exist
         
         # Import and call the seeding function directly (safer than subprocess)
         try:
