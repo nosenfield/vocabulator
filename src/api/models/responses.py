@@ -114,6 +114,7 @@ class StudentListItem(BaseModel):
         grade_level: Student grade level (6-8)
         vocabulary_size: Number of unique vocabulary words
         proficiency_score: Calculated proficiency score (0-100)
+        class: Optional class identifier (e.g., "7A-ELA")
     """
     
     student_id: str = Field(..., description="Student identifier")
@@ -124,6 +125,11 @@ class StudentListItem(BaseModel):
         ge=0.0,
         le=100.0,
         description="Proficiency score (0-100)",
+    )
+    class_id: Optional[str] = Field(
+        default=None,
+        description="Class identifier (e.g., '7A-ELA')",
+        alias="class",  # Use 'class' in JSON but 'class_id' in Python
     )
 
 

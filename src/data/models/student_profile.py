@@ -85,6 +85,10 @@ class StudentProfile(BaseModel):
         default_factory=lambda: datetime.now(timezone.utc),
         description="Last update timestamp",
     )
+    metadata: Optional[Dict] = Field(
+        default_factory=dict,
+        description="Optional metadata (e.g., class information)",
+    )
     
     @field_validator("grade_level")
     @classmethod
@@ -178,7 +182,7 @@ class StudentProfile(BaseModel):
         Returns:
             Dictionary representation suitable for DynamoDB
         """
-        return {
+        result = {
             "student_id": self.student_id,
             "profile_version": self.profile_version,
             "grade_level": self.grade_level,
@@ -195,6 +199,10 @@ class StudentProfile(BaseModel):
             "created_at": self.created_at.isoformat(),
             "last_updated": self.last_updated.isoformat(),
         }
+        # Include metadata if it exists (for class information)
+        if hasattr(self, "metadata") and self.metadata:
+            result["metadata"] = self.metadata
+        return result
     
     @classmethod
     def from_dict(cls, data: Dict) -> "StudentProfile":
@@ -222,7 +230,7 @@ class StudentProfile(BaseModel):
         if isinstance(proficiency_score, Decimal):
             proficiency_score = float(proficiency_score)
 
-        return cls(
+        profile = cls(
             student_id=data["student_id"],
             grade_level=data["grade_level"],
             vocabulary_list=vocabulary_list,
@@ -231,4 +239,8 @@ class StudentProfile(BaseModel):
             created_at=datetime.fromisoformat(data.get("created_at", datetime.now(timezone.utc).isoformat())),
             last_updated=datetime.fromisoformat(data.get("last_updated", datetime.now(timezone.utc).isoformat())),
         )
+        # Set metadata if it exists in the data
+        if "metadata" in data:
+            profile.metadata = data["metadata"]
+        return profile
 
