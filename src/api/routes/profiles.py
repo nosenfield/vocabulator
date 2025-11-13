@@ -212,11 +212,11 @@ async def list_students(
             
             class_value = profile.metadata.get("class") if profile.metadata else None
             students.append(
-                StudentListItem(
-                    student_id=profile.student_id,
-                    grade_level=profile.grade_level,
-                    vocabulary_size=len(profile.vocabulary_list),
-                    proficiency_score=profile.proficiency_score,
+            StudentListItem(
+                student_id=profile.student_id,
+                grade_level=profile.grade_level,
+                vocabulary_size=len(profile.vocabulary_list),
+                proficiency_score=profile.proficiency_score,
                     class_id=class_value,
                 )
             )

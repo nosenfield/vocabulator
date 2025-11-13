@@ -13,6 +13,7 @@
 		submitAssignments
 	} from '$lib/api';
 	import mockEducator from '../data/mockEducator.json';
+	import mockAssignments from '../data/mockAssignments.json';
 
 	let isSyncing = false;
 	let syncMessage = null;
@@ -48,7 +49,8 @@
 			currentStudentProfile = profile;
 			currentRecommendations = recommendations.recommendations || recommendations || [];
 			// For demo, use mock assignments - in real app, fetch from API
-			assignments = [];
+			// Use mock assignments for timeline visualization
+			assignments = mockAssignments || [];
 		} catch (error) {
 			console.error('Failed to load student data:', error);
 		} finally {
@@ -86,12 +88,10 @@
 			if (failed.length > 0) {
 				// Sanitize error messages for production (prevent information disclosure)
 				const errorDetails = failed.map((f) => {
-					if (import.meta.env.PROD) {
-						// In production, return generic string only (no error object access)
-						return 'Submission failed';
-					}
-					// In development, include full error details for debugging
-					return f.reason;
+					// Always return string only, never expose error objects
+					return import.meta.env.PROD
+						? 'Submission failed'
+						: String(f.reason?.message || f.reason || 'Unknown error');
 				});
 				console.error('Some assignments failed:', errorDetails);
 				// Show user-facing error message
