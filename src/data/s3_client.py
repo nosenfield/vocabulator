@@ -67,13 +67,15 @@ class S3Client:
         endpoint_url = config.get_aws_endpoint_url()
         if endpoint_url:
             # LocalStack requires explicit credentials
-            self.client: BaseClient = boto3.client(
-                "s3",
-                endpoint_url=endpoint_url,
-                config=boto_config,
-                aws_access_key_id=config.aws_access_key_id,
-                aws_secret_access_key=config.aws_secret_access_key,
-            )
+            # Only pass credentials if they're provided (for local development)
+            client_kwargs = {
+                "endpoint_url": endpoint_url,
+                "config": boto_config,
+            }
+            if config.aws_access_key_id and config.aws_secret_access_key:
+                client_kwargs["aws_access_key_id"] = config.aws_access_key_id
+                client_kwargs["aws_secret_access_key"] = config.aws_secret_access_key
+            self.client: BaseClient = boto3.client("s3", **client_kwargs)
         else:
             # Production: Use IAM roles (no explicit credentials)
             self.client = boto3.client("s3", config=boto_config)

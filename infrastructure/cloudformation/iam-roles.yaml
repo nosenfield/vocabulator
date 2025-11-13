@@ -93,8 +93,8 @@ Resources:
                   - batch:ListJobs
                   - batch:CancelJob
                 Resource:
-                  - !Sub 'arn:aws:batch:${AWS::Region}:${AWS::AccountId}:job-queue/vocabulator-*'
-                  - !Sub 'arn:aws:batch:${AWS::Region}:${AWS::AccountId}:job-definition/vocabulator-*'
+                  - !Sub 'arn:aws:batch:${AWS::Region}:${AWS::AccountId}:job-queue/vocabulator-${Environment}-*'
+                  - !Sub 'arn:aws:batch:${AWS::Region}:${AWS::AccountId}:job-definition/vocabulator-${Environment}:*'
                   - !Sub 'arn:aws:batch:${AWS::Region}:${AWS::AccountId}:job/*'
               - Effect: Allow
                 Action:
@@ -102,6 +102,11 @@ Resources:
                   - logs:CreateLogStream
                   - logs:PutLogEvents
                 Resource: !Ref LogGroupArn
+              - Effect: Allow
+                Action:
+                  - secretsmanager:GetSecretValue
+                  - secretsmanager:DescribeSecret
+                Resource: !Sub 'arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:vocabulator/*'
       Tags:
         - Key: Environment
           Value: !Ref Environment

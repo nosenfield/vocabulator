@@ -2,8 +2,10 @@
 
 This module provides type-safe configuration loading from environment variables
 with validation and support for multiple environments (development, staging, production).
+Also supports retrieving secrets from AWS Secrets Manager.
 """
 
+import json
 import os
 from enum import Enum
 from typing import Any, Optional
@@ -65,13 +67,13 @@ class Config(BaseModel):
         default="us-east-1",
         description="AWS region for all services",
     )
-    aws_access_key_id: str = Field(
-        ...,
-        description="AWS access key ID (required)",
+    aws_access_key_id: Optional[str] = Field(
+        default=None,
+        description="AWS access key ID (only required for local development with LocalStack)",
     )
-    aws_secret_access_key: str = Field(
-        ...,
-        description="AWS secret access key (required)",
+    aws_secret_access_key: Optional[str] = Field(
+        default=None,
+        description="AWS secret access key (only required for local development with LocalStack)",
     )
 
     # AWS Resources
@@ -126,13 +128,16 @@ class Config(BaseModel):
 
     @model_validator(mode="after")
     def validate_required_fields(self) -> "Config":
-        """Validate that all required fields are present."""
+        """Validate that all required fields are present.
+        
+        Note: AWS credentials (aws_access_key_id, aws_secret_access_key) are optional
+        and only required for local development with LocalStack. In production (Lambda),
+        IAM roles are used instead.
+        """
         missing_keys = []
 
-        # Check required string fields
+        # Check required string fields (AWS credentials are optional - see docstring)
         required_fields = [
-            ("aws_access_key_id", "AWS_ACCESS_KEY_ID"),
-            ("aws_secret_access_key", "AWS_SECRET_ACCESS_KEY"),
             ("s3_bucket_name", "S3_BUCKET_NAME"),
             ("dynamodb_table_prefix", "DYNAMODB_TABLE_PREFIX"),
             ("openai_api_key", "OPENAI_API_KEY"),
@@ -238,6 +243,32 @@ def load_config() -> Config:
             if env_value is not None:
                 config_dict[config_key] = env_value
 
+        # Retrieve OpenAI API key from Secrets Manager if ARN is provided
+        # This takes precedence over OPENAI_API_KEY environment variable
+        secret_arn = os.getenv("OPENAI_API_KEY_SECRET_ARN")
+        if secret_arn and not config_dict.get("openai_api_key"):
+            try:
+                import boto3
+                # Get AWS region from config or environment
+                aws_region = config_dict.get("aws_region") or os.getenv("AWS_REGION", "us-east-1")
+                secrets_client = boto3.client("secretsmanager", region_name=aws_region)
+                response = secrets_client.get_secret_value(SecretId=secret_arn)
+                secret_data = json.loads(response["SecretString"])
+                # Support both "openai_api_key" key and direct string value
+                if isinstance(secret_data, dict):
+                    api_key = secret_data.get("openai_api_key") or secret_data.get("OPENAI_API_KEY", "")
+                else:
+                    api_key = str(secret_data)
+                
+                if api_key:
+                    config_dict["openai_api_key"] = api_key
+            except Exception as e:
+                # If Secrets Manager retrieval fails, log but don't fail yet
+                # We'll check if it's required later
+                import logging
+                logging.warning(f"Failed to retrieve secret from Secrets Manager (ARN: {secret_arn}): {e}")
+                # Don't set it - let the validation catch it if it's required
+
         try:
             _config = Config(**config_dict)
         except Exception as e:
@@ -245,13 +276,22 @@ def load_config() -> Config:
             if "Field required" in str(e) or "missing" in str(e).lower():
                 # Extract missing fields from error or check manually
                 missing_keys = []
+                # AWS credentials are only required for local development (LocalStack)
+                # In production (Lambda), IAM roles are used instead
+                is_local_dev = config_dict.get("localstack_endpoint_url") or config_dict.get("environment") == "development"
+                
                 required_fields = [
-                    "AWS_ACCESS_KEY_ID",
-                    "AWS_SECRET_ACCESS_KEY",
                     "S3_BUCKET_NAME",
                     "DYNAMODB_TABLE_PREFIX",
                     "OPENAI_API_KEY",
                 ]
+                
+                # Only require AWS credentials if using LocalStack
+                if is_local_dev and not config_dict.get("aws_access_key_id"):
+                    required_fields.append("AWS_ACCESS_KEY_ID")
+                if is_local_dev and not config_dict.get("aws_secret_access_key"):
+                    required_fields.append("AWS_SECRET_ACCESS_KEY")
+                
                 for env_key in required_fields:
                     if env_key not in os.environ or not os.getenv(env_key):
                         missing_keys.append(env_key)

@@ -54,6 +54,11 @@ Parameters:
   LogGroupName:
     Type: String
     Description: Name of the CloudWatch Logs group
+  
+  OpenAIApiKeySecretArn:
+    Type: String
+    Description: ARN of the OpenAI API key secret in Secrets Manager
+    Default: ''
 
 Resources:
   ApiLambdaFunction:
@@ -80,6 +85,7 @@ Resources:
           BATCH_JOB_QUEUE: !Ref BatchJobQueueName
           BATCH_JOB_DEFINITION: !Ref BatchJobDefinitionName
           LOG_LEVEL: INFO
+          OPENAI_API_KEY_SECRET_ARN: !Ref OpenAIApiKeySecretArn
       Tags:
         - Key: Environment
           Value: !Ref Environment
@@ -120,6 +126,9 @@ Resources:
       RestApiId: !Ref ApiGatewayRestApi
       ResourceId: !Ref ApiGatewayResourceProxy
       HttpMethod: ANY
+      # TODO: Add API authentication (API Key or IAM) for production
+      # Currently NONE for MVP - this is a known security limitation
+      # See: infrastructure/cloudformation/README.md for security warnings
       AuthorizationType: NONE
       Integration:
         Type: AWS_PROXY
