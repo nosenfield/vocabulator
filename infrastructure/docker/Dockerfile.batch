@@ -1,0 +1,32 @@
+# Dockerfile for AWS Batch jobs
+# Builds container image for Fargate-based batch processing
+
+FROM python:3.11-slim
+
+# Set working directory
+WORKDIR /app
+
+# Install system dependencies
+# gcc is required for compiling Python packages with C extensions (e.g., cryptography, pandas)
+RUN apt-get update && apt-get install -y \
+    gcc \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy requirements first (for better caching)
+COPY requirements.txt /app/
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy application code
+COPY src/ /app/src/
+COPY pyproject.toml /app/
+
+# Set Python path
+ENV PYTHONPATH=/app
+
+# Create non-root user for security
+RUN useradd -m -u 1000 appuser && chown -R appuser:appuser /app
+USER appuser
+
+# Set default command (can be overridden by job definition)
+CMD ["python", "-m", "src.processing.batch_handler"]
+

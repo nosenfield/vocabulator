@@ -1,0 +1,169 @@
+{% extends "base.html" %}
+
+{% block title %}Student Profile Report - {{ student_id }}{% endblock %}
+
+{% block header %}Student Vocabulary Profile{% endblock %}
+
+{% block meta %}
+Student ID: {{ student_id }} • Grade {{ grade_level }} • Last Updated: {{ last_updated }}
+{% endblock %}
+
+{% block content %}
+<!-- Statistics Section -->
+<section class="section">
+    <h2 class="section-title">Overview</h2>
+    <div class="stat-grid">
+        <div class="stat-card">
+            <div class="stat-value">{{ vocabulary_size }}</div>
+            <div class="stat-label">Vocabulary Words</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">{{ proficiency_score }}</div>
+            <div class="stat-label">Proficiency Score</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">Grade {{ grade_level }}</div>
+            <div class="stat-label">Grade Level</div>
+        </div>
+    </div>
+</section>
+
+<!-- Vocabulary Growth Chart -->
+{% if vocabulary_size > 0 %}
+<section class="section">
+    <h2 class="section-title">Vocabulary Growth</h2>
+    <div class="chart-container">
+        <canvas id="growthChart"></canvas>
+    </div>
+</section>
+{% endif %}
+
+<!-- Recent Words Section -->
+{% if recent_words %}
+<section class="section">
+    <h2 class="section-title">Recent Word Acquisitions</h2>
+    <div class="vocabulary-list">
+        {% for word in recent_words %}
+        <div class="vocab-item">
+            <div class="vocab-word">{{ word.word }}</div>
+            <div class="vocab-meta">
+                <span>📅 First seen: {{ word.first_seen.strftime("%Y-%m-%d") }}</span>
+                <span>📊 Used {{ word.usage_count }} time{{ 's' if word.usage_count != 1 else '' }}</span>
+                {% if word.contexts and word.contexts|length > 0 %}
+                <span>📚 Contexts: {{ ', '.join(word.contexts) }}</span>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+
+<!-- Full Vocabulary List -->
+{% if vocabulary_list %}
+<section class="section">
+    <h2 class="section-title">Complete Vocabulary List</h2>
+    <div class="vocabulary-list">
+        {% for vocab in vocabulary_list %}
+        <div class="vocab-item">
+            <div class="vocab-word">{{ vocab.word }}</div>
+            <div class="vocab-meta">
+                <span>📅 {{ vocab.first_seen }}</span>
+                <span>📊 {{ vocab.usage_count }} use{{ 's' if vocab.usage_count != 1 else '' }}</span>
+                <span>📚 {{ vocab.contexts }}</span>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+{% else %}
+<section class="section">
+    <p style="text-align: center; color: #666; padding: 40px;">
+        No vocabulary data available yet. Upload transcripts or writing samples to begin tracking vocabulary.
+    </p>
+</section>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+    {% if vocabulary_size > 0 %}
+    // Prepare data for growth chart
+    const vocabData = [
+        {% for word in vocabulary_list %}
+        {
+            date: "{{ word.first_seen }}",
+            word: "{{ word.word }}"
+        }{% if not loop.last %},{% endif %}
+        {% endfor %}
+    ];
+    
+    // Group by date and count
+    const dateCounts = {};
+    vocabData.forEach(item => {
+        const date = item.date;
+        dateCounts[date] = (dateCounts[date] || 0) + 1;
+    });
+    
+    // Sort dates
+    const sortedDates = Object.keys(dateCounts).sort();
+    
+    // Calculate cumulative counts
+    let cumulative = 0;
+    const chartData = sortedDates.map(date => {
+        cumulative += dateCounts[date];
+        return cumulative;
+    });
+    
+    // Create chart
+    const ctx = document.getElementById('growthChart');
+    if (ctx) {
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: sortedDates,
+                datasets: [{
+                    label: 'Vocabulary Size',
+                    data: chartData,
+                    borderColor: '#667eea',
+                    backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Date'
+                        }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Total Words'
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top'
+                    },
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false
+                    }
+                }
+            }
+        });
+    }
+    {% endif %}
+</script>
+{% endblock %}
+

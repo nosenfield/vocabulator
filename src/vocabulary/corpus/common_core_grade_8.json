@@ -1,0 +1,267 @@
+[
+  {
+    "word": "scrutinize",
+    "grade_level": 8,
+    "definition": "examine or inspect closely",
+    "subject_areas": [
+      "ela",
+      "science"
+    ],
+    "complexity_tier": 3,
+    "word_family": [
+      "scrutiny",
+      "scrutinizing"
+    ]
+  },
+  {
+    "word": "delineate",
+    "grade_level": 8,
+    "definition": "describe or portray precisely",
+    "subject_areas": [
+      "ela"
+    ],
+    "complexity_tier": 3,
+    "word_family": [
+      "delineation"
+    ]
+  },
+  {
+    "word": "corroborate",
+    "grade_level": 8,
+    "definition": "confirm or give support to",
+    "subject_areas": [
+      "science",
+      "ela"
+    ],
+    "complexity_tier": 3,
+    "word_family": [
+      "corroboration",
+      "corroborative"
+    ]
+  },
+  {
+    "word": "substantiate",
+    "grade_level": 8,
+    "definition": "provide evidence to support or prove",
+    "subject_areas": [
+      "ela",
+      "science"
+    ],
+    "complexity_tier": 3,
+    "word_family": [
+      "substantiation",
+      "substantive"
+    ]
+  },
+  {
+    "word": "quantify",
+    "grade_level": 8,
+    "definition": "express or measure the quantity of",
+    "subject_areas": [
+      "math",
+      "science"
+    ],
+    "complexity_tier": 3,
+    "word_family": [
+      "quantification",
+      "quantitative"
+    ]
+  },
+  {
+    "word": "deduce",
+    "grade_level": 8,
+    "definition": "arrive at a conclusion by reasoning",
+    "subject_areas": [
+      "math",
+      "science"
+    ],
+    "complexity_tier": 3,
+    "word_family": [
+      "deduction",
+      "deductive"
+    ]
+  },
+  {
+    "word": "induce",
+    "grade_level": 8,
+    "definition": "bring about or give rise to",
+    "subject_areas": [
+      "science"
+    ],
+    "complexity_tier": 3,
+    "word_family": [
+      "induction",
+      "inductive"
+    ]
+  },
+  {
+    "word": "extrapolate",
+    "grade_level": 8,
+    "definition": "extend application beyond the original range",
+    "subject_areas": [
+      "math",
+      "science"
+    ],
+    "complexity_tier": 3,
+    "word_family": [
+      "extrapolation"
+    ]
+  },
+  {
+    "word": "generalize",
+    "grade_level": 8,
+    "definition": "make a general or broad statement",
+    "subject_areas": [
+      "math",
+      "science"
+    ],
+    "complexity_tier": 2,
+    "word_family": [
+      "generalization",
+      "general"
+    ]
+  },
+  {
+    "word": "speculate",
+    "grade_level": 8,
+    "definition": "form a theory without firm evidence",
+    "subject_areas": [
+      "science",
+      "ela"
+    ],
+    "complexity_tier": 2,
+    "word_family": [
+      "speculation",
+      "speculative"
+    ]
+  },
+  {
+    "word": "convey",
+    "grade_level": 8,
+    "definition": "transport or communicate",
+    "subject_areas": [
+      "ela"
+    ],
+    "complexity_tier": 2,
+    "word_family": [
+      "conveyance"
+    ]
+  },
+  {
+    "word": "elucidate",
+    "grade_level": 8,
+    "definition": "make clear; explain",
+    "subject_areas": [
+      "ela"
+    ],
+    "complexity_tier": 3,
+    "word_family": [
+      "elucidation"
+    ]
+  },
+  {
+    "word": "exemplify",
+    "grade_level": 8,
+    "definition": "be a typical example of",
+    "subject_areas": [
+      "ela"
+    ],
+    "complexity_tier": 2,
+    "word_family": [
+      "exemplification",
+      "example"
+    ]
+  },
+  {
+    "word": "characterize",
+    "grade_level": 8,
+    "definition": "describe the distinctive nature or features of",
+    "subject_areas": [
+      "ela",
+      "science"
+    ],
+    "complexity_tier": 2,
+    "word_family": [
+      "characterization",
+      "characteristic"
+    ]
+  },
+  {
+    "word": "contextualize",
+    "grade_level": 8,
+    "definition": "place or study in context",
+    "subject_areas": [
+      "ela"
+    ],
+    "complexity_tier": 3,
+    "word_family": [
+      "contextualization",
+      "context"
+    ]
+  },
+  {
+    "word": "hypothesize",
+    "grade_level": 8,
+    "definition": "put forward as a hypothesis",
+    "subject_areas": [
+      "science"
+    ],
+    "complexity_tier": 3,
+    "word_family": [
+      "hypothesis",
+      "hypothetical"
+    ]
+  },
+  {
+    "word": "methodology",
+    "grade_level": 8,
+    "definition": "a system of methods used in a particular area",
+    "subject_areas": [
+      "science"
+    ],
+    "complexity_tier": 3,
+    "word_family": [
+      "method",
+      "methodological"
+    ]
+  },
+  {
+    "word": "paradigm",
+    "grade_level": 8,
+    "definition": "a typical example or pattern",
+    "subject_areas": [
+      "science",
+      "ela"
+    ],
+    "complexity_tier": 3,
+    "word_family": [
+      "paradigmatic"
+    ]
+  },
+  {
+    "word": "phenomenon",
+    "grade_level": 8,
+    "definition": "a fact or situation that is observed",
+    "subject_areas": [
+      "science"
+    ],
+    "complexity_tier": 3,
+    "word_family": [
+      "phenomenal"
+    ]
+  },
+  {
+    "word": "theoretical",
+    "grade_level": 8,
+    "definition": "concerned with or involving theory",
+    "subject_areas": [
+      "science",
+      "math"
+    ],
+    "complexity_tier": 3,
+    "word_family": [
+      "theory",
+      "theorize"
+    ]
+  }
+]

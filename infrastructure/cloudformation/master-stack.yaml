@@ -1,0 +1,250 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Master CloudFormation stack for Vocabulator MVP - orchestrates all nested stacks'
+
+Parameters:
+  Environment:
+    Type: String
+    Default: development
+    AllowedValues:
+      - development
+      - staging
+      - production
+    Description: Environment name
+  
+  LambdaCodeS3Bucket:
+    Type: String
+    Description: S3 bucket containing Lambda deployment package
+  
+  LambdaCodeS3Key:
+    Type: String
+    Description: S3 key of Lambda deployment package
+  
+  TemplatesBucket:
+    Type: String
+    Description: S3 bucket containing CloudFormation templates (for nested stacks)
+  
+  EcrImageUri:
+    Type: String
+    Description: URI of the ECR container image for batch jobs
+    Default: ''
+  
+  SubnetIds:
+    Type: CommaDelimitedList
+    Description: List of subnet IDs for Fargate tasks (required if deploying Batch stack)
+    Default: ''
+  
+  SecurityGroupId:
+    Type: String
+    Description: Security group ID for Fargate tasks (required if deploying Batch stack)
+    Default: ''
+  
+  SnsTopicArn:
+    Type: String
+    Description: ARN of the SNS topic for alarm notifications (optional, will create if EmailAddress provided)
+    Default: ''
+  
+  EmailAddress:
+    Type: String
+    Description: Email address for alarm notifications (optional, creates SNS topic if provided)
+    Default: ''
+
+Resources:
+  # Stack 1: Secrets Manager
+  SecretsStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub 'https://s3.${AWS::Region}.amazonaws.com/${TemplatesBucket}/secrets-manager.yaml'
+      Parameters:
+        Environment: !Ref Environment
+      Tags:
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Project
+          Value: Vocabulator
+
+  # Stack 2: DynamoDB Tables
+  DynamoDBStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub 'https://s3.${AWS::Region}.amazonaws.com/${TemplatesBucket}/dynamodb-tables.yaml'
+      Parameters:
+        Environment: !Ref Environment
+        TablePrefix: vocabulator
+      Tags:
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Project
+          Value: Vocabulator
+
+  # Stack 3: S3 Buckets
+  S3Stack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub 'https://s3.${AWS::Region}.amazonaws.com/${TemplatesBucket}/s3-buckets.yaml'
+      Parameters:
+        Environment: !Ref Environment
+        BucketPrefix: vocabulator
+      Tags:
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Project
+          Value: Vocabulator
+
+  # Stack 4: SNS Topics (if email provided)
+  SNSStack:
+    Type: AWS::CloudFormation::Stack
+    Condition: HasEmailAddress
+    Properties:
+      TemplateURL: !Sub 'https://s3.${AWS::Region}.amazonaws.com/${TemplatesBucket}/sns-topics.yaml'
+      Parameters:
+        Environment: !Ref Environment
+        EmailAddress: !Ref EmailAddress
+      Tags:
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Project
+          Value: Vocabulator
+
+  # Stack 5: CloudWatch Logs
+  CloudWatchStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub 'https://s3.${AWS::Region}.amazonaws.com/${TemplatesBucket}/cloudwatch-logs.yaml'
+      Parameters:
+        Environment: !Ref Environment
+        SnsTopicArn: !If [HasEmailAddress, !GetAtt SNSStack.Outputs.AlarmTopicArn, !Ref SnsTopicArn]
+      Tags:
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Project
+          Value: Vocabulator
+
+  # Stack 6: CloudWatch Dashboard (commented out - dashboard validation issue to fix later)
+  # DashboardStack:
+  #   Type: AWS::CloudFormation::Stack
+  #   DependsOn:
+  #     - ApiStack
+  #   Properties:
+  #     TemplateURL: !Sub 'https://s3.${AWS::Region}.amazonaws.com/${TemplatesBucket}/cloudwatch-dashboard.yaml'
+  #     Parameters:
+  #       Environment: !Ref Environment
+  #       LambdaFunctionName: !GetAtt ApiStack.Outputs.ApiLambdaFunctionName
+  #       BatchJobQueueName: !If [HasEcrImage, !GetAtt BatchStack.Outputs.BatchJobQueueName, '']
+  #       AWSRegion: !Ref AWS::Region
+  #     Tags:
+  #       - Key: Environment
+  #         Value: !Ref Environment
+  #       - Key: Project
+  #         Value: Vocabulator
+
+  # Stack 7: IAM Roles (depends on DynamoDB, S3, CloudWatch, and optionally Batch)
+  IAMStack:
+    Type: AWS::CloudFormation::Stack
+    DependsOn:
+      - DynamoDBStack
+      - S3Stack
+      - CloudWatchStack
+    Properties:
+      TemplateURL: !Sub 'https://s3.${AWS::Region}.amazonaws.com/${TemplatesBucket}/iam-roles.yaml'
+      Parameters:
+        Environment: !Ref Environment
+        DataBucketArn: !GetAtt S3Stack.Outputs.DataBucketArn
+        ReportsBucketArn: !GetAtt S3Stack.Outputs.ReportsBucketArn
+        StudentProfilesTableArn: !GetAtt DynamoDBStack.Outputs.StudentProfilesTableArn
+        VocabularyRecommendationsTableArn: !GetAtt DynamoDBStack.Outputs.VocabularyRecommendationsTableArn
+        CommonCoreVocabularyTableArn: !GetAtt DynamoDBStack.Outputs.CommonCoreVocabularyTableArn
+        ProcessingJobsTableArn: !GetAtt DynamoDBStack.Outputs.ProcessingJobsTableArn
+        LogGroupArn: !GetAtt CloudWatchStack.Outputs.ApiLogGroupArn
+      Tags:
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Project
+          Value: Vocabulator
+
+  # Stack 8: Batch Resources (depends on IAM and CloudWatch)
+  BatchStack:
+    Type: AWS::CloudFormation::Stack
+    Condition: HasEcrImage
+    DependsOn:
+      - IAMStack
+      - CloudWatchStack
+    Properties:
+      TemplateURL: !Sub 'https://s3.${AWS::Region}.amazonaws.com/${TemplatesBucket}/batch-resources.yaml'
+      Parameters:
+        Environment: !Ref Environment
+        EcrImageUri: !Ref EcrImageUri
+        BatchExecutionRoleArn: !GetAtt IAMStack.Outputs.BatchExecutionRoleArn
+        BatchTaskRoleArn: !GetAtt IAMStack.Outputs.BatchTaskRoleArn
+        LogGroupName: !GetAtt CloudWatchStack.Outputs.BatchLogGroupName
+        SubnetIds: !Ref SubnetIds
+        SecurityGroupId: !Ref SecurityGroupId
+      Tags:
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Project
+          Value: Vocabulator
+
+  # Stack 9: API Gateway + Lambda (depends on all previous stacks)
+  ApiStack:
+    Type: AWS::CloudFormation::Stack
+    DependsOn:
+      - SecretsStack
+      - DynamoDBStack
+      - S3Stack
+      - IAMStack
+      - CloudWatchStack
+    Properties:
+      TemplateURL: !Sub 'https://s3.${AWS::Region}.amazonaws.com/${TemplatesBucket}/api-gateway-lambda.yaml'
+      Parameters:
+        Environment: !Ref Environment
+        LambdaCodeS3Bucket: !Ref LambdaCodeS3Bucket
+        LambdaCodeS3Key: !Ref LambdaCodeS3Key
+        LambdaExecutionRoleArn: !GetAtt IAMStack.Outputs.LambdaExecutionRoleArn
+        DataBucketName: !GetAtt S3Stack.Outputs.DataBucketName
+        ReportsBucketName: !GetAtt S3Stack.Outputs.ReportsBucketName
+        StudentProfilesTableName: !GetAtt DynamoDBStack.Outputs.StudentProfilesTableName
+        VocabularyRecommendationsTableName: !GetAtt DynamoDBStack.Outputs.VocabularyRecommendationsTableName
+        CommonCoreVocabularyTableName: !GetAtt DynamoDBStack.Outputs.CommonCoreVocabularyTableName
+        BatchJobQueueName: !If [HasEcrImage, !GetAtt BatchStack.Outputs.BatchJobQueueName, '']
+        BatchJobDefinitionName: !If [HasEcrImage, !GetAtt BatchStack.Outputs.BatchJobDefinitionName, '']
+        LogGroupName: !GetAtt CloudWatchStack.Outputs.ApiLogGroupName
+        OpenAIApiKeySecretArn: !GetAtt SecretsStack.Outputs.OpenAIApiKeySecretArn
+      Tags:
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Project
+          Value: Vocabulator
+
+Conditions:
+  HasEcrImage: !Not [!Equals [!Ref EcrImageUri, '']]
+  HasEmailAddress: !Not [!Equals [!Ref EmailAddress, '']]
+
+Outputs:
+  ApiGatewayUrl:
+    Description: URL of the Vocabulator API
+    Value: !GetAtt ApiStack.Outputs.ApiGatewayUrl
+  
+  DataBucketName:
+    Description: Name of the data S3 bucket
+    Value: !GetAtt S3Stack.Outputs.DataBucketName
+  
+  ReportsBucketName:
+    Description: Name of the reports S3 bucket
+    Value: !GetAtt S3Stack.Outputs.ReportsBucketName
+  
+  StudentProfilesTableName:
+    Description: Name of the StudentProfiles DynamoDB table
+    Value: !GetAtt DynamoDBStack.Outputs.StudentProfilesTableName
+  
+  VocabularyRecommendationsTableName:
+    Description: Name of the VocabularyRecommendations DynamoDB table
+    Value: !GetAtt DynamoDBStack.Outputs.VocabularyRecommendationsTableName
+  
+  CommonCoreVocabularyTableName:
+    Description: Name of the CommonCoreVocabulary DynamoDB table
+    Value: !GetAtt DynamoDBStack.Outputs.CommonCoreVocabularyTableName
+  
+  BatchJobQueueName:
+    Description: Name of the AWS Batch job queue
+    Value: !If [HasEcrImage, !GetAtt BatchStack.Outputs.BatchJobQueueName, '']
+

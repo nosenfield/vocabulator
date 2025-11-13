@@ -5,6 +5,30 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+ENV/
+.venv
+pip-log.txt
+pip-delete-this-directory.txt
+*.egg-info/
+dist/
+build/
+*.egg
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+.tox/
+.hypothesis/
+
 # Environment
 .env
 .env.local
@@ -17,6 +41,11 @@ out/
 .next/
 .nuxt/
 .cache/
+
+# Lambda deployment packages
+.lambda-package/
+vocabulator-lambda.zip
+*.zip
 
 # OS
 .DS_Store
@@ -38,11 +67,19 @@ coverage/
 # Logs
 logs/
 *.log
+_logs/*
 
 # Temporary files
 tmp/
 temp/
 *.tmp
+
+# AWS
+.aws/
+*.pem
+
+# LocalStack
+.localstack/
 
 # Context summaries (ephemeral session notes)
 _context-summaries/

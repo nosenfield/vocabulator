@@ -1,0 +1,254 @@
+#!/usr/bin/env python3
+"""Seed mock student data for dashboard demo.
+
+This script populates DynamoDB with 15-20 mock students across 3 classes
+(7A-ELA, 7B-ELA, 8A-ELA) for dashboard demonstration purposes.
+"""
+
+import random
+import sys
+from datetime import datetime, timedelta, timezone
+from pathlib import Path
+from typing import List
+
+# Add src to path
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
+from src.data.models.student_profile import StudentProfile, VocabularyEntry
+from src.data.repositories.student_repository import StudentRepository
+from src.utils.config import get_config
+from src.utils.logger import get_logger
+from src.vocabulary.common_core_loader import CommonCoreLoader
+
+logger = get_logger("scripts.seed_mock_dashboard_data")
+
+# Academic vocabulary words for middle school (grades 6-8)
+ACADEMIC_VOCABULARY = [
+    "analyze", "evaluate", "synthesize", "comprehend", "interpret",
+    "persuade", "demonstrate", "illustrate", "elaborate", "articulate",
+    "contradict", "substantiate", "hypothesize", "investigate", "examine",
+    "conclude", "summarize", "paraphrase", "infer", "deduce",
+    "metaphor", "simile", "alliteration", "personification", "hyperbole",
+    "protagonist", "antagonist", "narrative", "dialogue", "characterization",
+    "theme", "symbolism", "foreshadowing", "irony", "conflict",
+    "renewable", "sustainable", "ecosystem",     "photosynthesis", "chlorophyll",
+    "chloroplast", "glucose", "carbon dioxide", "oxygen",
+    "climate", "atmosphere", "greenhouse", "emissions", "conservation",
+    "prejudice", "justice", "morality", "integrity", "courage",
+    "complexity", "perspective", "context", "significance", "relevance"
+]
+
+
+def generate_vocabulary_entries(size: int, grade_level: int) -> List[VocabularyEntry]:
+    """Generate mock vocabulary entries for a student.
+    
+    Args:
+        size: Number of vocabulary words to generate
+        grade_level: Student's grade level (6, 7, or 8)
+        
+    Returns:
+        List of VocabularyEntry objects
+    """
+    # Select words appropriate for grade level
+    # Mix of academic vocabulary and common words
+    # If size exceeds available vocabulary, we'll cycle through with variations
+    # to ensure each student gets a unique set of words
+    max_unique = len(ACADEMIC_VOCABULARY)
+    
+    if size <= max_unique:
+        # Can use unique words
+        selected_words = random.sample(ACADEMIC_VOCABULARY, size)
+    else:
+        # Need more words than available - use all words, then add variations
+        # Shuffle to get different order for each student
+        selected_words = list(ACADEMIC_VOCABULARY)
+        random.shuffle(selected_words)
+        
+        # Add more words by cycling through with different combinations
+        # This ensures students have different vocabulary sets
+        while len(selected_words) < size:
+            # Pick a random word and add it (will be deduplicated later if needed)
+            word = random.choice(ACADEMIC_VOCABULARY)
+            # Only add if we don't already have enough unique words
+            # For demo purposes, allow some repetition to reach target size
+            if selected_words.count(word) < 3:  # Allow up to 3 instances of same word
+                selected_words.append(word)
+            else:
+                # If we've used this word too much, pick another
+                available = [w for w in ACADEMIC_VOCABULARY if selected_words.count(w) < 3]
+                if available:
+                    selected_words.append(random.choice(available))
+                else:
+                    # All words used, just add any word
+                    selected_words.append(random.choice(ACADEMIC_VOCABULARY))
+    
+    subject_areas = ["science", "literature", "social studies", "math", "ela"]
+    
+    entries = []
+    for word in selected_words[:size]:
+        # Generate usage count (higher for higher grade students)
+        base_usage = 1 + (grade_level - 6) * 2
+        usage_count = random.randint(base_usage, base_usage + 5)
+        
+        # Generate contexts (subject areas where word was used)
+        num_contexts = random.randint(1, 3)
+        contexts = random.sample(subject_areas, min(num_contexts, len(subject_areas)))
+        
+        # Generate first_seen timestamp (within last 6 months)
+        days_ago = random.randint(0, 180)
+        first_seen = datetime.now(timezone.utc) - timedelta(days=days_ago)
+        
+        entry = VocabularyEntry(
+            word=word,
+            first_seen=first_seen,
+            usage_count=usage_count,
+            contexts=contexts
+        )
+        entries.append(entry)
+    
+    return entries
+
+
+# Mock student data - 18 students across 3 classes
+MOCK_STUDENTS = [
+    # 7A-ELA (6 students)
+    {"student_id": "STU-001", "first_name": "Alex", "last_initial": "S", "grade_level": 7, "class": "7A-ELA", "vocab_size": 120, "proficiency_range": (70, 85)},
+    {"student_id": "STU-002", "first_name": "Jordan", "last_initial": "M", "grade_level": 7, "class": "7A-ELA", "vocab_size": 95, "proficiency_range": (60, 75)},
+    {"student_id": "STU-003", "first_name": "Taylor", "last_initial": "R", "grade_level": 7, "class": "7A-ELA", "vocab_size": 110, "proficiency_range": (65, 80)},
+    {"student_id": "STU-004", "first_name": "Morgan", "last_initial": "K", "grade_level": 7, "class": "7A-ELA", "vocab_size": 85, "proficiency_range": (50, 65)},
+    {"student_id": "STU-005", "first_name": "Casey", "last_initial": "L", "grade_level": 7, "class": "7A-ELA", "vocab_size": 130, "proficiency_range": (75, 90)},
+    {"student_id": "STU-006", "first_name": "Riley", "last_initial": "B", "grade_level": 7, "class": "7A-ELA", "vocab_size": 100, "proficiency_range": (55, 70)},
+    
+    # 7B-ELA (6 students)
+    {"student_id": "STU-007", "first_name": "Avery", "last_initial": "C", "grade_level": 7, "class": "7B-ELA", "vocab_size": 105, "proficiency_range": (65, 80)},
+    {"student_id": "STU-008", "first_name": "Quinn", "last_initial": "D", "grade_level": 7, "class": "7B-ELA", "vocab_size": 90, "proficiency_range": (55, 70)},
+    {"student_id": "STU-009", "first_name": "Sage", "last_initial": "F", "grade_level": 7, "class": "7B-ELA", "vocab_size": 115, "proficiency_range": (70, 85)},
+    {"student_id": "STU-010", "first_name": "River", "last_initial": "G", "grade_level": 7, "class": "7B-ELA", "vocab_size": 80, "proficiency_range": (45, 60)},
+    {"student_id": "STU-011", "first_name": "Phoenix", "last_initial": "H", "grade_level": 7, "class": "7B-ELA", "vocab_size": 125, "proficiency_range": (75, 90)},
+    {"student_id": "STU-012", "first_name": "Blake", "last_initial": "J", "grade_level": 7, "class": "7B-ELA", "vocab_size": 95, "proficiency_range": (60, 75)},
+    
+    # 8A-ELA (6 students)
+    {"student_id": "STU-013", "first_name": "Cameron", "last_initial": "N", "grade_level": 8, "class": "8A-ELA", "vocab_size": 140, "proficiency_range": (80, 95)},
+    {"student_id": "STU-014", "first_name": "Dakota", "last_initial": "P", "grade_level": 8, "class": "8A-ELA", "vocab_size": 120, "proficiency_range": (70, 85)},
+    {"student_id": "STU-015", "first_name": "Emery", "last_initial": "T", "grade_level": 8, "class": "8A-ELA", "vocab_size": 110, "proficiency_range": (65, 80)},
+    {"student_id": "STU-016", "first_name": "Finley", "last_initial": "V", "grade_level": 8, "class": "8A-ELA", "vocab_size": 100, "proficiency_range": (60, 75)},
+    {"student_id": "STU-017", "first_name": "Hayden", "last_initial": "W", "grade_level": 8, "class": "8A-ELA", "vocab_size": 135, "proficiency_range": (75, 90)},
+    {"student_id": "STU-018", "first_name": "Jamie", "last_initial": "Z", "grade_level": 8, "class": "8A-ELA", "vocab_size": 115, "proficiency_range": (70, 85)},
+]
+
+
+def seed_students() -> None:
+    """Populate DynamoDB with mock students for dashboard demo."""
+    config = get_config()
+    repo = StudentRepository()
+    
+    logger.info("Starting mock student data seeding for dashboard...")
+    
+    created_count = 0
+    updated_count = 0
+    
+    for student_data in MOCK_STUDENTS:
+        student_id = student_data["student_id"]
+        first_name = student_data.get("first_name")
+        last_initial = student_data.get("last_initial")
+        grade_level = student_data["grade_level"]
+        class_name = student_data["class"]
+        vocab_size = student_data["vocab_size"]
+        proficiency_range = student_data["proficiency_range"]
+        
+        # Check if student already exists
+        try:
+            existing = repo.get(student_id)
+            if existing:
+                logger.info(f"Student {student_id} already exists, updating...")
+                updated_count += 1
+                # Update existing student
+                existing.grade_level = grade_level
+                existing.first_name = first_name
+                existing.last_initial = last_initial
+                existing.vocabulary_list = generate_vocabulary_entries(vocab_size, grade_level)
+                existing.calculate_proficiency_score()
+                # Adjust to target range
+                target_score = random.uniform(proficiency_range[0], proficiency_range[1])
+                existing.proficiency_score = (existing.proficiency_score * 0.7) + (target_score * 0.3)
+                existing.proficiency_score = max(0.0, min(100.0, existing.proficiency_score))
+                existing.last_updated = datetime.now(timezone.utc)
+                # Update metadata with class information
+                if not hasattr(existing, 'metadata') or existing.metadata is None:
+                    existing.metadata = {}
+                existing.metadata["class"] = class_name
+                repo.update(existing)
+                continue
+        except Exception:
+            # Student doesn't exist, create new one
+            pass
+        
+        # Generate vocabulary entries
+        vocabulary = generate_vocabulary_entries(vocab_size, grade_level)
+        
+        # Create student profile
+        now = datetime.now(timezone.utc)
+        student = StudentProfile(
+            student_id=student_id,
+            first_name=first_name,
+            last_initial=last_initial,
+            grade_level=grade_level,
+            vocabulary_list=vocabulary,
+            proficiency_score=0.0,  # Will be calculated
+            created_at=now,
+            last_updated=now,
+            metadata={"class": class_name}  # Store class in metadata
+        )
+        
+        # Verify metadata is set before saving
+        if not student.metadata or student.metadata.get("class") != class_name:
+            logger.warning(f"Metadata not set correctly for {student_id} before save. Expected class: {class_name}, Got: {student.metadata}")
+            student.metadata = {"class": class_name}
+        
+        # Calculate proficiency score using the model's method
+        student.calculate_proficiency_score()
+        
+        # Adjust proficiency score to be within the specified range
+        # The calculated score is a baseline, we'll adjust it
+        target_score = random.uniform(proficiency_range[0], proficiency_range[1])
+        # Blend calculated score with target (70% calculated, 30% target for realism)
+        student.proficiency_score = (student.proficiency_score * 0.7) + (target_score * 0.3)
+        student.proficiency_score = max(0.0, min(100.0, student.proficiency_score))
+        
+        # Verify metadata is still set after calculations
+        if not student.metadata or student.metadata.get("class") != class_name:
+            logger.warning(f"Metadata lost for {student_id} after calculations. Re-setting...")
+            student.metadata = {"class": class_name}
+        
+        # Check to_dict output
+        student_dict = student.to_dict()
+        if "metadata" not in student_dict or student_dict.get("metadata", {}).get("class") != class_name:
+            logger.error(f"Metadata not in to_dict() for {student_id}. Dict keys: {list(student_dict.keys())}")
+        
+        # Save to database
+        repo.create(student)
+        
+        # Verify after save by reading back
+        saved_student = repo.get(student_id)
+        if saved_student:
+            if not saved_student.metadata or saved_student.metadata.get("class") != class_name:
+                logger.error(f"Metadata not persisted for {student_id}. Expected: {class_name}, Got: {saved_student.metadata}")
+        else:
+            logger.error(f"Failed to read back student {student_id} after creation")
+        
+        created_count += 1
+        logger.info(f"Created student {student_id} (Grade {grade_level}, {class_name}, {vocab_size} words, {student.proficiency_score:.1f} proficiency)")
+    
+    logger.info(f"Seeding complete: {created_count} created, {updated_count} updated, {len(MOCK_STUDENTS)} total students")
+    logger.info(f"Students distributed: 7A-ELA: 6, 7B-ELA: 6, 8A-ELA: 6")
+
+
+if __name__ == "__main__":
+    try:
+        seed_students()
+        print("✅ Mock student data seeding completed successfully")
+    except Exception as e:
+        logger.error(f"Failed to seed mock student data: {e}", exc_info=True)
+        print(f"❌ Error: {e}")
+        sys.exit(1)
+

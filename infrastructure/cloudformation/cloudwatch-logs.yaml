@@ -1,0 +1,219 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'CloudWatch Logs groups and alarms for Vocabulator MVP'
+
+Parameters:
+  Environment:
+    Type: String
+    Default: development
+    AllowedValues:
+      - development
+      - staging
+      - production
+    Description: Environment name
+  
+  SnsTopicArn:
+    Type: String
+    Description: ARN of the SNS topic for alarm notifications
+    Default: ''
+
+Resources:
+  ApiLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub '/aws/lambda/vocabulator-${Environment}-api'
+      RetentionInDays: 30
+      Tags:
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Project
+          Value: Vocabulator
+
+  BatchLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub '/aws/batch/vocabulator-${Environment}'
+      RetentionInDays: 30
+      Tags:
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Project
+          Value: Vocabulator
+
+  LambdaErrorAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Condition: HasSnsTopic
+    Properties:
+      AlarmName: !Sub 'vocabulator-${Environment}-lambda-error-rate'
+      AlarmDescription: 'Alarm when Lambda errors exceed 5 in 5-minute period (indicates >5% error rate at typical load)'
+      MetricName: Errors
+      Namespace: AWS/Lambda
+      Statistic: Sum
+      Period: 300
+      EvaluationPeriods: 2
+      Threshold: 5
+      ComparisonOperator: GreaterThanThreshold
+      Dimensions:
+        - Name: FunctionName
+          Value: !Sub 'vocabulator-${Environment}-api'
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - !Ref SnsTopicArn
+      Tags:
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Project
+          Value: Vocabulator
+
+  BatchJobFailureAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Condition: HasSnsTopic
+    Properties:
+      AlarmName: !Sub 'vocabulator-${Environment}-batch-failure-rate'
+      AlarmDescription: 'Alarm when Batch job failures exceed 10 in 5-minute period (indicates >10% failure rate at typical load)'
+      MetricName: FailedJobs
+      Namespace: AWS/Batch
+      Statistic: Sum
+      Period: 300
+      EvaluationPeriods: 2
+      Threshold: 10
+      ComparisonOperator: GreaterThanThreshold
+      Dimensions:
+        - Name: JobQueue
+          Value: !Sub 'vocabulator-${Environment}-batch-queue'
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - !Ref SnsTopicArn
+      Tags:
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Project
+          Value: Vocabulator
+
+  DailyCostAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Condition: HasSnsTopic
+    Properties:
+      AlarmName: !Sub 'vocabulator-${Environment}-daily-cost'
+      AlarmDescription: 'Alarm when daily AWS cost exceeds $20'
+      MetricName: EstimatedCharges
+      Namespace: AWS/Billing
+      Statistic: Maximum
+      Period: 86400
+      EvaluationPeriods: 1
+      Threshold: 20
+      ComparisonOperator: GreaterThanThreshold
+      Dimensions:
+        - Name: Currency
+          Value: USD
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - !Ref SnsTopicArn
+      Tags:
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Project
+          Value: Vocabulator
+
+  LambdaThrottleAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Condition: HasSnsTopic
+    Properties:
+      AlarmName: !Sub 'vocabulator-${Environment}-lambda-throttles'
+      AlarmDescription: 'Alarm when Lambda throttles occur'
+      MetricName: Throttles
+      Namespace: AWS/Lambda
+      Statistic: Sum
+      Period: 300
+      EvaluationPeriods: 1
+      Threshold: 1
+      ComparisonOperator: GreaterThanThreshold
+      Dimensions:
+        - Name: FunctionName
+          Value: !Sub 'vocabulator-${Environment}-api'
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - !Ref SnsTopicArn
+      Tags:
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Project
+          Value: Vocabulator
+
+  LambdaDurationAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Condition: HasSnsTopic
+    Properties:
+      AlarmName: !Sub 'vocabulator-${Environment}-lambda-duration'
+      AlarmDescription: 'Alarm when Lambda duration exceeds 25 seconds (80% of 30s timeout)'
+      MetricName: Duration
+      Namespace: AWS/Lambda
+      Statistic: Average
+      Period: 300
+      EvaluationPeriods: 2
+      Threshold: 25000
+      ComparisonOperator: GreaterThanThreshold
+      Dimensions:
+        - Name: FunctionName
+          Value: !Sub 'vocabulator-${Environment}-api'
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - !Ref SnsTopicArn
+      Tags:
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Project
+          Value: Vocabulator
+
+  DynamoDBThrottleAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Condition: HasSnsTopic
+    Properties:
+      AlarmName: !Sub 'vocabulator-${Environment}-dynamodb-throttles'
+      AlarmDescription: 'Alarm when DynamoDB throttling events occur (monitors all Vocabulator tables)'
+      MetricName: UserErrors
+      Namespace: AWS/DynamoDB
+      Statistic: Sum
+      Period: 300
+      EvaluationPeriods: 1
+      Threshold: 1
+      ComparisonOperator: GreaterThanThreshold
+      # No dimensions = monitors all DynamoDB tables in account
+      # In production, consider creating per-table alarms for better granularity
+      # Filter by table name in CloudWatch console if needed
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - !Ref SnsTopicArn
+      Tags:
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Project
+          Value: Vocabulator
+
+Conditions:
+  HasSnsTopic: !Not [!Equals [!Ref SnsTopicArn, '']]
+
+Outputs:
+  ApiLogGroupName:
+    Description: Name of the API Lambda log group
+    Value: !Ref ApiLogGroup
+    Export:
+      Name: !Sub '${AWS::StackName}-ApiLogGroup-Name'
+  
+  ApiLogGroupArn:
+    Description: ARN of the API Lambda log group
+    Value: !GetAtt ApiLogGroup.Arn
+    Export:
+      Name: !Sub '${AWS::StackName}-ApiLogGroup-Arn'
+  
+  BatchLogGroupName:
+    Description: Name of the Batch log group
+    Value: !Ref BatchLogGroup
+    Export:
+      Name: !Sub '${AWS::StackName}-BatchLogGroup-Name'
+  
+  BatchLogGroupArn:
+    Description: ARN of the Batch log group
+    Value: !GetAtt BatchLogGroup.Arn
+    Export:
+      Name: !Sub '${AWS::StackName}-BatchLogGroup-Arn'
+

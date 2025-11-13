@@ -1,0 +1,269 @@
+[
+  {
+    "word": "synthesize",
+    "grade_level": 7,
+    "definition": "combine elements into a coherent whole",
+    "subject_areas": [
+      "science",
+      "ela"
+    ],
+    "complexity_tier": 3,
+    "word_family": [
+      "synthesis",
+      "synthetic"
+    ]
+  },
+  {
+    "word": "critique",
+    "grade_level": 7,
+    "definition": "evaluate in a detailed and analytical way",
+    "subject_areas": [
+      "ela"
+    ],
+    "complexity_tier": 3,
+    "word_family": [
+      "criticism",
+      "critical"
+    ]
+  },
+  {
+    "word": "elaborate",
+    "grade_level": 7,
+    "definition": "develop or present in detail",
+    "subject_areas": [
+      "ela"
+    ],
+    "complexity_tier": 2,
+    "word_family": [
+      "elaboration",
+      "elaborative"
+    ]
+  },
+  {
+    "word": "distinguish",
+    "grade_level": 7,
+    "definition": "recognize or treat as different",
+    "subject_areas": [
+      "ela",
+      "science"
+    ],
+    "complexity_tier": 2,
+    "word_family": [
+      "distinction",
+      "distinctive"
+    ]
+  },
+  {
+    "word": "differentiate",
+    "grade_level": 7,
+    "definition": "recognize or identify as different",
+    "subject_areas": [
+      "math",
+      "science"
+    ],
+    "complexity_tier": 2,
+    "word_family": [
+      "differentiation",
+      "differential"
+    ]
+  },
+  {
+    "word": "hypothesize",
+    "grade_level": 7,
+    "definition": "put forward as a hypothesis",
+    "subject_areas": [
+      "science"
+    ],
+    "complexity_tier": 3,
+    "word_family": [
+      "hypothesis",
+      "hypothetical"
+    ]
+  },
+  {
+    "word": "theorize",
+    "grade_level": 7,
+    "definition": "form a theory about",
+    "subject_areas": [
+      "science"
+    ],
+    "complexity_tier": 3,
+    "word_family": [
+      "theory",
+      "theoretical"
+    ]
+  },
+  {
+    "word": "validate",
+    "grade_level": 7,
+    "definition": "check or prove the validity of",
+    "subject_areas": [
+      "science",
+      "math"
+    ],
+    "complexity_tier": 2,
+    "word_family": [
+      "validation",
+      "valid"
+    ]
+  },
+  {
+    "word": "verify",
+    "grade_level": 7,
+    "definition": "make sure or demonstrate that something is true",
+    "subject_areas": [
+      "math",
+      "science"
+    ],
+    "complexity_tier": 2,
+    "word_family": [
+      "verification",
+      "verifiable"
+    ]
+  },
+  {
+    "word": "refute",
+    "grade_level": 7,
+    "definition": "prove to be wrong or false",
+    "subject_areas": [
+      "ela",
+      "science"
+    ],
+    "complexity_tier": 3,
+    "word_family": [
+      "refutation"
+    ]
+  },
+  {
+    "word": "articulate",
+    "grade_level": 7,
+    "definition": "express clearly",
+    "subject_areas": [
+      "ela"
+    ],
+    "complexity_tier": 2,
+    "word_family": [
+      "articulation",
+      "articulate"
+    ]
+  },
+  {
+    "word": "clarify",
+    "grade_level": 7,
+    "definition": "make clear or easier to understand",
+    "subject_areas": [
+      "ela",
+      "math"
+    ],
+    "complexity_tier": 1,
+    "word_family": [
+      "clarification",
+      "clear"
+    ]
+  },
+  {
+    "word": "emphasize",
+    "grade_level": 7,
+    "definition": "give special importance to",
+    "subject_areas": [
+      "ela"
+    ],
+    "complexity_tier": 1,
+    "word_family": [
+      "emphasis",
+      "emphatic"
+    ]
+  },
+  {
+    "word": "paraphrase",
+    "grade_level": 7,
+    "definition": "express the meaning using different words",
+    "subject_areas": [
+      "ela"
+    ],
+    "complexity_tier": 2,
+    "word_family": [
+      "paraphrasing"
+    ]
+  },
+  {
+    "word": "cite",
+    "grade_level": 7,
+    "definition": "quote or refer to as evidence",
+    "subject_areas": [
+      "ela",
+      "science"
+    ],
+    "complexity_tier": 2,
+    "word_family": [
+      "citation",
+      "citable"
+    ]
+  },
+  {
+    "word": "investigate",
+    "grade_level": 7,
+    "definition": "carry out research or study",
+    "subject_areas": [
+      "science"
+    ],
+    "complexity_tier": 2,
+    "word_family": [
+      "investigation",
+      "investigative"
+    ]
+  },
+  {
+    "word": "experiment",
+    "grade_level": 7,
+    "definition": "a scientific procedure to test a hypothesis",
+    "subject_areas": [
+      "science"
+    ],
+    "complexity_tier": 2,
+    "word_family": [
+      "experimental",
+      "experimentation"
+    ]
+  },
+  {
+    "word": "formulate",
+    "grade_level": 7,
+    "definition": "create or devise methodically",
+    "subject_areas": [
+      "math",
+      "science"
+    ],
+    "complexity_tier": 2,
+    "word_family": [
+      "formulation",
+      "formula"
+    ]
+  },
+  {
+    "word": "construct",
+    "grade_level": 7,
+    "definition": "build or form by putting together parts",
+    "subject_areas": [
+      "math",
+      "science"
+    ],
+    "complexity_tier": 2,
+    "word_family": [
+      "construction",
+      "constructive"
+    ]
+  },
+  {
+    "word": "deconstruct",
+    "grade_level": 7,
+    "definition": "analyze by breaking down into components",
+    "subject_areas": [
+      "ela"
+    ],
+    "complexity_tier": 3,
+    "word_family": [
+      "deconstruction"
+    ]
+  }
+]

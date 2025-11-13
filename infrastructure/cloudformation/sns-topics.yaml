@@ -1,0 +1,54 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'SNS topics for Vocabulator MVP alarm notifications'
+
+Parameters:
+  Environment:
+    Type: String
+    Default: development
+    AllowedValues:
+      - development
+      - staging
+      - production
+    Description: Environment name
+  
+  EmailAddress:
+    Type: String
+    Description: Email address for alarm notifications (optional)
+    Default: ''
+
+Resources:
+  AlarmTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName: !Sub 'vocabulator-${Environment}-alarms'
+      DisplayName: !Sub 'Vocabulator ${Environment} Alarms'
+      Tags:
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Project
+          Value: Vocabulator
+
+  AlarmTopicSubscription:
+    Type: AWS::SNS::Subscription
+    Condition: HasEmailAddress
+    Properties:
+      TopicArn: !Ref AlarmTopic
+      Protocol: email
+      Endpoint: !Ref EmailAddress
+
+Conditions:
+  HasEmailAddress: !Not [!Equals [!Ref EmailAddress, '']]
+
+Outputs:
+  AlarmTopicArn:
+    Description: ARN of the alarm notification topic
+    Value: !Ref AlarmTopic
+    Export:
+      Name: !Sub '${AWS::StackName}-AlarmTopic-Arn'
+  
+  AlarmTopicName:
+    Description: Name of the alarm notification topic
+    Value: !GetAtt AlarmTopic.TopicName
+    Export:
+      Name: !Sub '${AWS::StackName}-AlarmTopic-Name'
+

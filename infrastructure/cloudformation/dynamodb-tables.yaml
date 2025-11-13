@@ -1,0 +1,175 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'DynamoDB tables for Vocabulator MVP'
+
+Parameters:
+  Environment:
+    Type: String
+    Default: development
+    AllowedValues:
+      - development
+      - staging
+      - production
+    Description: Environment name
+  
+  TablePrefix:
+    Type: String
+    Default: vocabulator
+    Description: Prefix for table names
+
+Resources:
+  StudentProfilesTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub '${TablePrefix}-${Environment}-StudentProfiles'
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: student_id
+          AttributeType: S
+        - AttributeName: profile_version
+          AttributeType: N
+        - AttributeName: grade_level
+          AttributeType: N
+        - AttributeName: proficiency_score
+          AttributeType: N
+      KeySchema:
+        - AttributeName: student_id
+          KeyType: HASH
+        - AttributeName: profile_version
+          KeyType: RANGE
+      GlobalSecondaryIndexes:
+        - IndexName: grade_level-proficiency_score-index
+          KeySchema:
+            - AttributeName: grade_level
+              KeyType: HASH
+            - AttributeName: proficiency_score
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+      Tags:
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Project
+          Value: Vocabulator
+
+  VocabularyRecommendationsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub '${TablePrefix}-${Environment}-VocabularyRecommendations'
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: student_id
+          AttributeType: S
+        - AttributeName: recommendation_date
+          AttributeType: S
+        - AttributeName: status
+          AttributeType: S
+      KeySchema:
+        - AttributeName: student_id
+          KeyType: HASH
+        - AttributeName: recommendation_date
+          KeyType: RANGE
+      GlobalSecondaryIndexes:
+        - IndexName: status-recommendation_date-index
+          KeySchema:
+            - AttributeName: status
+              KeyType: HASH
+            - AttributeName: recommendation_date
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+      TimeToLiveSpecification:
+        AttributeName: expires_at
+        Enabled: true
+      Tags:
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Project
+          Value: Vocabulator
+
+  CommonCoreVocabularyTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub '${TablePrefix}-${Environment}-CommonCoreVocabulary'
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: grade_level
+          AttributeType: N
+        - AttributeName: word
+          AttributeType: S
+      KeySchema:
+        - AttributeName: grade_level
+          KeyType: HASH
+        - AttributeName: word
+          KeyType: RANGE
+      Tags:
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Project
+          Value: Vocabulator
+
+  ProcessingJobsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub '${TablePrefix}-${Environment}-ProcessingJobs'
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: job_id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: job_id
+          KeyType: HASH
+      Tags:
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Project
+          Value: Vocabulator
+
+Outputs:
+  StudentProfilesTableName:
+    Description: Name of the StudentProfiles table
+    Value: !Ref StudentProfilesTable
+    Export:
+      Name: !Sub '${AWS::StackName}-StudentProfiles-TableName'
+  
+  StudentProfilesTableArn:
+    Description: ARN of the StudentProfiles table
+    Value: !GetAtt StudentProfilesTable.Arn
+    Export:
+      Name: !Sub '${AWS::StackName}-StudentProfiles-TableArn'
+  
+  VocabularyRecommendationsTableName:
+    Description: Name of the VocabularyRecommendations table
+    Value: !Ref VocabularyRecommendationsTable
+    Export:
+      Name: !Sub '${AWS::StackName}-VocabularyRecommendations-TableName'
+  
+  VocabularyRecommendationsTableArn:
+    Description: ARN of the VocabularyRecommendations table
+    Value: !GetAtt VocabularyRecommendationsTable.Arn
+    Export:
+      Name: !Sub '${AWS::StackName}-VocabularyRecommendations-TableArn'
+  
+  CommonCoreVocabularyTableName:
+    Description: Name of the CommonCoreVocabulary table
+    Value: !Ref CommonCoreVocabularyTable
+    Export:
+      Name: !Sub '${AWS::StackName}-CommonCoreVocabulary-TableName'
+  
+  CommonCoreVocabularyTableArn:
+    Description: ARN of the CommonCoreVocabulary table
+    Value: !GetAtt CommonCoreVocabularyTable.Arn
+    Export:
+      Name: !Sub '${AWS::StackName}-CommonCoreVocabulary-TableArn'
+  
+  ProcessingJobsTableName:
+    Description: Name of the ProcessingJobs table
+    Value: !Ref ProcessingJobsTable
+    Export:
+      Name: !Sub '${AWS::StackName}-ProcessingJobs-TableName'
+  
+  ProcessingJobsTableArn:
+    Description: ARN of the ProcessingJobs table
+    Value: !GetAtt ProcessingJobsTable.Arn
+    Export:
+      Name: !Sub '${AWS::StackName}-ProcessingJobs-TableArn'
+
