@@ -117,6 +117,10 @@ class StudentListItem(BaseModel):
         class: Optional class identifier (e.g., "7A-ELA")
     """
     
+    model_config = ConfigDict(
+        populate_by_name=True,  # Allow both field name and alias
+    )
+    
     student_id: str = Field(..., description="Student identifier")
     grade_level: int = Field(..., ge=6, le=8, description="Student grade level")
     vocabulary_size: int = Field(..., ge=0, description="Number of unique vocabulary words")
@@ -130,6 +134,7 @@ class StudentListItem(BaseModel):
         default=None,
         description="Class identifier (e.g., '7A-ELA')",
         alias="class",  # Use 'class' in JSON but 'class_id' in Python
+        serialization_alias="class",  # Explicitly set serialization alias
     )
 
 
@@ -153,6 +158,7 @@ class StudentsListResponse(BaseModel):
                         "grade_level": 7,
                         "vocabulary_size": 150,
                         "proficiency_score": 75.5,
+                        "class": "7A-ELA",
                     }
                 ],
                 "total": 1,

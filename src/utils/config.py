@@ -107,7 +107,7 @@ class Config(BaseModel):
     # CORS Configuration
     cors_allowed_origins: Optional[str] = Field(
         default=None,
-        description="Comma-separated list of allowed CORS origins (optional, defaults to localhost:3000 in dev)",
+        description="Comma-separated list of allowed CORS origins (optional, defaults to localhost:3000, localhost:5173, and localhost:8000 in dev)",
     )
 
     @field_validator("environment", mode="before")
@@ -185,7 +185,11 @@ class Config(BaseModel):
         
         # Default: allow localhost in development, empty list in production
         if self.environment == Environment.DEVELOPMENT:
-            return ["http://localhost:3000", "http://localhost:5173", "http://localhost:8000"]
+            return [
+                "http://localhost:3000",  # Legacy/alternative frontend
+                "http://localhost:5173",  # Vite dev server (SvelteKit dashboard)
+                "http://localhost:8000",  # FastAPI backend
+            ]
         
         return []
 

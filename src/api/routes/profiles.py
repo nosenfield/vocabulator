@@ -188,23 +188,38 @@ async def list_students(
             profiles = student_repo.list_by_grade_level(grade_level)
         else:
             # If no grade filter, query all grade levels (6, 7, 8) and combine results
+            # Note: This makes 3 separate GSI queries. For post-MVP, consider implementing
+            # a more efficient list_all() method using a single scan operation.
             all_profiles = []
             for grade in [6, 7, 8]:
                 grade_profiles = student_repo.list_by_grade_level(grade)
+                logger.debug(
+                    f"Found {len(grade_profiles)} students in grade {grade}",
+                    extra={"grade_level": grade, "request_id": request_id},
+                )
                 all_profiles.extend(grade_profiles)
             profiles = all_profiles
         
         # Convert to response items
-        students = [
-            StudentListItem(
-                student_id=profile.student_id,
-                grade_level=profile.grade_level,
-                vocabulary_size=len(profile.vocabulary_list),
-                proficiency_score=profile.proficiency_score,
-                class_id=profile.metadata.get("class") if profile.metadata else None,
+        students = []
+        for profile in profiles:
+            # Debug: Log metadata for first few students
+            if len(students) < 3:
+                logger.info(
+                    f"Processing profile {profile.student_id}: metadata={profile.metadata}, has_metadata={hasattr(profile, 'metadata')}, class={profile.metadata.get('class') if profile.metadata else None}",
+                    extra={"student_id": profile.student_id, "metadata": profile.metadata},
+                )
+            
+            class_value = profile.metadata.get("class") if profile.metadata else None
+            students.append(
+                StudentListItem(
+                    student_id=profile.student_id,
+                    grade_level=profile.grade_level,
+                    vocabulary_size=len(profile.vocabulary_list),
+                    proficiency_score=profile.proficiency_score,
+                    class_id=class_value,
+                )
             )
-            for profile in profiles
-        ]
         
         logger.debug(
             f"Retrieved {len(students)} students",

@@ -169,6 +169,11 @@ def seed_students() -> None:
             metadata={"class": class_name}  # Store class in metadata
         )
         
+        # Verify metadata is set before saving
+        if not student.metadata or student.metadata.get("class") != class_name:
+            logger.warning(f"Metadata not set correctly for {student_id} before save. Expected class: {class_name}, Got: {student.metadata}")
+            student.metadata = {"class": class_name}
+        
         # Calculate proficiency score using the model's method
         student.calculate_proficiency_score()
         
@@ -179,8 +184,27 @@ def seed_students() -> None:
         student.proficiency_score = (student.proficiency_score * 0.7) + (target_score * 0.3)
         student.proficiency_score = max(0.0, min(100.0, student.proficiency_score))
         
+        # Verify metadata is still set after calculations
+        if not student.metadata or student.metadata.get("class") != class_name:
+            logger.warning(f"Metadata lost for {student_id} after calculations. Re-setting...")
+            student.metadata = {"class": class_name}
+        
+        # Check to_dict output
+        student_dict = student.to_dict()
+        if "metadata" not in student_dict or student_dict.get("metadata", {}).get("class") != class_name:
+            logger.error(f"Metadata not in to_dict() for {student_id}. Dict keys: {list(student_dict.keys())}")
+        
         # Save to database
         repo.create(student)
+        
+        # Verify after save by reading back
+        saved_student = repo.get(student_id)
+        if saved_student:
+            if not saved_student.metadata or saved_student.metadata.get("class") != class_name:
+                logger.error(f"Metadata not persisted for {student_id}. Expected: {class_name}, Got: {saved_student.metadata}")
+        else:
+            logger.error(f"Failed to read back student {student_id} after creation")
+        
         created_count += 1
         logger.info(f"Created student {student_id} (Grade {grade_level}, {class_name}, {vocab_size} words, {student.proficiency_score:.1f} proficiency)")
     

@@ -1,6 +1,6 @@
 <script>
 	import { onMount } from 'svelte';
-	import { currentView, students, educator, selectedClass, filteredStudents } from '$lib/stores';
+	import { currentView, students, educator, selectedClass, filteredStudents, classes } from '$lib/stores';
 	import { getStudents, syncWithGoogleClassroom } from '$lib/api';
 	import Header from '$lib/components/Header.svelte';
 	import StudentStats from '$lib/components/StudentStats.svelte';
@@ -13,7 +13,6 @@
 		submitAssignments
 	} from '$lib/api';
 	import mockEducator from '../data/mockEducator.json';
-	import { classes } from '$lib/stores';
 
 	let isSyncing = false;
 	let syncMessage = null;

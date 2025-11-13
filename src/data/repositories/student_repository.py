@@ -105,7 +105,50 @@ class StudentRepository(BaseRepository[StudentProfile]):
         if profile.profile_version is None or profile.profile_version < 1:
             profile.profile_version = 1
         
-        return super().create(profile)
+        # Debug: Log metadata before save (using INFO level so it shows in logs)
+        if profile.metadata:
+            logger.info(
+                f"Creating student {profile.student_id} with metadata: {profile.metadata}",
+                extra={"student_id": profile.student_id, "metadata": profile.metadata},
+            )
+        else:
+            logger.warning(
+                f"Creating student {profile.student_id} without metadata",
+                extra={"student_id": profile.student_id},
+            )
+        
+        # Convert to item and check metadata
+        item = self._model_to_item(profile)
+        if "metadata" in item:
+            logger.info(
+                f"Item for {profile.student_id} includes metadata: {item['metadata']}",
+                extra={"student_id": profile.student_id, "metadata": item.get("metadata")},
+            )
+        else:
+            logger.error(
+                f"Item for {profile.student_id} missing metadata! Keys: {list(item.keys())}",
+                extra={"student_id": profile.student_id, "item_keys": list(item.keys())},
+            )
+        
+        result = super().create(profile)
+        
+        # Verify after save
+        saved = self.get(profile.student_id)
+        if saved:
+            if saved.metadata and saved.metadata.get("class"):
+                logger.info(
+                    f"Verified metadata persisted for {profile.student_id}: {saved.metadata}",
+                    extra={"student_id": profile.student_id, "metadata": saved.metadata},
+                )
+            else:
+                logger.error(
+                    f"Metadata NOT persisted for {profile.student_id}! Expected metadata, got: {saved.metadata}",
+                    extra={"student_id": profile.student_id, "metadata": saved.metadata},
+                )
+        else:
+            logger.error(f"Failed to read back student {profile.student_id} after creation")
+        
+        return result
     
     def update(self, profile: StudentProfile) -> Optional[StudentProfile]:
         """Update an existing student profile.
@@ -229,12 +272,42 @@ class StudentRepository(BaseRepository[StudentProfile]):
         """
         from boto3.dynamodb.conditions import Key
         
-        # Query using GSI
+        # Query using GSI to get student IDs
         items = self.client.query(
             key_condition_expression=Key("grade_level").eq(grade_level),
             index_name="grade_level-proficiency_score-index",
             limit=limit,
         )
         
-        return [self._item_to_model(item) for item in items]
+        # GSI queries may not return all attributes (like metadata) if not projected
+        # Do a batch get to fetch full items with all attributes
+        if items:
+            # Extract student IDs and profile versions for batch get
+            keys = [
+                {
+                    self._get_partition_key(): item["student_id"],
+                    self._get_sort_key(): item.get("profile_version", 1),
+                }
+                for item in items
+            ]
+            
+            logger.info(
+                f"GSI query returned {len(items)} items, fetching full items via batch_get",
+                extra={"grade_level": grade_level, "item_count": len(items)},
+            )
+            
+            # Use base repository's batch_get to fetch full items
+            full_profiles = self.batch_get(keys=keys)
+            
+            # Verify metadata is present
+            for profile in full_profiles:
+                if not profile.metadata or not profile.metadata.get("class"):
+                    logger.warning(
+                        f"Profile {profile.student_id} missing metadata after batch_get: {profile.metadata}",
+                        extra={"student_id": profile.student_id, "metadata": profile.metadata},
+                    )
+            
+            return full_profiles
+        
+        return []
 
