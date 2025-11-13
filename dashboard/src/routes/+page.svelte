@@ -1,7 +1,7 @@
 <script>
 	import { onMount } from 'svelte';
 	import { currentView, students, educator, selectedClass, filteredStudents, classes, sortColumn, sortDirection, sortedStudents } from '$lib/stores';
-	import { getStudents, syncWithGoogleClassroom } from '$lib/api';
+	import { getStudents, syncWithGoogleClassroom, clearStudents } from '$lib/api';
 	import Header from '$lib/components/Header.svelte';
 	import StudentStats from '$lib/components/StudentStats.svelte';
 	import VocabularyChart from '$lib/components/VocabularyChart.svelte';
@@ -16,6 +16,7 @@
 	import mockAssignments from '../data/mockAssignments.json';
 
 	let isSyncing = false;
+	let isClearing = false;
 	let syncMessage = null;
 	let isLoading = false;
 	let currentStudentProfile = null;
@@ -34,8 +35,8 @@
 		}
 	});
 
-	// Watch for view changes to load student data
-	$: if ($currentView !== 'teacher' && $currentView) {
+	// Watch for view changes to load student data (only in browser)
+	$: if (typeof window !== 'undefined' && $currentView !== 'teacher' && $currentView) {
 		loadStudentData($currentView);
 	}
 
@@ -88,6 +89,28 @@
 			syncMessage = { type: 'danger', text: `Sync failed: ${error.message}` };
 		} finally {
 			isSyncing = false;
+		}
+	}
+
+	async function handleClear() {
+		if (!confirm('Are you sure you want to clear all students? This will delete all mock student data.')) {
+			return;
+		}
+		isClearing = true;
+		syncMessage = null;
+		try {
+			const result = await clearStudents();
+			const studentData = await getStudents();
+			const studentList = studentData.students || studentData || [];
+			students.set(studentList);
+			syncMessage = { 
+				type: 'success', 
+				text: `Successfully cleared ${result.deleted_count || 0} students. You can now sync again to reload data.` 
+			};
+		} catch (error) {
+			syncMessage = { type: 'danger', text: `Clear failed: ${error.message}` };
+		} finally {
+			isClearing = false;
 		}
 	}
 
@@ -228,7 +251,10 @@
 				<h2>My Students</h2>
 			</div>
 			<div class="col-md-6 text-end">
-				<button class="btn btn-primary" on:click={handleSync} disabled={isSyncing} type="button">
+				<button class="btn btn-outline-danger me-2" on:click={handleClear} disabled={isClearing || isSyncing} type="button">
+					{isClearing ? 'Clearing...' : 'Clear Students'}
+				</button>
+				<button class="btn btn-primary" on:click={handleSync} disabled={isSyncing || isClearing} type="button">
 					{isSyncing ? 'Syncing...' : 'Sync with Google Classroom'}
 				</button>
 			</div>

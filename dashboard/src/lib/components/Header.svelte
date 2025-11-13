@@ -4,6 +4,13 @@
 	function handleViewChange(event) {
 		currentView.set(event.target.value);
 	}
+
+	// Sort students alphabetically by first name, then last initial, then student_id
+	$: sortedStudents = [...$students].sort((a, b) => {
+		const aName = (a.first_name || 'N/A') + (a.last_initial || '') + (a.student_id || '');
+		const bName = (b.first_name || 'N/A') + (b.last_initial || '') + (b.student_id || '');
+		return aName.localeCompare(bName);
+	});
 </script>
 
 <nav class="navbar navbar-dark bg-primary">
@@ -19,7 +26,7 @@
 				Teacher View - {$educator?.name || 'Loading...'}
 			</option>
 			<option disabled>──────────</option>
-			{#each $students as student}
+			{#each sortedStudents as student}
 				<option value={student.student_id}>
 					{student.first_name || 'N/A'}
 					{#if student.last_initial}
