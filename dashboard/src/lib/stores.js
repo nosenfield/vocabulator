@@ -10,11 +10,12 @@ export const students = writable([]);
 export const educator = writable(null);
 
 // Available classes (derived from students)
+// Returns sorted array of unique class IDs
 export const classes = derived(students, ($students) => {
 	const classSet = new Set(
 		$students.map((s) => s.class || s.metadata?.class).filter(Boolean)
 	);
-	return Array.from(classSet);
+	return Array.from(classSet).sort(); // Sort for consistent ordering
 });
 
 // Filtered students by selected class

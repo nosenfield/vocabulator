@@ -13,7 +13,7 @@
 		submitAssignments
 	} from '$lib/api';
 	import mockEducator from '../data/mockEducator.json';
-	import mockClasses from '../data/mockClasses.json';
+	import { classes } from '$lib/stores';
 
 	let isSyncing = false;
 	let syncMessage = null;
@@ -168,8 +168,8 @@
 				<label for="class-filter" class="form-label">Filter by Class:</label>
 				<select id="class-filter" class="form-select" bind:value={$selectedClass}>
 					<option value={null}>All Classes</option>
-					{#each mockClasses as classItem}
-						<option value={classItem.id}>{classItem.name}</option>
+					{#each $classes as classId}
+						<option value={classId}>{classId}</option>
 					{/each}
 				</select>
 			</div>
