@@ -145,6 +145,11 @@ class StudentRepository(BaseRepository[StudentProfile]):
         update_expression_parts.append("last_updated = :last_upd")
         expression_attribute_values[":last_upd"] = item["last_updated"]
         
+        # Update metadata if it exists
+        if "metadata" in item and item["metadata"]:
+            update_expression_parts.append("metadata = :metadata")
+            expression_attribute_values[":metadata"] = item["metadata"]
+        
         update_expression = "SET " + ", ".join(update_expression_parts)
         
         updated_item = self.client.update_item(

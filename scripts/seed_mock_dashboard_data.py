@@ -131,7 +131,7 @@ def seed_students() -> None:
         
         # Check if student already exists
         try:
-            existing = repo.get_by_id(student_id)
+            existing = repo.get(student_id)
             if existing:
                 logger.info(f"Student {student_id} already exists, updating...")
                 updated_count += 1
@@ -144,6 +144,10 @@ def seed_students() -> None:
                 existing.proficiency_score = (existing.proficiency_score * 0.7) + (target_score * 0.3)
                 existing.proficiency_score = max(0.0, min(100.0, existing.proficiency_score))
                 existing.last_updated = datetime.now(timezone.utc)
+                # Update metadata with class information
+                if not hasattr(existing, 'metadata') or existing.metadata is None:
+                    existing.metadata = {}
+                existing.metadata["class"] = class_name
                 repo.update(existing)
                 continue
         except Exception:
@@ -161,7 +165,8 @@ def seed_students() -> None:
             vocabulary_list=vocabulary,
             proficiency_score=0.0,  # Will be calculated
             created_at=now,
-            last_updated=now
+            last_updated=now,
+            metadata={"class": class_name}  # Store class in metadata
         )
         
         # Calculate proficiency score using the model's method
