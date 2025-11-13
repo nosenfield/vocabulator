@@ -85,7 +85,7 @@ class StudentProfile(BaseModel):
         default_factory=lambda: datetime.now(timezone.utc),
         description="Last update timestamp",
     )
-    metadata: Optional[Dict] = Field(
+    metadata: Dict = Field(
         default_factory=dict,
         description="Optional metadata (e.g., class information)",
     )
@@ -200,8 +200,8 @@ class StudentProfile(BaseModel):
             "last_updated": self.last_updated.isoformat(),
         }
         # Include metadata if it exists (for class information)
-        if hasattr(self, "metadata") and self.metadata:
-            result["metadata"] = self.metadata
+        # Always include metadata dict, even if empty, to ensure it's persisted
+        result["metadata"] = self.metadata if self.metadata else {}
         return result
     
     @classmethod

@@ -134,3 +134,102 @@ async def sync_google_classroom(
             ),
         ) from e
 
+
+@router.delete(
+    "/mock/clear-students",
+    response_model=dict,
+    status_code=status.HTTP_200_OK,
+    summary="Clear all mock students",
+    description="Delete all mock students (STU-001 to STU-018) from the database. Useful for redemonstrating the Google Classroom sync.",
+)
+async def clear_mock_students(
+    student_repo: Annotated[StudentRepository, Depends(get_student_repository)],
+) -> dict:
+    """Clear all mock students from the database.
+    
+    This endpoint deletes all mock students (STU-001 to STU-018) to allow
+    redemonstrating the Google Classroom sync functionality.
+    
+    Returns:
+        Dictionary with deletion status and count
+        
+    Raises:
+        HTTPException: If deletion fails
+    """
+    request_id = str(uuid4())
+    
+    try:
+        deleted_count = 0
+        errors = []
+        
+        # Delete all mock students (STU-001 to STU-018)
+        for i in range(1, MOCK_STUDENT_COUNT + 1):
+            student_id = f"STU-{i:03d}"
+            try:
+                # Get the student to find profile_version
+                student = student_repo.get(student_id)
+                if student:
+                    # Delete using profile_version (default is 1)
+                    student_repo.delete(student_id, student.profile_version)
+                    deleted_count += 1
+                    logger.debug(
+                        f"Deleted student {student_id}",
+                        extra={"request_id": request_id, "student_id": student_id},
+                    )
+            except Exception as e:
+                error_msg = f"Failed to delete {student_id}: {str(e)}"
+                errors.append(error_msg)
+                logger.warning(
+                    error_msg,
+                    extra={"request_id": request_id, "student_id": student_id},
+                )
+        
+        # Also delete any other students that might exist (STU-973, STU-719, STU-783, etc.)
+        # These are from previous test runs
+        extra_student_ids = ["STU-973", "STU-719", "STU-783"]
+        for student_id in extra_student_ids:
+            try:
+                student = student_repo.get(student_id)
+                if student:
+                    student_repo.delete(student_id, student.profile_version)
+                    deleted_count += 1
+                    logger.debug(
+                        f"Deleted extra student {student_id}",
+                        extra={"request_id": request_id, "student_id": student_id},
+                    )
+            except Exception:
+                # Ignore errors for extra students
+                pass
+        
+        logger.info(
+            f"Cleared {deleted_count} students",
+            extra={"request_id": request_id, "deleted_count": deleted_count},
+        )
+        
+        response = {
+            "success": True,
+            "message": f"Successfully cleared {deleted_count} students.",
+            "deleted_count": deleted_count,
+            "request_id": request_id,
+        }
+        
+        if errors:
+            response["errors"] = errors
+            response["message"] += f" {len(errors)} errors occurred."
+        
+        return response
+        
+    except Exception as e:
+        logger.error(
+            f"Error clearing students: {e}",
+            extra={"request_id": request_id},
+            exc_info=True,
+        )
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=create_internal_error_response(
+                message="An unexpected error occurred while clearing students",
+                request_id=request_id,
+            ),
+        ) from e
+
