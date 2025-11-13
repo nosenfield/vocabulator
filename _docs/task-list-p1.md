@@ -18,7 +18,7 @@ Build a minimalist teacher/student vocabulary dashboard using Svelte, Bootstrap 
 
 ### Phase 1: Project Setup
 
-#### Task 1.1: Initialize SvelteKit Project
+#### Task P1.1: Initialize SvelteKit Project
 **Objective:** Create new SvelteKit project with required dependencies
 
 **Steps:**
@@ -62,7 +62,7 @@ dashboard/
 
 ---
 
-#### Task 1.2: Create Mock Data Files
+#### Task P1.2: Create Mock Data Files
 **Objective:** Create JSON files with mock educator, class, and assignment data
 
 **Files to Create:**
@@ -136,7 +136,7 @@ dashboard/
 
 ---
 
-#### Task 1.3: Create API Utility Module
+#### Task P1.3: Create API Utility Module
 **Objective:** Build simple fetch wrapper for backend API communication
 
 **File to Create:** src/lib/api.js
@@ -194,7 +194,7 @@ export async function getStudents(gradeLevel = null) {
 
 ---
 
-#### Task 1.4: Create Svelte Stores for State Management
+#### Task P1.4: Create Svelte Stores for State Management
 **Objective:** Set up reactive state management using Svelte stores
 
 **File to Create:** src/lib/stores.js
@@ -246,7 +246,7 @@ export const currentStudent = derived(
 
 ### Phase 2: Backend Mock Data Script
 
-#### Task 2.1: Create Database Seeding Script
+#### Task P2.1: Create Database Seeding Script
 **Objective:** Python script to populate DynamoDB with mock student data
 
 **File to Create:** scripts/seed_mock_dashboard_data.py
@@ -309,7 +309,7 @@ if __name__ == "__main__":
 
 ---
 
-#### Task 2.2: Create Mock Assignment Submission Endpoint
+#### Task P2.2: Create Mock Assignment Submission Endpoint
 **Objective:** Add backend endpoint to receive mock assignment submissions
 
 **File to Modify:** src/api/routes/upload.py
@@ -344,7 +344,7 @@ async def mock_submit_assignment(
 
 ---
 
-#### Task 2.3: Create Mock Google Classroom Sync Endpoint
+#### Task P2.3: Create Mock Google Classroom Sync Endpoint
 **Objective:** Endpoint that simulates syncing students from Google Classroom
 
 **File to Create:** src/api/routes/mock.py
@@ -381,7 +381,7 @@ async def sync_google_classroom(
 
 ### Phase 3: Core Components
 
-#### Task 3.1: Create Header Component
+#### Task P3.1: Create Header Component
 **Objective:** Build navigation header with view switcher dropdown
 
 **File to Create:** src/lib/components/Header.svelte
@@ -431,7 +431,7 @@ async def sync_google_classroom(
 
 ---
 
-#### Task 3.2: Create Student Stats Component
+#### Task P3.2: Create Student Stats Component
 **Objective:** Display student profile statistics
 
 **File to Create:** src/lib/components/StudentStats.svelte
@@ -486,7 +486,7 @@ async def sync_google_classroom(
 
 ---
 
-#### Task 3.3: Create Vocabulary Growth Chart Component
+#### Task P3.3: Create Vocabulary Growth Chart Component
 **Objective:** Time-series chart showing vocabulary growth over 30 days
 
 **File to Create:** src/lib/components/VocabularyChart.svelte
@@ -566,7 +566,7 @@ function prepareChartData(assignments) {
 
 ---
 
-#### Task 3.4: Create Recommendations List Component
+#### Task P3.4: Create Recommendations List Component
 **Objective:** Display vocabulary word recommendations
 
 **File to Create:** src/lib/components/RecommendationsList.svelte
@@ -656,7 +656,7 @@ function prepareChartData(assignments) {
 
 ---
 
-#### Task 3.5: Create Mock Assignment Selector Component
+#### Task P3.5: Create Mock Assignment Selector Component
 **Objective:** Multi-select list for choosing assignments to submit
 
 **File to Create:** src/lib/components/AssignmentSelector.svelte
@@ -774,7 +774,7 @@ function prepareChartData(assignments) {
 
 ### Phase 4: Page Views
 
-#### Task 4.1: Create Teacher Dashboard Page
+#### Task P4.1: Create Teacher Dashboard Page
 **Objective:** Main dashboard view showing classroom overview
 
 **File to Create:** src/routes/+page.svelte (teacher view)
@@ -925,7 +925,7 @@ function prepareChartData(assignments) {
 
 ---
 
-#### Task 4.2: Create Student Detail Page
+#### Task P4.2: Create Student Detail Page
 **Objective:** Detailed view for individual student
 
 **File to Modify:** src/routes/+page.svelte (add student view)
@@ -1042,7 +1042,7 @@ function prepareChartData(assignments) {
 
 ### Phase 5: Integration and Testing
 
-#### Task 5.1: Configure Environment Variables
+#### Task P5.1: Configure Environment Variables
 **Objective:** Set up environment configuration for different deployment contexts
 
 **File to Create:** .env.example
@@ -1071,7 +1071,7 @@ VITE_API_BASE=https://your-api-domain.com/api/v1
 
 ---
 
-#### Task 5.2: Test End-to-End Workflow
+#### Task P5.2: Test End-to-End Workflow
 **Objective:** Verify complete user flow works correctly
 
 **Test Scenarios:**
@@ -1111,7 +1111,7 @@ VITE_API_BASE=https://your-api-domain.com/api/v1
 
 ---
 
-#### Task 5.3: Responsive Design Testing
+#### Task P5.3: Responsive Design Testing
 **Objective:** Ensure dashboard works on mobile and tablet devices
 
 **Test Cases:**
@@ -1139,7 +1139,7 @@ VITE_API_BASE=https://your-api-domain.com/api/v1
 
 ### Phase 6: Deployment
 
-#### Task 6.1: Configure Vercel Deployment
+#### Task P6.1: Configure Vercel Deployment
 **Objective:** Set up Vercel project and deployment configuration
 
 **File to Create:** vercel.json
@@ -1171,7 +1171,7 @@ VITE_API_BASE=https://your-api-domain.com/api/v1
 
 ---
 
-#### Task 6.2: Create Documentation
+#### Task P6.2: Create Documentation
 **Objective:** Document setup, usage, and deployment process
 
 **File to Create:** dashboard/README.md
@@ -1202,33 +1202,33 @@ VITE_API_BASE=https://your-api-domain.com/api/v1
 ## Implementation Order
 
 ### Priority 1 (Core Functionality)
-1. Task 1.1: Initialize project
-2. Task 1.2: Create mock data files
-3. Task 1.3: Create API utility
-4. Task 1.4: Create Svelte stores
-5. Task 2.1: Create seeding script
-6. Task 3.1: Create header component
+1. Task P1.1: Initialize project
+2. Task P1.2: Create mock data files
+3. Task P1.3: Create API utility
+4. Task P1.4: Create Svelte stores
+5. Task P2.1: Create seeding script
+6. Task P3.1: Create header component
 
 ### Priority 2 (Teacher View)
-7. Task 4.1: Create teacher dashboard page
-8. Task 2.3: Create sync endpoint
+7. Task P4.1: Create teacher dashboard page
+8. Task P2.3: Create sync endpoint
 9. Test teacher dashboard flow
 
 ### Priority 3 (Student View)
-10. Task 3.2: Create stats component
-11. Task 3.3: Create chart component
-12. Task 3.4: Create recommendations component
-13. Task 3.5: Create assignment selector
-14. Task 4.2: Create student detail view
-15. Task 2.2: Create assignment submission endpoint
+10. Task P3.2: Create stats component
+11. Task P3.3: Create chart component
+12. Task P3.4: Create recommendations component
+13. Task P3.5: Create assignment selector
+14. Task P4.2: Create student detail view
+15. Task P2.2: Create assignment submission endpoint
 16. Test student view flow
 
 ### Priority 4 (Polish & Deploy)
-17. Task 5.1: Configure environment variables
-18. Task 5.2: End-to-end testing
-19. Task 5.3: Responsive design testing
-20. Task 6.1: Deploy to Vercel
-21. Task 6.2: Create documentation
+17. Task P5.1: Configure environment variables
+18. Task P5.2: End-to-end testing
+19. Task P5.3: Responsive design testing
+20. Task P6.1: Deploy to Vercel
+21. Task P6.2: Create documentation
 
 ## Success Criteria
 

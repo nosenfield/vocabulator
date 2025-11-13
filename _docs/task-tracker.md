@@ -1,6 +1,6 @@
 # Vocabulator MVP Task Tracker
 
-**Last Updated:** 2025-11-12
+**Last Updated:** 2025-11-13
 
 ---
 
@@ -18,7 +18,7 @@ Simple progress tracker for the Vocabulator MVP. Reference: [task-list.md](task-
 
 ## Progress Summary
 
-**Overall:** 46/71 tasks complete (64.8%)
+**Overall:** 46/90 tasks complete (51.1%)
 
 **By Phase:**
 - Phase 0: 4/4 (100%)
@@ -31,6 +31,7 @@ Simple progress tracker for the Vocabulator MVP. Reference: [task-list.md](task-
 - Phase 7: 3/3 (100%)
 - Phase 8: 4/4 (100%)
 - Phase 9: 4/4 (100%)
+- **Phase P1 (Dashboard): 0/19 (0%)**
 
 ---
 
@@ -141,6 +142,45 @@ Simple progress tracker for the Vocabulator MVP. Reference: [task-list.md](task-
 - [x] 9.2 - Demo Environment Setup (P0)
 - [x] 9.3 - Cost Optimization Review (P1)
 - [x] 9.4 - Launch Checklist & Go/No-Go (P1)
+
+---
+
+## Phase P1: Teacher Dashboard (P1 PRD Feature)
+
+**Progress:** 0/19 (0%)
+
+Reference: [task-list-p1.md](task-list-p1.md)
+
+### P1.1: Project Setup (0/4)
+- [ ] P1.1 - Initialize SvelteKit Project
+- [ ] P1.2 - Create Mock Data Files
+- [ ] P1.3 - Create API Utility Module
+- [ ] P1.4 - Create Svelte Stores for State Management
+
+### P1.2: Backend Mock Data (0/3)
+- [ ] P2.1 - Create Database Seeding Script
+- [ ] P2.2 - Create Mock Assignment Submission Endpoint
+- [ ] P2.3 - Create Mock Google Classroom Sync Endpoint
+
+### P1.3: Core Components (0/5)
+- [ ] P3.1 - Create Header Component
+- [ ] P3.2 - Create Student Stats Component
+- [ ] P3.3 - Create Vocabulary Growth Chart Component
+- [ ] P3.4 - Create Recommendations List Component
+- [ ] P3.5 - Create Mock Assignment Selector Component
+
+### P1.4: Page Views (0/2)
+- [ ] P4.1 - Create Teacher Dashboard Page
+- [ ] P4.2 - Create Student Detail Page
+
+### P1.5: Integration and Testing (0/3)
+- [ ] P5.1 - Configure Environment Variables
+- [ ] P5.2 - Test End-to-End Workflow
+- [ ] P5.3 - Responsive Design Testing
+
+### P1.6: Deployment (0/2)
+- [ ] P6.1 - Configure Vercel Deployment
+- [ ] P6.2 - Create Documentation
 
 ---
 
