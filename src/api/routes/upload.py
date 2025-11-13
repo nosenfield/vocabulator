@@ -41,6 +41,134 @@ router = APIRouter()
 
 
 @router.post(
+    "/mock/submit-assignment",
+    response_model=WritingUploadResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Mock assignment submission for dashboard demo",
+    description="Accept assignment submission from dashboard mock. Identical to real upload but labeled as mock for clarity.",
+)
+async def mock_submit_assignment(
+    request: WritingUploadRequest,
+    pipeline: Annotated[TextProcessingPipeline, Depends(get_text_processing_pipeline)],
+    student_repo: Annotated[StudentRepository, Depends(get_student_repository)],
+) -> WritingUploadResponse:
+    """Accept assignment submission from dashboard mock.
+    
+    This endpoint is identical to the regular writing upload endpoint but is
+    specifically labeled as "mock" to indicate it's for dashboard demonstration
+    purposes. It processes assignments submitted from the dashboard's mock
+    assignment selector.
+    
+    Args:
+        request: Writing upload request with student_id, text, and metadata
+        pipeline: Text processing pipeline dependency
+        student_repo: Student repository dependency
+        
+    Returns:
+        WritingUploadResponse with success status and words extracted count
+        
+    Raises:
+        HTTPException: If upload or processing fails
+    """
+    # Use existing upload logic - just call the regular upload_writing function
+    # but we need to also handle S3 storage, so we'll duplicate the logic
+    # but mark it as mock in logs
+    request_id = str(uuid4())
+    
+    try:
+        # Verify student exists
+        try:
+            student_repo.get_by_id(request.student_id)
+        except Exception:
+            logger.warning(
+                f"Student not found for mock assignment: {request.student_id}",
+                extra={"request_id": request_id},
+            )
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=create_not_found_error_response(
+                    resource_type="student",
+                    resource_id=request.student_id,
+                    request_id=request_id,
+                ),
+            )
+        
+        # Process through pipeline (this handles vocabulary extraction and profile update)
+        try:
+            recommendation = await pipeline.process_text(
+                text=request.text,
+                student_id=request.student_id,
+                grade_level=request.grade_level,
+                request_id=request_id,
+            )
+            
+            # Get updated profile to calculate words_extracted
+            profile = student_repo.get_by_id(request.student_id)
+            words_extracted = len(profile.vocabulary_list) if profile else 0
+            
+            logger.info(
+                "Mock assignment processed successfully",
+                extra={
+                    "student_id": request.student_id,
+                    "words_extracted": words_extracted,
+                    "request_id": request_id,
+                },
+            )
+            
+            return WritingUploadResponse(
+                success=True,
+                student_id=request.student_id,
+                words_extracted=words_extracted,
+            )
+            
+        except ValueError as e:
+            logger.error(
+                f"Validation error processing mock assignment: {e}",
+                extra={"request_id": request_id, "student_id": request.student_id},
+            )
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=create_error_response(
+                    error_code="validation_error",
+                    message=str(e),
+                    request_id=request_id,
+                    student_id=request.student_id,
+                ),
+            ) from e
+        except Exception as e:
+            logger.error(
+                f"Error processing mock assignment: {e}",
+                extra={"request_id": request_id, "student_id": request.student_id},
+                exc_info=True,
+            )
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=create_error_response(
+                    error_code="processing_error",
+                    message="Failed to process mock assignment",
+                    request_id=request_id,
+                    student_id=request.student_id,
+                ),
+            ) from e
+            
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(
+            f"Unexpected error in mock assignment submission: {e}",
+            extra={"request_id": request_id},
+            exc_info=True,
+        )
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=create_internal_error_response(
+                message="An unexpected error occurred",
+                request_id=request_id,
+            ),
+        ) from e
+
+
+@router.post(
     "/transcripts/upload",
     response_model=TranscriptUploadResponse,
     status_code=status.HTTP_200_OK,
