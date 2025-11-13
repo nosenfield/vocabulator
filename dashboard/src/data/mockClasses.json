@@ -1,0 +1,21 @@
+[
+  {
+    "id": "7A-ELA",
+    "name": "Grade 7A - English Language Arts",
+    "grade": 7,
+    "period": "Period 2"
+  },
+  {
+    "id": "7B-ELA",
+    "name": "Grade 7B - English Language Arts",
+    "grade": 7,
+    "period": "Period 4"
+  },
+  {
+    "id": "8A-ELA",
+    "name": "Grade 8A - English Language Arts",
+    "grade": 8,
+    "period": "Period 3"
+  }
+]
+
