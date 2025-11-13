@@ -73,6 +73,29 @@ npm run preview
 
 The `@sveltejs/adapter-vercel` adapter automatically configures Vercel deployment settings.
 
+## Security Considerations
+
+### CSRF Protection
+
+The dashboard uses API authentication (when implemented) and relies on:
+- Backend API Gateway CSRF protection (if configured)
+- SameSite cookie policies (when authentication is added)
+- Request ID correlation for request validation
+
+**Note**: For production deployment, ensure CSRF protection is implemented at the API Gateway or backend level. The current implementation is for demo/mock purposes.
+
+### Content Security
+
+- **Client-side**: Validates input length, format, and basic structure
+- **Backend**: Handles all content sanitization and validation
+- **Trust Boundary**: Client validates format/length, backend validates/sanitizes content
+
+See `src/lib/api.js` for detailed security boundary documentation.
+
+### Content Security Policy (CSP)
+
+The dashboard includes basic CSP headers in `src/app.html`. For production, configure stricter CSP headers at the server/deployment level (e.g., Vercel headers configuration).
+
 ## Backend CORS Configuration
 
 The FastAPI backend must allow CORS requests from the dashboard origin. Ensure your backend CORS configuration includes the dashboard URL:

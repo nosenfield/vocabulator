@@ -2,16 +2,20 @@
 // Note: import.meta.env is replaced at build time by Vite
 const API_BASE = import.meta.env.VITE_API_BASE;
 // In development, allow localhost fallback; in production, VITE_API_BASE must be set at build time
-const API_BASE_URL = API_BASE || (import.meta.env.DEV ? 'http://localhost:8000/api/v1' : '');
+const API_BASE_URL = API_BASE || (import.meta.env.DEV ? 'http://localhost:8000/api/v1' : null);
 if (!API_BASE_URL) {
 	// Production build requires VITE_API_BASE. Application will fail at runtime if not set.
+	// Fail fast during initialization to prevent runtime errors
 	// Use generic error message to avoid exposing configuration details
-	const isProduction = !import.meta.env.DEV;
-	throw new Error(
-		isProduction
-			? 'Application configuration error. Please contact support.'
-			: 'VITE_API_BASE environment variable is required. Set it in your .env file or build configuration.'
-	);
+	if (import.meta.env.PROD) {
+		// In production, log to error tracking service (not console)
+		// For now, throw generic error
+		throw new Error('Application configuration error');
+	} else {
+		// In development, provide helpful error message
+		console.error('VITE_API_BASE environment variable not set');
+		throw new Error('VITE_API_BASE environment variable is required. Set it in your .env file.');
+	}
 }
 
 /**
@@ -184,15 +188,35 @@ export async function submitAssignments(studentId, assignment) {
 	if (!assignment.text || typeof assignment.text !== 'string' || assignment.text.length === 0) {
 		throw new Error('Assignment text is required');
 	}
-	// Validate text length to prevent oversized payloads
-	const MAX_ASSIGNMENT_LENGTH = 50000; // Reasonable limit for middle school writing
+	// Validate assignment text length
+	// Note: Backend has a 50KB limit for assignment text
+	// This validation prevents oversized payloads and aligns with backend constraints
+	const MAX_ASSIGNMENT_LENGTH = 50000; // Character limit (aligned with backend)
+	const MAX_ASSIGNMENT_BYTES = 100000; // Byte limit (~100KB to account for Unicode)
 	if (assignment.text.length > MAX_ASSIGNMENT_LENGTH) {
 		throw new Error(`Assignment text exceeds maximum length (${MAX_ASSIGNMENT_LENGTH} characters)`);
 	}
+	const textBytes = new TextEncoder().encode(assignment.text).length;
+	if (textBytes > MAX_ASSIGNMENT_BYTES) {
+		throw new Error(`Assignment text exceeds maximum size (${MAX_ASSIGNMENT_BYTES} bytes)`);
+	}
 	
+	// Basic validation: ensure no null bytes or other problematic characters
+	if (assignment.text.includes('\0')) {
+		throw new Error('Assignment text contains invalid characters (null bytes)');
+	}
+	
+	// SECURITY BOUNDARY: assignment.text handling
+	// 
+	// We intentionally do NOT sanitize assignment.text on the client side because:
+	// 1. Educational content may contain legitimate special characters, formatting, etc.
+	// 2. Backend is responsible for all content validation and sanitization
+	// 3. Client-side sanitization could corrupt legitimate educational content
+	//
+	// Trust boundary: Client validates length/format, backend validates/sanitizes content.
+	// This is documented in the security architecture: backend handles all content validation.
+	//
 	// Student ID already validated by regex, no need for additional sanitization
-	// Don't sanitize assignment.text - backend handles content validation
-	// Sanitizing could corrupt legitimate educational content
 	const sanitizedTitle = assignment.title ? sanitizeString(assignment.title) : '';
 	const sanitizedDate = assignment.date || new Date().toISOString().split('T')[0];
 	const sanitizedType = assignment.type === 'writing' || assignment.type === 'transcript' 

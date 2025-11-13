@@ -11,7 +11,9 @@ export const educator = writable(null);
 
 // Available classes (derived from students)
 export const classes = derived(students, ($students) => {
-	const classSet = new Set($students.map((s) => s.class));
+	const classSet = new Set(
+		$students.map((s) => s.class || s.metadata?.class).filter(Boolean)
+	);
 	return Array.from(classSet);
 });
 
@@ -21,7 +23,11 @@ export const filteredStudents = derived(
 	[students, selectedClass],
 	([$students, $selectedClass]) => {
 		if (!$selectedClass) return $students;
-		return $students.filter((s) => s.class === $selectedClass);
+		return $students.filter((s) => {
+			// Check both class field and metadata.class for compatibility
+			const studentClass = s.class || s.metadata?.class;
+			return studentClass === $selectedClass;
+		});
 	}
 );
 
