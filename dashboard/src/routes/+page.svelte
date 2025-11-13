@@ -138,6 +138,8 @@
 			// Reload student data to show updates
 			if (succeeded > 0) {
 				await loadStudentData(studentId);
+				// Scroll to top of page to show updated stats and chart
+				window.scrollTo({ top: 0, behavior: 'smooth' });
 			}
 		} catch (error) {
 			console.error('Failed to submit assignments:', error);

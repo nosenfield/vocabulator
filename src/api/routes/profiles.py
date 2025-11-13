@@ -444,10 +444,22 @@ async def update_student(
             extra={"request_id": request_id},
         )
         
+        # Convert vocabulary entries to response format
+        vocabulary_entries = [
+            {
+                "word": entry.word,
+                "first_seen": entry.first_seen.isoformat(),
+                "usage_count": entry.usage_count,
+                "contexts": entry.contexts,
+            }
+            for entry in updated_profile.vocabulary_list
+        ]
+        
         return StudentProfileResponse(
             student_id=updated_profile.student_id,
             grade_level=updated_profile.grade_level,
             vocabulary_size=len(updated_profile.vocabulary_list),
+            vocabulary_list=vocabulary_entries,
             proficiency_score=updated_profile.proficiency_score,
             created_at=updated_profile.created_at,
             last_updated=updated_profile.last_updated,

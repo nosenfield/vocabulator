@@ -1,6 +1,4 @@
 <script>
-	import { getDifficultyColor } from '$lib/utils';
-
 	export let recommendations = [];
 
 	let expandedWords = new Set();
@@ -28,7 +26,6 @@
 			<div class="list-group">
 				{#each recommendations as rec}
 					{@const difficulty = rec.difficulty_score || 0}
-					{@const colorClass = getDifficultyColor(difficulty)}
 					<div class="list-group-item">
 						<div class="d-flex justify-content-between align-items-start">
 							<div class="flex-grow-1">
