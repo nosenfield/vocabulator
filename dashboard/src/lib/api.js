@@ -224,10 +224,53 @@ export async function submitAssignments(studentId, assignment) {
 		: 'writing'; // Default to writing if invalid
 	
 	try {
+		// Get student profile to retrieve grade_level (required by API)
+		// If grade_level is provided in assignment, use it; otherwise fetch from profile
+		let gradeLevel = assignment.grade_level;
+		if (!gradeLevel) {
+			try {
+				const profileResponse = await fetch(`${API_BASE_URL}/students/${studentId}/profile`, {
+					headers: {
+						'X-Request-ID': requestId
+					}
+				});
+				if (profileResponse.ok) {
+					const profile = await profileResponse.json();
+					gradeLevel = profile.grade_level;
+				} else {
+					// Default to grade 7 if profile fetch fails
+					gradeLevel = 7;
+				}
+			} catch (profileError) {
+				// Default to grade 7 if profile fetch fails
+				gradeLevel = 7;
+			}
+		}
+
 		const endpoint =
 			sanitizedType === 'writing'
 				? `${API_BASE_URL}/writing/upload`
 				: `${API_BASE_URL}/transcripts/upload`;
+
+		// Build request body based on endpoint type
+		let requestBody;
+		if (sanitizedType === 'writing') {
+			// WritingUploadRequest requires: student_id, text, grade_level, optional assignment_id
+			requestBody = {
+				student_id: studentId,
+				text: assignment.text,
+				grade_level: gradeLevel,
+				assignment_id: assignment.id || sanitizedTitle || null
+			};
+		} else {
+			// TranscriptUploadRequest requires: student_id, text, session_date, grade_level
+			requestBody = {
+				student_id: studentId,
+				text: assignment.text,
+				session_date: sanitizedDate,
+				grade_level: gradeLevel
+			};
+		}
 
 		const response = await fetch(endpoint, {
 			method: 'POST',
@@ -235,15 +278,7 @@ export async function submitAssignments(studentId, assignment) {
 				'Content-Type': 'application/json',
 				'X-Request-ID': requestId
 			},
-			body: JSON.stringify({
-				student_id: studentId,
-				text: assignment.text,
-				metadata: {
-					title: sanitizedTitle,
-					date: sanitizedDate,
-					type: sanitizedType
-				}
-			})
+			body: JSON.stringify(requestBody)
 		});
 
 		if (!response.ok) {

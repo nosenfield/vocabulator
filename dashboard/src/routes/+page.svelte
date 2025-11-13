@@ -78,9 +78,14 @@
 	async function handleAssignmentSubmit(event) {
 		const { studentId, assignments: selectedAssignments } = event.detail;
 		try {
+			// Get current student profile to pass grade_level to assignments
+			const gradeLevel = currentStudentProfile?.grade_level || 7;
+			
 			// Process all assignments and handle partial failures
 			const results = await Promise.allSettled(
-				selectedAssignments.map((assignment) => submitAssignments(studentId, assignment))
+				selectedAssignments.map((assignment) => 
+					submitAssignments(studentId, { ...assignment, grade_level: gradeLevel })
+				)
 			);
 
 			const succeeded = results.filter((r) => r.status === 'fulfilled').length;

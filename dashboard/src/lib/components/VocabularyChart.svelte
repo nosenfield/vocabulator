@@ -63,6 +63,10 @@
 			data[lastIndex] = Math.max(data[lastIndex], currentVocabularySize);
 		}
 
+		// Calculate max value for y-axis (add 20 for padding)
+		const maxDataValue = data.length > 0 ? Math.max(...data) : 0;
+		const yAxisMax = maxDataValue > 0 ? maxDataValue + 20 : 20;
+
 		return {
 			labels,
 			datasets: [
@@ -75,7 +79,8 @@
 					pointRadius: 4,
 					pointHoverRadius: 6
 				}
-			]
+			],
+			yAxisMax: yAxisMax // Store for use in chart options
 		};
 	}
 
@@ -84,16 +89,21 @@
 
 		const ctx = chartCanvas.getContext('2d');
 		const chartData = prepareChartData(vocabularyList, currentVocabularySize);
+		const yAxisMax = chartData.yAxisMax || 20;
 
 		chart = new Chart(ctx, {
 			type: 'line',
-			data: chartData,
+			data: {
+				labels: chartData.labels,
+				datasets: chartData.datasets
+			},
 			options: {
 				responsive: true,
 				maintainAspectRatio: true,
 				scales: {
 					y: {
 						beginAtZero: true,
+						max: yAxisMax,
 						title: {
 							display: true,
 							text: 'Vocabulary Size'
@@ -129,7 +139,12 @@
 	// Update chart when vocabulary data changes
 	$: if (chart && (vocabularyList || currentVocabularySize !== undefined)) {
 		const chartData = prepareChartData(vocabularyList, currentVocabularySize);
-		chart.data = chartData;
+		const yAxisMax = chartData.yAxisMax || 20;
+		chart.data = {
+			labels: chartData.labels,
+			datasets: chartData.datasets
+		};
+		chart.options.scales.y.max = yAxisMax;
 		chart.update();
 	}
 </script>
